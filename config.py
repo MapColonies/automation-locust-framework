@@ -16,6 +16,7 @@ class Config:
     TOKEN = os.environ.get("SECRET_VALUE_API") or "hard to guess string"
     HOST = (os.environ.get("HOST") or "enter a host",)
     WAIT_TIME_FUNC = (int(os.environ.get("wait_function", "4")),)
+    WAIT_TIME = (int(os.environ.get("wait_time", "4")),)
 
 
 class WmtsConfig(Config):
