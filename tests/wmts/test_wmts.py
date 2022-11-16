@@ -22,7 +22,9 @@ class User(HttpUser):
         wait_time = constant_throughput(wait_time)
         print(CONSTANT_THROUGHPUT_TIMER_STR)
     elif timer_selection == 3:
-        wait_time = between(cfg.MIN_WAIT, cfg.MAX_WAIT)
+        wait_time = between(
+            config[Selection.WMTS].MIN_WAIT, config[Selection.WMTS].MAX_WAIT
+        )
         print(BETWEEN_TIMER_STR)
     elif timer_selection == 4:
         wait_time = constant_pacing(wait_time)

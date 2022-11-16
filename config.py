@@ -17,6 +17,8 @@ class Config:
     HOST = (os.environ.get("HOST") or "enter a host",)
     WAIT_TIME_FUNC = (int(os.environ.get("wait_function", "4")),)
     WAIT_TIME = (int(os.environ.get("wait_time", "4")),)
+    MAX_WAIT = (int(os.environ.get("max_wait", 1)),)
+    MIN_WAIT = (int(os.environ.get("min_wait", 1)),)
 
 
 class WmtsConfig(Config):
