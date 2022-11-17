@@ -1,6 +1,5 @@
 from config import Selection, config
 
-
 # Constants for XML post requests
 POLYGON_XML = rf"""<?xml version="1.0" encoding="UTF-8"?>
 
