@@ -5,7 +5,7 @@ from common.strings import (
     CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
 )
-from config import Selection, config
+from config import Selection, config , WmtsConfig
 from locust import (
     HttpUser,
     between,
@@ -16,7 +16,7 @@ from locust import (
 )
 from locust_plugins.csvreader import CSVReader
 
-wmts_csv_path = str(config[Selection.WMTS].WMTS_CSV_PATH)
+wmts_csv_path = WmtsConfig.WMTS_CSV_PATH
 ssn_reader = CSVReader(wmts_csv_path)
 
 
@@ -43,7 +43,7 @@ class User(HttpUser):
     @task(1)
     def index(self):
         points = next(ssn_reader)
-        if config[Selection.DEFAULT].TOKEN is None:
+        if config[Selection.WMTS].TOKEN is None:
             self.client.get(
                 f"/{config[Selection.WMTS].LAYER_TYPE}/"
                 f"{config[Selection.WMTS].LAYER_NAME}/"
