@@ -1,3 +1,6 @@
 from config import Selection, config
 
-print(config[Selection.WMTS].WAIT_TIME_FUNC)
+if config[Selection.DEFAULT].TOKEN is None:
+    print("Is None")
+else:
+    print("TOKEN")
