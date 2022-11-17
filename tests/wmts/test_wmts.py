@@ -1,19 +1,19 @@
 from common.strings import (
-    CONSTANT_TIMER_STR,
+    BETWEEN_TIMER_STR,
     CONSTANT_PACING_TIMER_STR,
     CONSTANT_THROUGHPUT_TIMER_STR,
-    BETWEEN_TIMER_STR,
+    CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
 )
+from config import Selection, config
 from locust import (
     HttpUser,
-    constant,
-    constant_throughput,
     between,
+    constant,
     constant_pacing,
+    constant_throughput,
     task,
 )
-from config import Selection, config
 from locust_plugins.csvreader import CSVReader
 
 ssn_reader = CSVReader("csv_data/data/new.csv")
