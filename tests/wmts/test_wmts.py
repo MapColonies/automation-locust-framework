@@ -1,4 +1,10 @@
-from locust_plugins.csvreader import CSVReader
+from common.strings import (
+    CONSTANT_TIMER_STR,
+    CONSTANT_PACING_TIMER_STR,
+    CONSTANT_THROUGHPUT_TIMER_STR,
+    BETWEEN_TIMER_STR,
+    INVALID_TIMER_STR,
+)
 from locust import (
     HttpUser,
     constant,
@@ -8,13 +14,7 @@ from locust import (
     task,
 )
 from config import Selection, config
-from common.strings import (
-    CONSTANT_TIMER_STR,
-    CONSTANT_PACING_TIMER_STR,
-    CONSTANT_THROUGHPUT_TIMER_STR,
-    BETWEEN_TIMER_STR,
-    INVALID_TIMER_STR,
-)
+from locust_plugins.csvreader import CSVReader
 
 ssn_reader = CSVReader("csv_data/data/new.csv")
 
@@ -44,11 +44,20 @@ class User(HttpUser):
         points = next(ssn_reader)
         if config[Selection.DEFAULT].TOKEN is None:
             self.client.get(
-                f"/{config[Selection.WMTS].LAYER_TYPE}/{config[Selection.WMTS].LAYER_NAME}/{config[Selection.WMTS].GRID_NAME}/{points[0]}/{points[1]}/{points[2]}{config[Selection.WMTS].IMAGE_FORMAT}",
+                f"/{config[Selection.WMTS].LAYER_TYPE}/"
+                f"{config[Selection.WMTS].LAYER_NAME}/"
+                f"{config[Selection.WMTS].GRID_NAME}/"
+                f"{points[0]}/{points[1]}/{points[2]}"
+                f"{config[Selection.WMTS].IMAGE_FORMAT}",
             )
         else:
             self.client.get(
-                f"/{config[Selection.WMTS].LAYER_TYPE}/{config[Selection.WMTS].LAYER_NAME}/{config[Selection.WMTS].GRID_NAME}/{points[0]}/{points[1]}/{points[2]}{config[Selection.WMTS].IMAGE_FORMAT}?token={config[Selection.WMTS].TOKEN}",
+                f"/{config[Selection.WMTS].LAYER_TYPE}/"
+                f"{config[Selection.WMTS].LAYER_NAME}/"
+                f"{config[Selection.WMTS].GRID_NAME}/"
+                f"{points[0]}/{points[1]}/{points[2]}"
+                f"{config[Selection.WMTS].IMAGE_FORMAT}"
+                f"?token={config[Selection.WMTS].TOKEN}",
             )
 
     host = config[Selection.WMTS].HOST
