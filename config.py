@@ -28,11 +28,20 @@ class WmtsConfig(Config):
     GRID_NAME = os.environ.get("gridName", "default")
     IMAGE_FORMAT = os.environ.get("imageType", ".png")
 
-    WMTS_CSV_PATH = "dsadasdas" or None
+    WMTS_CSV_PATH = "csv_data/data/new.csv" or None
 
 
 class PycswConfig(Config):
-    TOT = True
+    PYCSW_ID_PROPERTY = os.environ.get("mc_id_property", "mc:id")
+    PYCSW_REGION_PROPERTY = os.environ.get("mc_region_property", "mc:region")
+    PYCSW_POLYGON_PROPERTY = os.environ.get(
+        "mc_polygon_property", "mc:layerPolygonParts"
+    )
+    PYCSW_ID_VALUE = os.environ.get(
+        "mc_id_value", "d53a03e3-650b-4f4e-9047-071667741c08"
+    )
+    PYCSW_REGION_VALUE = os.environ.get("mc_region_value", "string")
+    PYCSW_POLYGON_VALUE = os.environ.get("mc_polygon_value", "")
 
 
 class ProActiveConfig(Config):
