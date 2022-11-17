@@ -41,7 +41,7 @@ class PycswConfig(Config):
         "mc_id_value", "d53a03e3-650b-4f4e-9047-071667741c08"
     )
     PYCSW_REGION_VALUE = os.environ.get("mc_region_value", "string")
-    PYCSW_POLYGON_VALUE = os.environ.get("mc_polygon_value", "")
+    PYCSW_POLYGON_VALUE = os.environ.get("mc_polygon_value", "s")
 
 
 class ProActiveConfig(Config):
