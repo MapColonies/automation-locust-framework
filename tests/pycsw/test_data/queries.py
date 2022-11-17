@@ -92,3 +92,5 @@ outputSchema="http://schema.mapcolonies.com/raster" version="2.0.2" xmlns:mc="ht
 
 </csw:GetRecords>
 """
+
+print(config[Selection.PYCSW].PYCSW_REGION_VALUE)
