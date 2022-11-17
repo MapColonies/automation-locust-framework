@@ -1,4 +1,4 @@
-from config import Selection, config
+from config import Selection, config, PycswConfig
 
 # Constants for XML post requests
 POLYGON_XML = rf"""<?xml version="1.0" encoding="UTF-8"?>
@@ -16,9 +16,9 @@ outputSchema="http://schema.mapcolonies.com/raster" version="2.0.2" xmlns:mc="ht
 
 <PropertyIsLike wildCard="%" singleChar="_" escapeChar="\\">
 
-<PropertyName>{config[Selection.PYCSW].PYCSW_POLYGON_PROPERTY}</PropertyName>
+<PropertyName>{PycswConfig.PYCSW_POLYGON_PROPERTY}</PropertyName>
 
-<Literal>{config[Selection.PYCSW].PYCSW_POLYGON_VALUE}</Literal>
+<Literal>{PycswConfig.PYCSW_POLYGON_VALUE}</Literal>
 
 </PropertyIsLike>
 
@@ -47,9 +47,9 @@ outputSchema="http://schema.mapcolonies.com/raster" version="2.0.2" xmlns:mc="ht
 
 <PropertyIsLike wildCard="%" singleChar="_" escapeChar="\\">
 
-<PropertyName>{config[Selection.PYCSW].PYCSW_ID_PROPERTY}</PropertyName>
+<PropertyName>{PycswConfig.PYCSW_ID_PROPERTY}</PropertyName>
 
-<Literal>{config[Selection.PYCSW].PYCSW_ID_VALUE}</Literal>
+<Literal>{PycswConfig.PYCSW_ID_VALUE}</Literal>
 
 </PropertyIsLike>
 
@@ -78,9 +78,9 @@ outputSchema="http://schema.mapcolonies.com/raster" version="2.0.2" xmlns:mc="ht
 
 <PropertyIsLike wildCard="%" singleChar="_" escapeChar="\\">
 
-<PropertyName>{config[Selection.PYCSW].PYCSW_REGION_PROPERTY}</PropertyName>
+<PropertyName>{PycswConfig.PYCSW_REGION_PROPERTY}</PropertyName>
 
-<Literal>{config[Selection.PYCSW].PYCSW_REGION_VALUE}</Literal>
+<Literal>{PycswConfig.PYCSW_REGION_VALUE}</Literal>
 
 </PropertyIsLike>
 
