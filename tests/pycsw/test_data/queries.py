@@ -4,7 +4,8 @@ from config import Selection, config
 # Constants for XML post requests
 POLYGON_XML = rf"""<?xml version="1.0" encoding="UTF-8"?>
 
-<csw:GetRecords xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" service="CSW" maxRecords="1" startPosition="1" outputSchema="http://schema.mapcolonies.com/raster" version="2.0.2" xmlns:mc="http://schema.mapcolonies.com/raster" >
+<csw:GetRecords xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" service="CSW" maxRecords="1" startPosition="1" \
+outputSchema="http://schema.mapcolonies.com/raster" version="2.0.2" xmlns:mc="http://schema.mapcolonies.com/raster" >
 
 <csw:Query typeNames="mc:MCRasterRecord">
 
@@ -34,7 +35,8 @@ POLYGON_XML = rf"""<?xml version="1.0" encoding="UTF-8"?>
 
 ID_RECORD_XML = rf"""<?xml version="1.0" encoding="UTF-8"?>
 
-<csw:GetRecords xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" service="CSW" maxRecords="1" startPosition="1" outputSchema="http://schema.mapcolonies.com/raster" version="2.0.2" xmlns:mc="http://schema.mapcolonies.com/raster" >
+<csw:GetRecords xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" service="CSW" maxRecords="1" startPosition="1" \
+outputSchema="http://schema.mapcolonies.com/raster" version="2.0.2" xmlns:mc="http://schema.mapcolonies.com/raster" >
 
 <csw:Query typeNames="mc:MCRasterRecord">
 
@@ -64,7 +66,8 @@ ID_RECORD_XML = rf"""<?xml version="1.0" encoding="UTF-8"?>
 
 REGION_RECORD_XML = rf"""<?xml version="1.0" encoding="UTF-8"?>
 
-<csw:GetRecords xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" service="CSW" maxRecords="1" startPosition="1" outputSchema="http://schema.mapcolonies.com/raster" version="2.0.2" xmlns:mc="http://schema.mapcolonies.com/raster" >
+<csw:GetRecords xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" service="CSW" maxRecords="1" startPosition="1" \
+outputSchema="http://schema.mapcolonies.com/raster" version="2.0.2" xmlns:mc="http://schema.mapcolonies.com/raster" >
 
 <csw:Query typeNames="mc:MCRasterRecord">
 
