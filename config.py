@@ -14,7 +14,7 @@ class Selection(Enum):
 
 class Config:
     TOKEN = os.environ.get("SECRET_VALUE_API") or None
-    HOST = (os.environ.get("HOST") or "enter a host",)
+    HOST = os.environ.get("HOST", "enter a host")
     WAIT_TIME_FUNC = (int(os.environ.get("wait_function", "4")),)
     WAIT_TIME = (int(os.environ.get("wait_time", "4")),)
     MAX_WAIT = (int(os.environ.get("max_wait", 1)),)
@@ -22,13 +22,11 @@ class Config:
 
 
 class WmtsConfig(Config):
-    DOD = (True,)
     LAYER_TYPE = os.environ.get("layer_type", "wmts")
     LAYER_NAME = os.environ.get("layer", "OrthophotoHistory")
     GRID_NAME = os.environ.get("gridName", "default")
     IMAGE_FORMAT = os.environ.get("imageType", ".png")
-
-    WMTS_CSV_PATH = "csv_data/data/new.csv" or None
+    WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "csv_data/data/new.csv")
 
 
 class PycswConfig(Config):
