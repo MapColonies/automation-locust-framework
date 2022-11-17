@@ -16,8 +16,8 @@ from locust import (
 )
 from locust_plugins.csvreader import CSVReader
 
-
-ssn_reader = CSVReader(config[Selection.WMTS].WMTS_CSV_PATH)
+wmts_csv_path = config[Selection.WMTS].WMTS_CSV_PATH
+ssn_reader = CSVReader(wmts_csv_path)
 
 
 class User(HttpUser):
