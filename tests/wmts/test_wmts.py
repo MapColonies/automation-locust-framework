@@ -1,5 +1,12 @@
 from locust_plugins.csvreader import CSVReader
-from locust import HttpUser, constant, constant_throughput, between, constant_pacing
+from locust import (
+    HttpUser,
+    constant,
+    constant_throughput,
+    between,
+    constant_pacing,
+    task,
+)
 from config import Selection, config
 from common.strings import (
     CONSTANT_TIMER_STR,
@@ -31,3 +38,17 @@ class User(HttpUser):
         print(CONSTANT_PACING_TIMER_STR)
     else:
         print(INVALID_TIMER_STR)
+
+    @task(1)
+    def index(self):
+        points = next(ssn_reader)
+        if config[Selection.DEFAULT].TOKEN is None:
+            self.client.get(
+                f"/{config[Selection.WMTS].LAYER_TYPE}/{config[Selection.WMTS].LAYER_NAME}/{config[Selection.WMTS].GRID_NAME}/{points[0]}/{points[1]}/{points[2]}{config[Selection.WMTS].IMAGE_FORMAT}",
+            )
+        else:
+            self.client.get(
+                f"/{config[Selection.WMTS].LAYER_TYPE}/{config[Selection.WMTS].LAYER_NAME}/{config[Selection.WMTS].GRID_NAME}/{points[0]}/{points[1]}/{points[2]}{config[Selection.WMTS].IMAGE_FORMAT}?token={config[Selection.WMTS].TOKEN}",
+            )
+
+    host = config[Selection.WMTS].HOST
