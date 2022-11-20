@@ -5,7 +5,7 @@ from common.strings import (
     CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
 )
-from config import Selection, config, WmtsConfig
+from config.config import config_obj, WmtsConfig
 from locust import (
     HttpUser,
     between,
@@ -21,8 +21,8 @@ ssn_reader = CSVReader(wmts_csv_path)
 
 
 class User(HttpUser):
-    timer_selection = config[Selection.WMTS].WAIT_TIME_FUNC
-    wait_time = config[Selection.WMTS].WAIT_TIME
+    timer_selection = config_obj["wmts"].WAIT_TIME_FUNC
+    wait_time = config_obj["wmts"].WAIT_TIME
     if timer_selection == 1:
         wait_time = constant(wait_time)
         print(CONSTANT_TIMER_STR)
@@ -30,9 +30,7 @@ class User(HttpUser):
         wait_time = constant_throughput(wait_time)
         print(CONSTANT_THROUGHPUT_TIMER_STR)
     elif timer_selection == 3:
-        wait_time = between(
-            config[Selection.WMTS].MIN_WAIT, config[Selection.WMTS].MAX_WAIT
-        )
+        wait_time = between(config_obj["wmts"].MIN_WAIT, config_obj["wmts"].MAX_WAIT)
         print(BETWEEN_TIMER_STR)
     elif timer_selection == 4:
         wait_time = constant_pacing(wait_time)
@@ -43,22 +41,22 @@ class User(HttpUser):
     @task(1)
     def index(self):
         points = next(ssn_reader)
-        if config[Selection.WMTS].TOKEN is None:
+        if config_obj["wmts"].TOKEN is None:
             self.client.get(
-                f"/{config[Selection.WMTS].LAYER_TYPE}/"
-                f"{config[Selection.WMTS].LAYER_NAME}/"
-                f"{config[Selection.WMTS].GRID_NAME}/"
+                f"/{config_obj['wmts'].LAYER_TYPE}/"
+                f"{config_obj['wmts'].LAYER_NAME}/"
+                f"{config_obj['wmts'].GRID_NAME}/"
                 f"{points[0]}/{points[1]}/{points[2]}"
-                f"{config[Selection.WMTS].IMAGE_FORMAT}",
+                f"{config_obj['wmts'].IMAGE_FORMAT}",
             )
         else:
             self.client.get(
-                f"/{config[Selection.WMTS].LAYER_TYPE}/"
-                f"{config[Selection.WMTS].LAYER_NAME}/"
-                f"{config[Selection.WMTS].GRID_NAME}/"
+                f"/{config_obj['wmts'].LAYER_TYPE}/"
+                f"{config_obj['wmts'].LAYER_NAME}/"
+                f"{config_obj['wmts'].GRID_NAME}/"
                 f"{points[0]}/{points[1]}/{points[2]}"
-                f"{config[Selection.WMTS].IMAGE_FORMAT}"
-                f"?token={config[Selection.WMTS].TOKEN}",
+                f"{config_obj['wmts'].IMAGE_FORMAT}"
+                f"?token={config_obj['wmts'].TOKEN}",
             )
 
-    host = config[Selection.WMTS].HOST
+    host = config_obj["wmts"].HOST

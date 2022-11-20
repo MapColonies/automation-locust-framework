@@ -4,14 +4,6 @@ from enum import Enum
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
-class Selection(Enum):
-    WMTS = (1,)
-    PYCSW = (2,)
-    PRO_ACTIVE = (3,)
-    CONFIG_3D = (4,)
-    DEFAULT = 5
-
-
 class Config:
     TOKEN = os.environ.get("SECRET_VALUE_API") or None
     HOST = os.environ.get("HOST", "enter a host")
@@ -52,9 +44,9 @@ class Config3D(Config):
 
 
 config_obj = {
-    Selection.WMTS: WmtsConfig,
-    Selection.PYCSW: PycswConfig,
-    Selection.PRO_ACTIVE: ProActiveConfig,
-    Selection.CONFIG_3D: Config3D,
-    Selection.DEFAULT: Config,
+    "wmts": WmtsConfig,
+    "pycsw": PycswConfig,
+    "pro_active": ProActiveConfig,
+    "_3d": Config3D,
+    "default": Config,
 }
