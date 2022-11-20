@@ -1,7 +1,6 @@
 import math
 from math import floor
-from typing import Optional
-from typing import Tuple
+from typing import Optional, Tuple
 
 
 def zoom_level_convertor(deg_value: float) -> Optional[int]:

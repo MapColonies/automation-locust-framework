@@ -36,6 +36,8 @@ zoom_level = 4
 # max_tile_x = floor((maxx_deg+180)/deg_per_tile,1)+1
 # min_tile_y = power(2,zoom_level) - floor((maxy_deg+90)/deg_per_tile,1) -1
 # max_tile_y = power(2,zoom_level) - floor((miny_deg+90)/deg_per_tile,1)
+
+
 def get_min_tile_x(min_x_deg):
     min_tile_x = floor((min_x_deg + 180) / deg_per_tile)
     return min_tile_x
