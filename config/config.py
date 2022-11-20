@@ -1,6 +1,4 @@
 import os
-from enum import Enum
-import json
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 

@@ -29,14 +29,6 @@ def get_max_x_and_y_range(zoom_level, min_x, max_x, min_y, max_y):
     return (min_y_tile, max_y_tile), (min_x_tile, max_x_tile)
 
 
-# print(get_max_x_and_y_range(zoom_level=4, min_x=35.024411528661574, max_x=32.79419004139809, min_y=35.37597717328861, max_y=32.947998391903226))
-
-
-def convert_tile_to_bbox():
-    max_lan = 180
-    max_lat = 90
-
-
 deg_per_tile = 0.001373
 zoom_level = 4
 # minx_deg, miny_deg , maxx_deg , maxy_deg, zoom_level
