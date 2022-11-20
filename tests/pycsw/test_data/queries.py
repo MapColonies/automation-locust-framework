@@ -1,4 +1,4 @@
-from config import Selection, config, PycswConfig
+from config import PycswConfig
 
 # Constants for XML post requests
 POLYGON_XML = rf"""<?xml version="1.0" encoding="UTF-8"?>
