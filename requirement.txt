@@ -1,3 +1,4 @@
 pre-commit
 locust-plugins
 locust
+mc-automation-tools

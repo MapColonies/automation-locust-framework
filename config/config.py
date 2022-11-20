@@ -1,5 +1,6 @@
 import os
 from enum import Enum
+import json
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -11,6 +12,7 @@ class Config:
     WAIT_TIME = (int(os.environ.get("wait_time", "4")),)
     MAX_WAIT = (int(os.environ.get("max_wait", 1)),)
     MIN_WAIT = (int(os.environ.get("min_wait", 1)),)
+    LAYERS_LIST = (os.environ.get("layer_list", "test-update,shay")).split(",")
 
 
 class WmtsConfig(Config):
