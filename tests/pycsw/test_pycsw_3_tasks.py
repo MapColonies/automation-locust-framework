@@ -1,11 +1,3 @@
-from locust import between
-from locust import constant
-from locust import constant_pacing
-from locust import constant_throughput
-from locust import HttpUser
-from locust import task
-from config.config import config_obj
-from test_data.queries import POLYGON_XML, ID_RECORD_XML, REGION_RECORD_XML
 from common.strings import (
     BETWEEN_TIMER_STR,
     CONSTANT_PACING_TIMER_STR,
@@ -13,6 +5,16 @@ from common.strings import (
     CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
 )
+from config.config import config_obj
+from locust import (
+    HttpUser,
+    between,
+    constant,
+    constant_pacing,
+    constant_throughput,
+    task,
+)
+from test_data.queries import ID_RECORD_XML, POLYGON_XML, REGION_RECORD_XML
 
 
 class SizingUser(HttpUser):
@@ -37,7 +39,7 @@ class SizingUser(HttpUser):
 
     @task(1)
     def get_records_by_polygon(self):
-        polygon_request = self.client.post(
+        self.client.post(
             "/",
             data=POLYGON_XML.encode("UTF-8"),
             verify=False,
@@ -45,7 +47,7 @@ class SizingUser(HttpUser):
 
     @task(1)
     def get_records_by_id(self):
-        id_record_request = self.client.post(
+        self.client.post(
             "/",
             data=ID_RECORD_XML.encode("utf-8"),
             verify=False,
@@ -53,7 +55,7 @@ class SizingUser(HttpUser):
 
     @task(1)
     def get_records_by_region(self):
-        region_record_request = self.client.post(
+        self.client.post(
             "/",
             data=REGION_RECORD_XML.encode("utf-8"),
             verify=False,
