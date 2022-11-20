@@ -5,7 +5,7 @@ from common.strings import (
     CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
 )
-from config.config import config_obj, WmtsConfig
+from config.config import WmtsConfig, config_obj
 from locust import (
     HttpUser,
     between,
