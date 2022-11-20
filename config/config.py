@@ -51,7 +51,7 @@ class Config3D(Config):
     LOL = True
 
 
-config = {
+config_obj = {
     Selection.WMTS: WmtsConfig,
     Selection.PYCSW: PycswConfig,
     Selection.PRO_ACTIVE: ProActiveConfig,

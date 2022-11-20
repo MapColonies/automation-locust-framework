@@ -3,8 +3,6 @@ from math import floor
 from typing import Optional
 from typing import Tuple
 
-import common.config
-
 
 def zoom_level_convertor(deg_value: float) -> Optional[int]:
     """
