@@ -40,7 +40,7 @@ class ProActiveConfig(Config):
 
 
 class Config3D(Config):
-    LOL = True
+    CSV_DATA_PATH = "/home/shayavr/Desktop/git/automation-locust/urls_data.csv"
 
 
 config_obj = {
