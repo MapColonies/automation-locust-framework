@@ -31,7 +31,7 @@ from config.config import config_obj
 # response_param = requests.get(url=f'http://{pvc_url}{config.UPDATE_LAYER_DATA_DIR}/',
 #                               params={'file': layers_name})
 # "/home/shayavr/Desktop/git/automation-locust/urls_data.csv"
-ssn_reader = CSVReader(config_obj['_3d'].CSV_DATA_PATH)
+ssn_reader = CSVReader(config_obj["_3d"].CSV_DATA_PATH)
 
 
 class User(HttpUser):
