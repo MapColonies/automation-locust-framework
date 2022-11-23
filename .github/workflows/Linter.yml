@@ -49,5 +49,6 @@ jobs:
           VALIDATE_ALL_CODEBASE: true
           VALIDATE_PYTHON_MYPY: false
           VALIDATE_YAML: false
+          VALIDATE_KUBERNETES_KUBEVAL: false
           DEFAULT_BRANCH: master
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
