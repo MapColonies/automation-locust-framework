@@ -1,5 +1,6 @@
 import os
 import sys
+from pathlib import Path
 from common.strings import (
     BETWEEN_TIMER_STR,
     CONSTANT_PACING_TIMER_STR,
@@ -7,7 +8,6 @@ from common.strings import (
     CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
 )
-from pathlib import Path
 from config.config import config_obj
 from locust import (
     HttpUser,
