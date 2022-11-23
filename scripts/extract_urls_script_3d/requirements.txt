@@ -1,12 +1,5 @@
-attrs==22.1.0
-boltons==21.0.0
-face==22.0.0
-glom==22.1.0
-numpy==1.23.4
-pandas==1.5.1
-pip==21.3.1
-python-dateutil==2.8.2
-pytz==2022.6
+glom
+numpy
+pandas
+python-dateutil
 setuptools==60.2.0
-six==1.16.0
-wheel==0.37.1
