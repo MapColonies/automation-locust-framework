@@ -72,6 +72,11 @@ spec:
             value: {{ $value | quote }}
 {{- end }}
 {{- end }}
+        readinessProbe:
+          initialDelaySeconds: 1
+          periodSeconds: 30
+          timeoutSeconds: 30
+          failureThreshold: 2
       restartPolicy: {{ .Values.worker.restartPolicy }}
       volumes:
         - name: ingestion-storage
