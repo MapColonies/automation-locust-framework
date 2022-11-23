@@ -90,9 +90,9 @@ spec:
             name: loc-master-p2
             protocol: TCP
         readinessProbe:
-          initialDelaySeconds: 180
-          periodSeconds: 30
-          timeoutSeconds: 30
+          initialDelaySeconds: 10
+          periodSeconds: 15
+          timeoutSeconds: 15
           failureThreshold: 2
 {{- if .Values.global.headless }}
           tcpSocket:
