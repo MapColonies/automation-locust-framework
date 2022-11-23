@@ -71,8 +71,8 @@ worker:
     type: RollingUpdate
   restartPolicy: Always
 
-nameOverride: ""
-fullnameOverride: ""
+nameOverride: "liran"
+fullnameOverride: "danny"
 pullSecretName: acr-registry
 
 ingress:
