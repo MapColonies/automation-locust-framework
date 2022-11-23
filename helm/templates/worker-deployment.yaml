@@ -73,7 +73,7 @@ spec:
 {{- end }}
 {{- end }}
         readinessProbe:
-          initialDelaySeconds: 1
+          initialDelaySeconds: 80
           periodSeconds: 30
           timeoutSeconds: 30
           failureThreshold: 2
