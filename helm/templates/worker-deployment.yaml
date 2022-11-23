@@ -77,5 +77,3 @@ spec:
         - name: ingestion-storage
           persistentVolumeClaim:
             claimName: {{ .Values.storage.pvcName }}
-      
-      
