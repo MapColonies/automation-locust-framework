@@ -74,9 +74,6 @@ spec:
 {{- end }}
         readinessProbe:
           initialDelaySeconds: 80
-          periodSeconds: 30
-          timeoutSeconds: 30
-          failureThreshold: 2
       restartPolicy: {{ .Values.worker.restartPolicy }}
       volumes:
         - name: ingestion-storage
