@@ -1,0 +1,24 @@
+---
+{{- if .Values.route.enabled -}}
+apiVersion: route.openshift.io/v1
+# apiVersion: v1
+kind: Route
+metadata:
+  name: {{ template "locust.fullname" . }}-route
+  annotations:
+    haproxy.router.openshift.io/rewrite-target: /
+    {{- if .Values.route.timeout.enabled }}
+    haproxy.router.openshift.io/timeout: {{ .Values.route.timeout.duration }}
+    {{- end }}
+spec:
+  path: {{ .Values.route.path | default "/" }}
+  port:
+    targetPort: 8089
+  to:
+    kind: Service
+    name: {{ template "locust.fullname" . }}
+  {{- if .Values.route.https }}
+  tls:
+    termination: edge
+  {{- end }}
+  {{- end -}}
