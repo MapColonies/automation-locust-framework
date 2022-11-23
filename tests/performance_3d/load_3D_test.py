@@ -11,12 +11,6 @@ from common.strings import (
 myDir = os.getcwd()
 sys.path.append(myDir)
 from pathlib import Path
-
-path = Path(myDir)
-a = str(path.parent.absolute())
-sys.path.append(a)
-
-import requests
 from config.config import config_obj
 from locust import (
     HttpUser,
@@ -27,6 +21,11 @@ from locust import (
     task,
 )
 from locust_plugins.csvreader import CSVReader
+
+path = Path(myDir)
+a = str(path.parent.absolute())
+sys.path.append(a)
+
 
 # pvc_url = cfg.PVC_HANDLER_ROUTE
 # response_param = requests.get(url=f'http://{pvc_url}{config.UPDATE_LAYER_DATA_DIR}/',
