@@ -6,10 +6,6 @@ metadata:
   labels:
     component: master
 {{ include "locust.labels" . | indent 4 }}
-{{- with .Values.master.deploymentAnnotations }}
-  annotations:
-    {{- toYaml . | nindent 4 }}
-{{- end }}
 spec:
   selector:
     matchLabels:
@@ -22,24 +18,14 @@ spec:
 {{- end }}
   template:
     metadata:
-      annotations:
-      {{- with .Values.master.annotations }}
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-        checksum/config-secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
       labels:
         component: master
         {{- include "locust.selectorLabels" . | nindent 8 }}
     spec:
       imagePullSecrets:
         - name: {{ .Values.pullSecretName }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      serviceAccountName: {{ template "locust.fullname" . }}-master
       containers:
       - name: {{ .Chart.Name }}
-        securityContext:
-          {{- toYaml .Values.securityContext | nindent 12 }}
         image: "{{ if .Values.master.image }}{{ .Values.master.image }}{{ else }}{{ .Values.image.repository }}:{{ .Values.image.tag }}{{ end }}"
 {{- with .Values.master.command }}
         command:
@@ -50,7 +36,7 @@ spec:
 {{- if .Values.master.args }}
           {{- toYaml .Values.master.args | nindent 10 }}
 {{- end }}
-{{- if .Values.loadtest.headless }}
+{{- if .Values.global.headless }}
           - --headless
 {{- end }}
 {{- if .Values.master.auth.enabled }}
@@ -62,49 +48,33 @@ spec:
 {{- if .Values.master.csv_options.csv_history }}
           - --csv-full-history
 {{- end }}
-{{- if .Values.loadtest.tags }}
-          - --tags {{ .Values.loadtest.tags }}
-{{- end }}
-{{- if .Values.loadtest.excludeTags }}
-          - --exclude-tags {{ .Values.loadtest.excludeTags }}
-{{- end }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        resources:
-{{ toYaml .Values.master.resources | indent 10 }}
         volumeMounts:
           - name: ingestion-storage
             mountPath: /layerSources
             {{- if .Values.storage.subPath }}
             subPath: {{ .Values.storage.subPath }}
             {{- end }}
-          - name: config
-            mountPath: /config
-{{- end }}
-{{- if .Values.loadtest.mount_external_secret }}
-{{- include "locust.external_secret.volumemount" . | nindent 10 }}
-{{- end}}
-{{- if or .Values.master.envs_include_default .Values.loadtest.environment .Values.master.environment .Values.loadtest.environment_secret .Values.loadtest.environment_external_secret }}
+{{- if or .Values.master.envs_include_default .Values.global.env .Values.master.env .Values.global.env_external_secret }}
         env:
 {{- if .Values.master.envs_include_default }}
           - name: LOCUST_HOST
-            value: "{{ .Values.loadtest.locust_host }}"
+            value: "{{ .Values.global.locust_host }}"
           - name: LOCUST_LOGLEVEL
             value: "{{ .Values.master.logLevel }}"
           - name: LOCUST_LOCUSTFILE
-            value: "{{ .Values.loadtest.locust_locustfile_path }}/{{ .Values.loadtest.locust_locustfile }}"
+            value: "{{ .Values.global.locust_file_path }}/{{ .Values.global.locust_file }}"
           - name: SECRET_VALUE_API
             valueFrom:
               secretKeyRef:
-                name: {{ .Values.loadtest.secret_name_api_key_locust }}
+                name: {{ .Values.global.secret_name_api_key_locust }}
                 key: x-api-key
-                # name: {{ .Values.loadtest.sub_url_secret }}
-                # key: sub-url
 {{- end }}
-{{- range $key, $value := .Values.loadtest.environment }}
+{{- range $key, $value := .Values.global.env }}
           - name: {{ $key }}
             value: {{ $value | quote }}
 {{- end }}
-{{- range $key, $value := .Values.master.environment }}
+{{- range $key, $value := .Values.master.env }}
           - name: {{ $key }}
             value: {{ $value | quote }}
 {{- end }}
@@ -124,7 +94,7 @@ spec:
           periodSeconds: 30
           timeoutSeconds: 30
           failureThreshold: 2
-{{- if .Values.loadtest.headless }}
+{{- if .Values.global.headless }}
           tcpSocket:
             port: 5557
 {{ else }}
@@ -142,19 +112,5 @@ spec:
         - name: ingestion-storage
           persistentVolumeClaim:
             claimName: {{ .Values.storage.pvcName }}
-{{- end }}
-{{- if .Values.loadtest.mount_external_secret }}
-{{- include "locust.external_secret.volume" . | nindent 8 }}
-{{- end }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+
+  
