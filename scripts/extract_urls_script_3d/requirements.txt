@@ -1,0 +1,5 @@
+glom
+numpy
+pandas
+python-dateutil
+setuptools==60.2.0
