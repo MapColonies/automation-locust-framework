@@ -1,0 +1,114 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "locust.fullname" . }}-master
+  labels:
+    component: master
+{{ include "locust.labels" . | indent 4 }}
+spec:
+  selector:
+    matchLabels:
+      component: master
+      {{- include "locust.selectorLabels" . | nindent 6 }}
+  replicas: 1
+{{- with .Values.master.strategy }}
+  strategy:
+{{ toYaml . | trim | indent 4 }}
+{{- end }}
+  template:
+    metadata:
+      labels:
+        component: master
+        {{- include "locust.selectorLabels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.pullSecretName }}
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ if .Values.master.image }}{{ .Values.master.image }}{{ else }}{{ .Values.image.repository }}:{{ .Values.image.tag }}{{ end }}"
+{{- with .Values.master.command }}
+        command:
+        {{- toYaml . | nindent 8 }}
+{{- end }}
+        args:
+          - --master
+{{- if .Values.master.args }}
+          {{- toYaml .Values.master.args | nindent 10 }}
+{{- end }}
+{{- if .Values.global.headless }}
+          - --headless
+{{- end }}
+{{- if .Values.master.auth.enabled }}
+          - --web-auth={{ .Values.master.auth.username }}:{{ .Values.master.auth.password }}
+{{- end }}
+{{- if .Values.master.csv_options.enabled }}
+          - --csv={{ .Values.master.csv_options.csv }}
+{{- end }}
+{{- if .Values.master.csv_options.csv_history }}
+          - --csv-full-history
+{{- end }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        volumeMounts:
+          - name: ingestion-storage
+            mountPath: /layerSources
+            {{- if .Values.storage.subPath }}
+            subPath: {{ .Values.storage.subPath }}
+            {{- end }}
+{{- if or .Values.master.envs_include_default .Values.global.env .Values.master.env .Values.global.env_external_secret }}
+        env:
+{{- if .Values.master.envs_include_default }}
+          - name: LOCUST_HOST
+            value: "{{ .Values.global.locust_host }}"
+          - name: LOCUST_LOGLEVEL
+            value: "{{ .Values.master.logLevel }}"
+          - name: LOCUST_LOCUSTFILE
+            value: "{{ .Values.global.locust_file_path }}/{{ .Values.global.locust_file }}"
+          - name: SECRET_VALUE_API
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.global.secret_name_api_key_locust }}
+                key: x-api-key
+{{- end }}
+{{- range $key, $value := .Values.global.env }}
+          - name: {{ $key }}
+            value: {{ $value | quote }}
+{{- end }}
+{{- range $key, $value := .Values.master.env }}
+          - name: {{ $key }}
+            value: {{ $value | quote }}
+{{- end }}
+{{- end }}
+        ports:
+          - containerPort: 8089
+            name: loc-master-web
+            protocol: TCP
+          - containerPort: 5557
+            name: loc-master-p1
+            protocol: TCP
+          - containerPort: 5558
+            name: loc-master-p2
+            protocol: TCP
+        readinessProbe:
+          initialDelaySeconds: 180
+          periodSeconds: 30
+          timeoutSeconds: 30
+          failureThreshold: 2
+{{- if .Values.global.headless }}
+          tcpSocket:
+            port: 5557
+{{ else }}
+          httpGet:
+            path: /
+            port: 8089
+{{- if .Values.master.auth.enabled }}
+            httpHeaders:
+                - name: Authorization
+                  value: Basic {{ printf "%s:%s" .Values.master.auth.username .Values.master.auth.password | b64enc }}
+{{- end }}
+{{- end }}
+      restartPolicy: {{ .Values.master.restartPolicy }}
+      volumes:
+        - name: ingestion-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.storage.pvcName }}
