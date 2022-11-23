@@ -1,3 +1,6 @@
+import logging
+import os
+import sys
 from common.strings import (
     BETWEEN_TIMER_STR,
     CONSTANT_PACING_TIMER_STR,
@@ -5,9 +8,6 @@ from common.strings import (
     CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
 )
-import logging
-import os
-import sys
 
 myDir = os.getcwd()
 sys.path.append(myDir)
@@ -18,14 +18,16 @@ a = str(path.parent.absolute())
 sys.path.append(a)
 
 import requests
-from locust import between
-from locust import constant
-from locust import constant_pacing
-from locust import constant_throughput
-from locust import HttpUser
-from locust import task
-from locust_plugins.csvreader import CSVReader
 from config.config import config_obj
+from locust import (
+    HttpUser,
+    between,
+    constant,
+    constant_pacing,
+    constant_throughput,
+    task,
+)
+from locust_plugins.csvreader import CSVReader
 
 # pvc_url = cfg.PVC_HANDLER_ROUTE
 # response_param = requests.get(url=f'http://{pvc_url}{config.UPDATE_LAYER_DATA_DIR}/',
