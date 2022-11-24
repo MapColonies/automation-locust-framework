@@ -1,19 +1,23 @@
-import logging
-import time
-
-from locust import between
-from locust import constant
-from locust import constant_pacing
-from locust import constant_throughput
-from locust import HttpUser
-from locust import task
-from locust_plugins import StopUser
+from common.strings import (
+    BETWEEN_TIMER_STR,
+    CONSTANT_PACING_TIMER_STR,
+    CONSTANT_THROUGHPUT_TIMER_STR,
+    CONSTANT_TIMER_STR,
+    INVALID_TIMER_STR,
+)
+from config.config import WmtsConfig, config_obj
+from locust import (
+    HttpUser,
+    between,
+    constant,
+    constant_pacing,
+    constant_throughput,
+    task,
+)
 from locust_plugins.csvreader import CSVReader
 
-import common.config as cfg
-
-logging.error("Reading CSV file")
-ssn_reader = CSVReader("csv_data/data/wmts_shaziri.csv")
+wmts_csv_path = WmtsConfig.WMTS_CSV_PATH
+ssn_reader = CSVReader(wmts_csv_path)
 
 
 class SizingUser(HttpUser):
@@ -39,9 +43,22 @@ class SizingUser(HttpUser):
     @task(1)
     def index(self):
         points = next(ssn_reader)
-        self.client.get(
-            f"/{cfg.LAYER_TYPE}/{cfg.LAYER}/{cfg.GRIDNAME}/{points[0]}/{points[1]}/{points[2]}{cfg.IMAGE_FORMAT}?token={cfg.TOKEN}",
-            verify=False,
-        )
+        if config_obj["wmts"].TOKEN is None:
+            self.client.get(
+                f"/{config_obj['wmts'].LAYER_TYPE}/"
+                f"{config_obj['wmts'].LAYER_NAME}/"
+                f"{config_obj['wmts'].GRID_NAME}/"
+                f"{points[0]}/{points[1]}/{points[2]}"
+                f"{config_obj['wmts'].IMAGE_FORMAT}",
+            )
+        else:
+            self.client.get(
+                f"/{config_obj['wmts'].LAYER_TYPE}/"
+                f"{config_obj['wmts'].LAYER_NAME}/"
+                f"{config_obj['wmts'].GRID_NAME}/"
+                f"{points[0]}/{points[1]}/{points[2]}"
+                f"{config_obj['wmts'].IMAGE_FORMAT}"
+                f"?token={config_obj['wmts'].TOKEN}",
+            )
 
-    host = cfg.HOST
+    host = config_obj["wmts"].HOST
