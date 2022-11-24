@@ -1,5 +1,7 @@
 import os
 import sys
+from pathlib import Path
+
 from common.strings import (
     BETWEEN_TIMER_STR,
     CONSTANT_PACING_TIMER_STR,
@@ -7,10 +9,6 @@ from common.strings import (
     CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
 )
-
-myDir = os.getcwd()
-sys.path.append(myDir)
-from pathlib import Path
 from config.config import config_obj
 from locust import (
     HttpUser,
@@ -21,6 +19,9 @@ from locust import (
     task,
 )
 from locust_plugins.csvreader import CSVReader
+
+myDir = os.getcwd()
+sys.path.append(myDir)
 
 path = Path(myDir)
 a = str(path.parent.absolute())
