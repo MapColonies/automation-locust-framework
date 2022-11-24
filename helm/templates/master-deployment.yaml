@@ -112,7 +112,3 @@ spec:
         - name: ingestion-storage
           persistentVolumeClaim:
             claimName: {{ .Values.storage.pvcName }}
-      initContainers:
-        - name: init-myservice
-          image: registry.access.redhat.com/ubi8/ubi:latest
-          command: ['sh', '-c', 'until getent hosts myservice; do echo waiting for myservice; sleep 2; done;']
