@@ -1,7 +1,7 @@
 from itertools import product
 from typing import Iterable
-import config as cfg
-from config.config import WmtsConfig, config_obj
+
+from config.config import config_obj
 
 
 class WMTSIterator:
@@ -42,7 +42,6 @@ def create_tiles_url_order(zoom_ranges, x_ranges, y_ranges):
     :param zoom_ranges: zoom ranges value
     :param x_ranges: x ranges value
     :param y_ranges: y ranges value"""
-    tiles_lst = []
     x_values = [*range(x_ranges[0], x_ranges[1] + 1)]
     y_values = [*range(y_ranges[0], y_ranges[1] + 1)]
     zoom_values = [*range(zoom_ranges[0], zoom_ranges[1] + 1)]
