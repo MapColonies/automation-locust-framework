@@ -8,14 +8,7 @@ from common.strings import (
 import os
 import sys
 
-myDir = os.getcwd()
-sys.path.append(myDir)
 from pathlib import Path
-
-path = Path(myDir)
-a = str(path.parent.absolute())
-sys.path.append(a)
-
 from locust import between
 from locust import constant
 from locust import constant_pacing
@@ -24,6 +17,12 @@ from locust import HttpUser
 from locust import task
 from config.config import config_obj
 from utils.get_all_layer import create_layers_urls
+
+myDir = os.getcwd()
+sys.path.append(myDir)
+path = Path(myDir)
+a = str(path.parent.absolute())
+sys.path.append(a)
 
 
 class SizingUser(HttpUser):
