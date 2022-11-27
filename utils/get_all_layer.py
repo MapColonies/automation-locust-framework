@@ -1,11 +1,12 @@
+import itertools
 import os
 import sys
 
-import itertools
+from typing import List
+
+from config.config import config_obj
 from config.config import Database
 from mc_automation_tools import postgres
-from typing import List
-from config.config import config_obj
 from utils.mapproxy_layer import MapproxyLayer, zoom_level_convertor
 
 myDir = os.getcwd()
