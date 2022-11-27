@@ -1,3 +1,7 @@
+import os
+import sys
+from pathlib import Path
+
 from common.strings import (
     BETWEEN_TIMER_STR,
     CONSTANT_PACING_TIMER_STR,
@@ -5,17 +9,15 @@ from common.strings import (
     CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
 )
-import os
-import sys
-
-from pathlib import Path
-from locust import between
-from locust import constant
-from locust import constant_pacing
-from locust import constant_throughput
-from locust import HttpUser
-from locust import task
 from config.config import config_obj
+from locust import (
+    HttpUser,
+    between,
+    constant,
+    constant_pacing,
+    constant_throughput,
+    task,
+)
 from utils.get_all_layer import create_layers_urls
 
 myDir = os.getcwd()
