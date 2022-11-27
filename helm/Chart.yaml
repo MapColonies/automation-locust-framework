@@ -1,5 +1,5 @@
 ---
 apiVersion: v2 # Check if need change to v1
-name: locust
+name: Locust-Automation
 version: 1.1.1
 appVersion: 1.1.1
