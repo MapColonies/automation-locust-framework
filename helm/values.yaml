@@ -72,7 +72,7 @@ worker:
   restartPolicy: Always
 
 nameOverride: ""
-fullnameOverride: "danny"
+fullnameOverride: ""
 pullSecretName: acr-registry
 
 # ingress:
