@@ -1,7 +1,17 @@
 FROM python:3.8
 
-WORKDIR /mnt/shay
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-COPY .. /mnt/shay
+# Install dependencies:
+COPY requirements.txt .
 
-CMD ["python", "./extract_url.py"]
+RUN pip install -r requirements.txt
+
+WORKDIR urls
+
+# Run the application:
+COPY ./extract_url.py .
+
+CMD ["python", "extract_url.py"]
