@@ -72,7 +72,7 @@ worker:
   restartPolicy: Always
 
 nameOverride: ""
-fullnameOverride: "locust-automation"
+fullnameOverride: "Locust"
 pullSecretName: acr-registry
 
 # ingress:
