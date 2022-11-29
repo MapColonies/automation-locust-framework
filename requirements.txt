@@ -1,0 +1,5 @@
+glom
+locust
+locust-plugins
+mc-automation-tools
+pre-commit
