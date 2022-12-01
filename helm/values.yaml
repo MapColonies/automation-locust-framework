@@ -1,7 +1,7 @@
 ---
 global:
   name: locust-global
-  locust_file: wmts.py
+  locust_file: teat_wmts.py
   locust_file_path: "/mnt/locust/tests"
   locust_host: https://www.google.com
   env: {
