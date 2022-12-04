@@ -11,7 +11,7 @@ myDir = os.getcwd()
 sys.path.append(myDir)
 
 
-def get_layers_list(is_all_records: bool = True) -> dict:
+def get_layers_list(is_all_records: bool = False) -> dict:
     """
     This method returns layer list for querying
     params: is_all_records flag - indicate if query all records from the db or not
