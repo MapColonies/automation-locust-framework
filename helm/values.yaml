@@ -64,7 +64,7 @@ worker:
   image: "acrarolibotnonprod.azurecr.io/locust-automation:2.5.3"
   logLevel: INFO
   envs_include_default: true
-  replicas: 1
+  replicas: 10
   env: { SUB_URL_FOR_IDS: "https://www.google.com" }
   args: []
   strategy:
