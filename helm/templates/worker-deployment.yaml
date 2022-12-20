@@ -57,11 +57,13 @@ spec:
             value: "{{ .Values.worker.logLevel }}"
           - name: LOCUST_LOCUSTFILE
             value: "{{ .Values.global.locust_file_path }}/{{ .Values.global.locust_file }}"
+          {{- if .Values.global.env_secret }}
           - name: SECRET_VALUE_API
             valueFrom:
               secretKeyRef:
                 name: {{ .Values.global.secret_name_api_key_locust }}
                 key: x-api-key
+          {{- end }}
 {{- end }}
 {{- range $key, $value := .Values.worker.env }}
           - name: {{ $key }}
