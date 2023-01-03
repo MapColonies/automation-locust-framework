@@ -20,6 +20,10 @@ class Database:
     MAPPROXY_CONFIG = os.environ.get("mapproxy_config")
     RASTER_CATALOG = os.environ.get("raster_catalog_manager")
     PUBLIC = os.environ.get("public")
+    TEST_DURATION = os.environ.get("test_duration", "1h")
+    STOP_TIMEOUT = os.environ.get("stop_timeout", 10)
+    # locust --headless --run-time 1h30m --stop-timeout 10
+    # do not forget to define the above before running the test - --run-time 1h30m
 
 
 class Config:
@@ -29,6 +33,7 @@ class Config:
     WAIT_TIME = (int(os.environ.get("wait_time", "4")),)
     MAX_WAIT = (int(os.environ.get("max_wait", 1)),)
     MIN_WAIT = (int(os.environ.get("min_wait", 1)),)
+
     LAYERS_LIST = (os.environ.get("layer_list", "test-update,shay")).split(",")
 
 
@@ -60,7 +65,7 @@ class ProActiveConfig(Config):
 
 class Config3D(Config):
     CSV_DATA_PATH = os.environ.get(
-        "CSV_3D_DATA_PATH", "/home/shayavr/Desktop/git/automation-locust/urls_data.csv"
+        "CSV_3D_DATA_PATH", "/home/shayavr/Desktop/git/automation-locust-framework/csv_data/urls_data.csv"
     )
 
 
