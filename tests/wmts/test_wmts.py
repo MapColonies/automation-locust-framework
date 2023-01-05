@@ -30,47 +30,40 @@ from utils.percentile_calculation import extract_response_time_from_record, coun
     get_percentile_value, write_rsp_time_percentile_ranges
 
 stat_file = open('stats.csv', 'w')
-# wmts_csv_path = WmtsConfig.WMTS_CSV_PATH
-wmts_csv_path = "/home/shayavr/Desktop/git/automation-locust-framework/csv_data/data/wmts_shaziri.csv"
-LAYER_NAME = "artzi1-Orthophoto"
-GRID_NAME = "newGrids"
+wmts_csv_path = WmtsConfig.WMTS_CSV_PATH
+# wmts_csv_path = "/home/shayavr/Desktop/git/automation-locust-framework/csv_data/data/wmts_shaziri.csv"
+
 ssn_reader = CSVReader(wmts_csv_path)
 
 
 class User(HttpUser):
-    # timer_selection = config_obj["wmts"].WAIT_TIME_FUNC
-    # wait_time = config_obj["wmts"].WAIT_TIME
-    wait_time = 1
-    # if timer_selection == 1:
-    #     wait_time = constant(wait_time)
-    #     print(CONSTANT_TIMER_STR)
-    # elif timer_selection == 2:
-    #     wait_time = constant_throughput(wait_time)
-    #     print(CONSTANT_THROUGHPUT_TIMER_STR)
-    # elif timer_selection == 3:
-    #     wait_time = between(config_obj["wmts"].MIN_WAIT, config_obj["wmts"].MAX_WAIT)
-    #     print(BETWEEN_TIMER_STR)
-    # elif timer_selection == 4:
-    #     wait_time = constant_pacing(wait_time)
-    #     print(CONSTANT_PACING_TIMER_STR)
-    # else:
-    #     print(INVALID_TIMER_STR)
+    timer_selection = config_obj["wmts"].WAIT_TIME_FUNC
+    wait_time = config_obj["wmts"].WAIT_TIME
+    timer_selection = timer_selection[0]
+    wait_time = wait_time[0]
+    if timer_selection == 1:
+        wait_time = constant(wait_time)
+        print(CONSTANT_TIMER_STR)
+    elif timer_selection == 2:
+        wait_time = constant_throughput(wait_time)
+        print(CONSTANT_THROUGHPUT_TIMER_STR)
+    elif timer_selection == 3:
+        wait_time = between(config_obj["wmts"].MIN_WAIT, config_obj["wmts"].MAX_WAIT)
+        print(BETWEEN_TIMER_STR)
+    elif timer_selection == 4:
+        wait_time = constant_pacing(wait_time)
+        print(CONSTANT_PACING_TIMER_STR)
+    else:
+        print(INVALID_TIMER_STR)
 
     @task(1)
     def index(self):
         points = next(ssn_reader)
         if config_obj["wmts"].TOKEN is None:
-            # self.client.get(
-            #     f"/{config_obj['wmts'].LAYER_TYPE}/"
-            #     f"{config_obj['wmts'].LAYER_NAME}/"
-            #     f"{config_obj['wmts'].GRID_NAME}/"
-            #     f"{points[0]}/{points[1]}/{points[2]}"
-            #     f"{config_obj['wmts'].IMAGE_FORMAT}",
-            # )
             self.client.get(
                 f"/{config_obj['wmts'].LAYER_TYPE}/"
-                f"{LAYER_NAME}/"
-                f"{GRID_NAME}/"
+                f"{config_obj['wmts'].LAYER_NAME}/"
+                f"{config_obj['wmts'].GRID_NAME}/"
                 f"{points[0]}/{points[1]}/{points[2]}"
                 f"{config_obj['wmts'].IMAGE_FORMAT}",
             )
@@ -84,12 +77,13 @@ class User(HttpUser):
                 f"?token={config_obj['wmts'].TOKEN}",
             )
 
-    # host = config_obj["wmts"].HOST
-    host = ""
+    host = config_obj["wmts"].HOST
+
+    # host = "http://lb-mapcolonies.gg.wwest.local/mapproxy-ww"
 
     def on_stop(self):
         rsp_list = extract_response_time_from_record(
-            csv_path="/home/shayavr/Desktop/git/automation-locust/tests/stats.csv")
+            csv_path=config_obj["wmts"].REQUESTS_RECORDS_CSV)
 
         # rsp_list_millisecond = convert_to_millisecond(response_time_list=rsp_list)
         percentile_rages_dict = {}
