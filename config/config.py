@@ -25,10 +25,10 @@ class Database:
 class Config:
     TOKEN = os.environ.get("SECRET_VALUE_API") or None
     HOST = os.environ.get("HOST", "enter a host")
-    WAIT_TIME_FUNC = (int(os.environ.get("wait_function", "4")),)
-    WAIT_TIME = (int(os.environ.get("wait_time", "4")),)
-    MAX_WAIT = (int(os.environ.get("max_wait", 1)),)
-    MIN_WAIT = (int(os.environ.get("min_wait", 1)),)
+    WAIT_TIME_FUNC = int(os.environ.get("wait_function", "4"))
+    WAIT_TIME = int(os.environ.get("wait_time", "4"))
+    MAX_WAIT = int(os.environ.get("max_wait", 1))
+    MIN_WAIT = int(os.environ.get("min_wait", 1))
     LAYERS_LIST = (os.environ.get("layer_list", "test-update,shay")).split(",")
 
 
@@ -38,6 +38,7 @@ class WmtsConfig(Config):
     GRID_NAME = os.environ.get("gridName", "default")
     IMAGE_FORMAT = os.environ.get("imageType", ".png")
     WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "csv_data/data/new.csv")
+    REQUESTS_RECORDS_CSV = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/stats.csv")
 
 
 class PycswConfig(Config):
