@@ -18,20 +18,6 @@ def extract_response_time_from_record(csv_path: str):
     return response_time_list
 
 
-def convert_to_millisecond(response_time_list: list):
-    """
-    This function gets a list of request response times in seconds
-     and convert this list to a millisecond
-    :param response_time_list: list of response time in seconds
-    :return:
-    rsp_millisecond: list of response time in millisecond
-    """
-    rsp_millisecond = []
-    for rsp_time in response_time_list:
-        rsp_millisecond.append(float(rsp_time) * 1000)
-    return rsp_millisecond
-
-
 def count_rsp_time_by_rsp_time_ranges(rsp_time_data: list, rsp_range: tuple):
     """
     This function check the number of the request of the given rsp time range
@@ -64,13 +50,7 @@ def get_percentile_value(rsp_counter: float, rsp_time_list: list):
 
 
 def write_rsp_time_percentile_ranges(percentile_value: dict):
-    """
-    This function gets the percentile values per rsp time range and write it to a json file
-    :param percentile_value: dictionary of percentile values per range
-    :return:
-    """
     json_obj = json.dumps(percentile_value)
+    print(percentile_value)
     with open(f"{os.getcwd()}/rsp_time_percentile_ranges.json", 'w') as f:
         f.write(json_obj)
-
-
