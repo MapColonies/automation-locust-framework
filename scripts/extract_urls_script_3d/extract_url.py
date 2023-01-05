@@ -12,4 +12,4 @@ with open(input_path) as f:
 urls = glom(data_to_extract, ("log.entries", ["request.url"]))
 urls_dict = {"url": urls}
 df = pd.DataFrame(urls_dict)
-df.to_csv(f"csv_data/urls_data.csv")
+df.to_csv(f"/csv_data/urls_data.csv")

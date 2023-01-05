@@ -1,40 +1,39 @@
 ---
 global:
   name: locust-global
-  locust_file: pro_active_wmts_stage_2.py
-  locust_file_path: "/mnt/locust/tests"
-  locust_host: https://www.google.com
+  locust_file: test_wmts.py
+  locust_file_path: "/mnt/locust/tests/wmts"
+  locust_host: http://lb-mapcolonies.gg.wwest.local/mapproxy-ww
   env: {
       measure_time: false,
       pro_active_wmts_bbox: [35.024411528661574, 32.79419004139809, 35.37597717328861, 32.947998391903226],
       mc_region_value: "ישראל, ירדן",
       mc_polygon_value: '{"bbox":[34.8468438649828,32.0466327470143,34.8804418550117,32.0689996810298],"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[34.8468438649828,32.0689996810298],[34.8637856279928,32.0590059440186],[34.8773961450173,32.0680478960404],[34.8804418550117,32.0528193460686],[34.8786334639958,32.0466327470143],[34.8605495609931,32.0488218510146],[34.8468438649828,32.0689996810298]]]},"properties":{"Dsc":"תשתית אורתופוטו בישראל עדכני לאפריל 2019","Rms":null,"Ep90":"3","Scale":null,"Source":"MAS_6_ORT_247993-1.0","Resolution":"0.2","SensorType":"OTHER","SourceName":"O_arzi_mz_w84geo_Tiff_20cm","UpdateDate":"06/04/2019"}}]}',
       version: "1.0.0",
-      wait_time: 30,
+      wait_time: 1,
       projection: "roie",
       wmts_csv_path: "csv_data/data/wmts_shaziri.csv",
+      requests_records_csv: "csv_data/data/stats.csv",
       gridName: "newGrids",
       imageType: ".png",
-      layer: "bluemarble-dani-mumhui-Orthophoto",
+      layer: "artzi1-Orthophoto",
       users: 15,
       port: 8080,
       CONF_FILE: "/layerSources/locust_configuration.json",
       layer_type: "wmts",
       test_to_run: "Lateron",
-      sub_url_for_pycsw: "https://catalog-qa-raster-catalog-pycsw-route-raster.apps.v0h0bdx6.eastus.aroapp.io/",
+      sub_url_for_pycsw: "http://lb-mapcolonies.gg.wwest.local/pycsw-ww/",
     }
-  env_secret:
-    "replace_me"
+  env_secret: ""
   env_external_secret:
     {}
-  secret_name_api_key_locust: "automation-sub-url"
-  sub_url_secret:
-    "automation-sub-url"
+  secret_name_api_key_locust: "automation-secret-v2"
+  sub_url_secret: "automation-secret"
   headless: false
 
 image:
-  repository: acrarolibotnonprod.azurecr.io/locust-automation
-  tag: 2.5.3
+  repository: artifactory.rnd-hub.com:6543/locust-ww
+  tag: 2.0.0
   pullPolicy: IfNotPresent
 
 service:
@@ -43,7 +42,7 @@ service:
   annotations: {}
 
 master:
-  image: "acrarolibotnonprod.azurecr.io/locust-automation:2.5.3"
+  image: artifactory.rnd-hub.com:6543/locust-ww:2.0.0
   logLevel: INFO
   envs_include_default: true
   env: {}
@@ -61,10 +60,10 @@ master:
   restartPolicy: Always
 
 worker:
-  image: "acrarolibotnonprod.azurecr.io/locust-automation:2.5.3"
+  image: artifactory.rnd-hub.com:6543/locust-ww:2.0.0
   logLevel: INFO
   envs_include_default: true
-  replicas: 10
+  replicas: 1
   env: { SUB_URL_FOR_IDS: "https://www.google.com" }
   args: []
   strategy:
@@ -73,7 +72,7 @@ worker:
 
 nameOverride: ""
 fullnameOverride: "locust"
-pullSecretName: acr-registry
+pullSecretName: mapcolonies-secret
 
 # ingress:
   # enabled: false
@@ -91,22 +90,22 @@ pullSecretName: acr-registry
   #      - chart-example.local
 
 route:
-  enabled: true
+  enabled: false
   path: /
   https: true
   timeout:
     enabled: false # defaults to 30s by openshift
     duration: 60s # supported units (us, ms, s, m, h, d)
 ingress:
-  enabled: false
+  enabled: true
   type: 'nginx-kubernetes' # supported values: 'nginx-org' | 'nginx-kubernetes'
-  path: /locust
-  host: "localhost"
+  path: /locust-ww
+  host: "lb-mapcolonies.gg.wwest.local"
   cors:
     enabled: true
     origin: '*'
     tls: []
 
 storage:
-  pvcName: ingestion-source-pvc
-  subPath: ingestion-source
+  pvcName: ortho-pvc
+  subPath:
