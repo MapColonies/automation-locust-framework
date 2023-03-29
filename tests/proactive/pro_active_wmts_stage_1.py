@@ -1,11 +1,3 @@
-from common.strings import (
-    BETWEEN_TIMER_STR,
-    CONSTANT_PACING_TIMER_STR,
-    CONSTANT_THROUGHPUT_TIMER_STR,
-    CONSTANT_TIMER_STR,
-    INVALID_TIMER_STR,
-)
-from config.config import WmtsConfig, config_obj
 from locust import (
     HttpUser,
     between,
@@ -15,6 +7,15 @@ from locust import (
     task,
 )
 from locust_plugins.csvreader import CSVReader
+
+from common.strings import (
+    BETWEEN_TIMER_STR,
+    CONSTANT_PACING_TIMER_STR,
+    CONSTANT_THROUGHPUT_TIMER_STR,
+    CONSTANT_TIMER_STR,
+    INVALID_TIMER_STR,
+)
+from config.config import WmtsConfig, config_obj
 
 wmts_csv_path = WmtsConfig.WMTS_CSV_PATH
 ssn_reader = CSVReader(wmts_csv_path)

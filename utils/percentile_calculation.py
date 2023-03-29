@@ -11,8 +11,8 @@ def extract_response_time_from_record(csv_path: str):
     response_time_list: response time of requests
     """
     response_time_list = []
-    with open(csv_path, 'r') as f:
-        reader = csv.reader(f, delimiter=';')
+    with open(csv_path) as f:
+        reader = csv.reader(f, delimiter=";")
         for row in reader:
             response_time_list.append(float(row[3]))
     return response_time_list
@@ -52,5 +52,5 @@ def get_percentile_value(rsp_counter: float, rsp_time_list: list):
 def write_rsp_time_percentile_ranges(percentile_value: dict):
     json_obj = json.dumps(percentile_value)
     print(percentile_value)
-    with open(f"{os.getcwd()}/rsp_time_percentile_ranges.json", 'w') as f:
+    with open(f"{os.getcwd()}/rsp_time_percentile_ranges.json", "w") as f:
         f.write(json_obj)
