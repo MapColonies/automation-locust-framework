@@ -58,12 +58,12 @@ spec:
 {{- if or .Values.master.envs_include_default .Values.global.env .Values.master.env .Values.global.env_external_secret }}
         env:
 {{- if .Values.master.envs_include_default }}
-          - name: LOCUST_HOST
-            value: "{{ .Values.global.locust_host }}"
+          - name: host
+            value: "{{ .Values.global.host }}"
           - name: LOCUST_LOGLEVEL
             value: "{{ .Values.master.logLevel }}"
           - name: LOCUST_LOCUSTFILE
-            value: "{{ .Values.global.locust_file_path }}/{{ .Values.global.locust_file }}"
+            value: "{{ .Values.global.test_file_path }}/{{ .Values.global.test_file }}"
           {{- if .Values.global.env_secret }}
           - name: SECRET_VALUE_API
             valueFrom:
