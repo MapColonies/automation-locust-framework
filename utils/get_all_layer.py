@@ -3,8 +3,9 @@ import os
 import sys
 from typing import List
 
-from config.config import Database, config_obj
 from mc_automation_tools import postgres
+
+from config.config import Database, config_obj
 from utils.mapproxy_layer import MapproxyLayer, zoom_level_convertor
 
 myDir = os.getcwd()
