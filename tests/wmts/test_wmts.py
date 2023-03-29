@@ -1,13 +1,18 @@
 import os
 import sys
-
-myDir = os.getcwd()
-sys.path.append(myDir)
 from pathlib import Path
 
-path = Path(myDir)
-a = str(path.parent.absolute())
-sys.path.append(a)
+from locust import (
+    HttpUser,
+    between,
+    constant,
+    constant_pacing,
+    constant_throughput,
+    events,
+    task,
+)
+from locust_plugins.csvreader import CSVReader
+
 from common.strings import (
     BETWEEN_TIMER_STR,
     CONSTANT_PACING_TIMER_STR,
@@ -16,20 +21,21 @@ from common.strings import (
     INVALID_TIMER_STR,
 )
 from config.config import WmtsConfig, config_obj
-from locust import (
-    HttpUser,
-    between,
-    constant,
-    constant_pacing,
-    constant_throughput,
-    task, events,
+from utils.percentile_calculation import (
+    count_rsp_time_by_rsp_time_ranges,
+    extract_response_time_from_record,
+    get_percentile_value,
+    write_rsp_time_percentile_ranges,
 )
-from locust_plugins.csvreader import CSVReader
 
-from utils.percentile_calculation import extract_response_time_from_record, count_rsp_time_by_rsp_time_ranges, \
-    get_percentile_value, write_rsp_time_percentile_ranges
+myDir = os.getcwd()
+sys.path.append(myDir)
 
-stat_file = open('stats.csv', 'w')
+path = Path(myDir)
+a = str(path.parent.absolute())
+sys.path.append(a)
+
+stat_file = open("stats.csv", "w")
 wmts_csv_path = WmtsConfig.WMTS_CSV_PATH
 # wmts_csv_path = "/home/shayavr/Desktop/git/automation-locust-framework/csv_data/data/wmts_shaziri.csv"
 
@@ -83,23 +89,40 @@ class User(HttpUser):
 
     def on_stop(self):
         rsp_list = extract_response_time_from_record(
-            csv_path=config_obj["wmts"].REQUESTS_RECORDS_CSV)
+            csv_path=config_obj["wmts"].REQUESTS_RECORDS_CSV
+        )
 
         # rsp_list_millisecond = convert_to_millisecond(response_time_list=rsp_list)
         percentile_rages_dict = {}
         rsp_time_ranges = [(0, 100), (101, 500), (501, None)]
         for idx, rsp_t_range in enumerate(rsp_time_ranges):
-            counter = count_rsp_time_by_rsp_time_ranges(rsp_time_data=rsp_list, rsp_range=rsp_t_range)
+            counter = count_rsp_time_by_rsp_time_ranges(
+                rsp_time_data=rsp_list, rsp_range=rsp_t_range
+            )
 
-            percentile = get_percentile_value(rsp_counter=counter, rsp_time_list=rsp_list)
+            percentile = get_percentile_value(
+                rsp_counter=counter, rsp_time_list=rsp_list
+            )
             percentile_rages_dict[str(rsp_time_ranges[idx])] = percentile
         write_rsp_time_percentile_ranges(percentile_rages_dict)
 
 
 @events.request.add_listener
-def hook_request_success(request_type, name, response_time, response_length, response, **kw):
-    stat_file.write(str(response) + ";" + request_type + ";" + name + ";" + str(response_time) + ";" + str(
-        response_length) + "\n")
+def hook_request_success(
+    request_type, name, response_time, response_length, response, **kw
+):
+    stat_file.write(
+        str(response)
+        + ";"
+        + request_type
+        + ";"
+        + name
+        + ";"
+        + str(response_time)
+        + ";"
+        + str(response_length)
+        + "\n"
+    )
 
 
 @events.quitting.add_listener
