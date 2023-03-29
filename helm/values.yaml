@@ -1,9 +1,9 @@
 ---
 global:
   name: locust-global
-  locust_file: test_wmts.py
-  locust_file_path: "/mnt/locust/tests/wmts"
-  locust_host: http://lb-mapcolonies.gg.wwest.local/mapproxy-ww
+  test_file: test_wmts.py
+  test_file_path: "/mnt/locust/tests/wmts"
+  host: http://lb-mapcolonies.gg.wwest.local/mapproxy-ww
   env: {
       measure_time: false,
       pro_active_wmts_bbox: [35.024411528661574, 32.79419004139809, 35.37597717328861, 32.947998391903226],
