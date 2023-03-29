@@ -1,5 +1,4 @@
-import itertools
-import logging
+# import logging
 import os
 
 import pandas as pd
@@ -25,7 +24,7 @@ def do_something():
     try:
         df = pd.read_csv(csv_path)
         logging.info(f"csv read from {csv_path}")
-    except FileNotFoundError as err:
+    except FileNotFoundError:
         logging.error("Failed to read csv , file not found")
         raise FileNotFoundError(f"{CSV_NAME} in path : {csv_path}")
 
@@ -37,7 +36,7 @@ def do_something():
 
     url_list_to_run = []
 
-    for (x, y, z) in zip(x_column, y_column, z_column):
+    for x, y, z in zip(x_column, y_column, z_column):
         url_builder = URL_TO_ITERATE
         url_builder = url_builder.replace("TileMatrix", str(x))
         url_builder = url_builder.replace("TileCol", str(y))
