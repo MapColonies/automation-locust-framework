@@ -34,7 +34,7 @@ class WmtsConfig(Config):
     LAYER_NAME = os.environ.get("layer", "OrthophotoHistory")
     GRID_NAME = os.environ.get("gridName", "default")
     IMAGE_FORMAT = os.environ.get("imageType", ".png")
-    WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "csv_data/data/new.csv")
+    WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "test_data/data/new.csv")
     REQUESTS_RECORDS_CSV = os.environ.get(
         "requests_records_csv", f"{os.getcwd()}/tests/stats.csv"
     )

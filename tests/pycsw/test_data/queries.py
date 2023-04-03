@@ -1,4 +1,4 @@
-from config.config import config_obj
+from common.config.config import config_obj
 
 # Constants for XML post requests - with data
 POLYGON_XML = rf"""<?xml version="1.0" encoding="UTF-8"?>

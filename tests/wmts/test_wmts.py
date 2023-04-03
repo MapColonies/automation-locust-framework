@@ -13,19 +13,19 @@ from locust import (
 )
 from locust_plugins.csvreader import CSVReader
 
-from common.strings import (
+from common.config.config import WmtsConfig, config_obj
+from common.utils import (
+    count_rsp_time_by_rsp_time_ranges,
+    extract_response_time_from_record,
+    get_percentile_value,
+    write_rsp_time_percentile_ranges,
+)
+from common.utils.constants.strings import (
     BETWEEN_TIMER_STR,
     CONSTANT_PACING_TIMER_STR,
     CONSTANT_THROUGHPUT_TIMER_STR,
     CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
-)
-from config.config import WmtsConfig, config_obj
-from utils.percentile_calculation import (
-    count_rsp_time_by_rsp_time_ranges,
-    extract_response_time_from_record,
-    get_percentile_value,
-    write_rsp_time_percentile_ranges,
 )
 
 myDir = os.getcwd()
