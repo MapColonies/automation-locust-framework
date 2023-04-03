@@ -21,6 +21,23 @@ from common.strings import (
 from config.config import config_obj
 from utils.get_all_layer import create_layers_urls
 
+
+def set_wait_time(timer_selection, wait_time):
+    if timer_selection == 1:
+        return constant(wait_time), CONSTANT_TIMER_STR
+    elif timer_selection == 2:
+        return constant_throughput(wait_time), CONSTANT_THROUGHPUT_TIMER_STR
+    elif timer_selection == 3:
+        return (
+            between(config_obj["default"].MIN_WAIT, config_obj["default"].MAX_WAIT),
+            BETWEEN_TIMER_STR,
+        )
+    elif timer_selection == 4:
+        return constant_pacing(wait_time), CONSTANT_PACING_TIMER_STR
+    else:
+        return None, INVALID_TIMER_STR
+
+
 myDir = os.getcwd()
 sys.path.append(myDir)
 path = Path(myDir)
@@ -31,22 +48,9 @@ sys.path.append(a)
 class SizingUser(HttpUser):
     timer_selection = config_obj["default"].WAIT_TIME_FUNC
     wait_time = config_obj["default"].WAIT_TIME
-    if timer_selection == 1:
-        wait_time = constant(wait_time)
-        print(CONSTANT_TIMER_STR)
-    elif timer_selection == 2:
-        wait_time = constant_throughput(wait_time)
-        print(CONSTANT_THROUGHPUT_TIMER_STR)
-    elif timer_selection == 3:
-        wait_time = between(
-            config_obj["default"].MIN_WAIT, config_obj["default"].MAX_WAIT
-        )
-        print(BETWEEN_TIMER_STR)
-    elif timer_selection == 4:
-        wait_time = constant_pacing(wait_time)
-        print(CONSTANT_PACING_TIMER_STR)
-    else:
-        print(INVALID_TIMER_STR)
+
+    wait_time, timer_message = set_wait_time(timer_selection, wait_time)
+    print(timer_message)
 
     def on_start(self):
         self.layers_tiles_urls = create_layers_urls()
