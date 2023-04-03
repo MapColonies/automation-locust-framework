@@ -12,14 +12,14 @@ from locust import (
 )
 from locust_plugins.csvreader import CSVReader
 
-from common.strings import (
+from common.config.config import config_obj
+from common.utils.constants.strings import (
     BETWEEN_TIMER_STR,
     CONSTANT_PACING_TIMER_STR,
     CONSTANT_THROUGHPUT_TIMER_STR,
     CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
 )
-from config.config import config_obj
 
 
 def set_wait_time(timer_selection, wait_time):
