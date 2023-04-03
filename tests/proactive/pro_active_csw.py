@@ -7,14 +7,14 @@ from locust import (
     task,
 )
 
-from common.strings import (
+from common.config.config import config_obj
+from common.utils.constants.strings import (
     BETWEEN_TIMER_STR,
     CONSTANT_PACING_TIMER_STR,
     CONSTANT_THROUGHPUT_TIMER_STR,
     CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
 )
-from config.config import config_obj
 from tests.pycsw.test_data.queries import ID_RECORD_XML, POLYGON_XML, REGION_RECORD_XML
 
 
