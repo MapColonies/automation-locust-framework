@@ -1,12 +1,10 @@
 name: Pre-commit
-
 on:
   push:
-    branches:
-      - refactoring-helm
+    branches: [ "master" ]
   pull_request:
-    branches:
-      - refactoring-helm
+    branches: [ "master" ]
+    
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
