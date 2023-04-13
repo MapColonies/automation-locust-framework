@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 from locust import (
-    HttpUser,
+    FastHttpUser,
     between,
     constant,
     constant_pacing,
@@ -56,7 +56,7 @@ def set_wait_time(timer_selection, wait_time):
         return None, INVALID_TIMER_STR
 
 
-class User(HttpUser):
+class User(FastHttpUser):
     timer_selection = config_obj["wmts"].WAIT_TIME_FUNC[0]
     wait_time = config_obj["wmts"].WAIT_TIME[0]
 
