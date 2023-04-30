@@ -38,17 +38,19 @@ spec:
           {{- toYaml .Values.worker.args | nindent 10 }}
 {{- end }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+{{- if .Values.worker.pvc.enabled }}
         volumeMounts:
-          - name: ingestion-storage
-            mountPath: /layerSources
+          - name: {{ .Values.storage.volumeName }}
+            mountPath: {{ .Values.storage.mountPathName }}
             {{- if .Values.storage.subPath }}
             subPath: {{ .Values.storage.subPath }}
             {{- end }}
+{{- end }}
 {{- if or .Values.worker.envs_include_default .Values.global.env .Values.worker.env .Values.global.env_secret .Values.global.env_external_secret }}
         env:
 {{- if .Values.worker.envs_include_default }}
-          - name: LOCUST_HOST
-            value: "{{ .Values.global.locust_host }}"
+          - name: host
+            value: "{{ .Values.global.host }}"
           - name: LOCUST_MASTER_NODE_HOST
             value: "{{ template "locust.fullname" . }}"
           - name: LOCUST_MASTER_NODE_PORT
@@ -56,7 +58,7 @@ spec:
           - name: LOCUST_LOGLEVEL
             value: "{{ .Values.worker.logLevel }}"
           - name: LOCUST_LOCUSTFILE
-            value: "{{ .Values.global.locust_file_path }}/{{ .Values.global.locust_file }}"
+            value: "{{ .Values.global.test_file_path }}/{{ .Values.global.test_file }}"
           {{- if .Values.global.env_secret }}
           - name: SECRET_VALUE_API
             valueFrom:
@@ -75,7 +77,9 @@ spec:
 {{- end }}
 {{- end }}
       restartPolicy: {{ .Values.worker.restartPolicy }}
+{{- if .Values.worker.pvc.enabled }}
       volumes:
-        - name: ingestion-storage
+        - name: {{ .Values.storage.volumeName }}
           persistentVolumeClaim:
             claimName: {{ .Values.storage.pvcName }}
+{{- end }}

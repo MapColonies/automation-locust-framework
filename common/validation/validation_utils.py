@@ -1,0 +1,86 @@
+import re
+from typing import Any, List, Union
+
+
+class ValidationError(Exception):
+    pass
+
+
+class KeyNotFoundError(ValidationError):
+    pass
+
+
+class ValueMismatchError(ValidationError):
+    pass
+
+
+class TypeMismatchError(ValidationError):
+    pass
+
+
+class LengthMismatchError(ValidationError):
+    pass
+
+
+def validate_response_status(response: Any, expected_status_code: int) -> None:
+    if response.status_code != expected_status_code:
+        raise ValueMismatchError(
+            f"Expected status code {expected_status_code},"
+            f" but got {response.status_code}"
+        )
+
+
+def validate_json_key_value(
+    json_data: dict, key: str, expected_value: Union[str, int, float, bool]
+) -> None:
+    if key not in json_data:
+        raise KeyNotFoundError(f"Key '{key}' not found in JSON data")
+    if json_data[key] != expected_value:
+        raise ValueMismatchError(
+            f"Expected value for key '{key}' is {expected_value},"
+            f" but got {json_data[key]}"
+        )
+
+
+def validate_json_keys(json_data: dict, expected_keys: List[str]) -> None:
+    for key in expected_keys:
+        if key not in json_data:
+            raise KeyNotFoundError(f"Key '{key}' not found in JSON data")
+
+
+def validate_json_array_length(json_array: List[Any], expected_length: int) -> None:
+    if len(json_array) != expected_length:
+        raise LengthMismatchError(
+            f"Expected array length is {expected_length}, but got {len(json_array)}"
+        )
+
+
+def validate_json_key_type(json_data: dict, key: str, expected_type: type) -> None:
+    if key not in json_data:
+        raise KeyNotFoundError(f"Key '{key}' not found in JSON data")
+    if not isinstance(json_data[key], expected_type):
+        raise TypeMismatchError(
+            f"Expected type for key '{key}' is {expected_type},"
+            f" but got {type(json_data[key])}"
+        )
+
+
+def validate_json_array_contains(json_array: List[Any], expected_value: Any) -> None:
+    if expected_value not in json_array:
+        raise ValueMismatchError(
+            f"Expected value '{expected_value}' not found in JSON array"
+        )
+
+
+def validate_json_key_regex(json_data: dict, key: str, regex_pattern: str) -> None:
+    if key not in json_data:
+        raise KeyNotFoundError(f"Key '{key}' not found in JSON data")
+    if re.match(regex_pattern, json_data[key]) is None:
+        raise ValueMismatchError(
+            f"Value for key '{key}' does not match the regex pattern '{regex_pattern}'"
+        )
+
+
+def validate_json_key_not_present(json_data: dict, key: str) -> None:
+    if key in json_data:
+        raise KeyNotFoundError(f"Key '{key}' should not be present in JSON data")

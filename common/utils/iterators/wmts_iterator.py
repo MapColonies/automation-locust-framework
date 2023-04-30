@@ -1,7 +1,7 @@
 from itertools import product
 from typing import Iterable
 
-from config.config import config_obj
+from common.config.config import config_obj
 
 
 class WMTSIterator:
