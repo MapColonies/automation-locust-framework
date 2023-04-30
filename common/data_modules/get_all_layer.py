@@ -3,9 +3,10 @@ import os
 import sys
 from typing import List
 
-from config.config import Database, config_obj
 from mc_automation_tools import postgres
-from utils.mapproxy_layer import MapproxyLayer, zoom_level_convertor
+
+from common.config.config import Database, config_obj
+from common.data_modules.mapproxy_layer import MapproxyLayer, zoom_level_convertor
 
 myDir = os.getcwd()
 sys.path.append(myDir)

@@ -1,9 +1,9 @@
 ---
 global:
   name: locust-global
-  locust_file: test_wmts.py
-  locust_file_path: "/mnt/locust/tests/wmts"
-  locust_host: http://lb-mapcolonies.gg.wwest.local/mapproxy-ww
+  test_file: test_wmts.py
+  test_file_path: "/mnt/locust/tests/wmts"
+  host: http://lb-mapcolonies.gg.wwest.local/mapproxy-ww
   env: {
       measure_time: false,
       pro_active_wmts_bbox: [35.024411528661574, 32.79419004139809, 35.37597717328861, 32.947998391903226],
@@ -12,8 +12,8 @@ global:
       version: "1.0.0",
       wait_time: 1,
       projection: "roie",
-      wmts_csv_path: "csv_data/data/wmts_shaziri.csv",
-      requests_records_csv: "csv_data/data/stats.csv",
+      wmts_csv_path: "test_data/data/wmts_shaziri.csv",
+      requests_records_csv: "test_data/data/stats.csv",
       gridName: "newGrids",
       imageType: ".png",
       layer: "artzi1-Orthophoto",
@@ -47,6 +47,8 @@ master:
   envs_include_default: true
   env: {}
   args: []
+  pvc:
+    enabled: true
   strategy:
     type: RollingUpdate
   auth:
@@ -66,6 +68,8 @@ worker:
   replicas: 1
   env: { SUB_URL_FOR_IDS: "https://www.google.com" }
   args: []
+  pvc:
+    enabled: true
   strategy:
     type: RollingUpdate
   restartPolicy: Always
@@ -108,4 +112,6 @@ ingress:
 
 storage:
   pvcName: ortho-pvc
+  volumeName: ingestion-storage
+  mountPathName: /layerSources
   subPath:
