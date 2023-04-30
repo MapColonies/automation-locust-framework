@@ -3,3 +3,6 @@ locust
 locust-plugins
 mc-automation-tools
 pre-commit
+flake8
+black
+toml

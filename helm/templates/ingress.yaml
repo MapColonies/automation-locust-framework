@@ -13,7 +13,7 @@ metadata:
     {{- end }}
     {{- if eq .Values.ingress.type "nginx-kubernetes" }}
     nginx.ingress.kubernetes.io/rewrite-target: /$2
-    {{- end }}  
+    {{- end }}
     nginx.org/location-snippets: |
       if ($request_method = OPTIONS) {
         return 204;
@@ -33,7 +33,7 @@ spec:
         backend:
           service:
             name: {{ $chartName }}
-            port: 
+            port:
               number: 8089
     host: {{ .Values.ingress.host | quote }}
 {{- end -}}
