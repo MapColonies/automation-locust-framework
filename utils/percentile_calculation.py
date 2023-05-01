@@ -11,10 +11,11 @@ def extract_response_time_from_record(csv_path: str):
     response_time_list: response time of requests
     """
     response_time_list = []
-    with open(csv_path, 'r') as f:
-        reader = csv.reader(f, delimiter=';')
-        for row in reader:
-            response_time_list.append(float(row[3]))
+    if csv_path:
+        with open(csv_path, 'r') as f:
+            reader = csv.reader(f, delimiter=';')
+            for row in reader:
+                response_time_list.append(float(row[3]))
     return response_time_list
 
 
