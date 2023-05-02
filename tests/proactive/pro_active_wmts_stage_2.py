@@ -12,7 +12,7 @@ from locust import (
 )
 
 from common.config.config import config_obj
-from common.utils import create_layers_urls
+from common.data_modules.get_all_layer import create_layers_urls
 from common.utils.constants.strings import (
     BETWEEN_TIMER_STR,
     CONSTANT_PACING_TIMER_STR,
