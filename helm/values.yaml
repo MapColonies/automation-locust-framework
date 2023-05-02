@@ -2,8 +2,8 @@
 global:
   name: locust-global
   test_file: test_wmts.py
-  test_file_path: "/mnt/locust/tests/wmts"
-  host: http://lb-mapcolonies.gg.wwest.local/mapproxy-ww
+  test_file_path: "/mnt/locust/tests/proactive"
+  host: https://mapproxy-raster-qa-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1
   env: {
       measure_time: false,
       pro_active_wmts_bbox: [35.024411528661574, 32.79419004139809, 35.37597717328861, 32.947998391903226],
@@ -22,7 +22,7 @@ global:
       CONF_FILE: "/layerSources/locust_configuration.json",
       layer_type: "wmts",
       test_to_run: "Lateron",
-      sub_url_for_pycsw: "http://lb-mapcolonies.gg.wwest.local/pycsw-ww/",
+      sub_url_for_pycsw: "https://pycsw-raster-qa-nginx-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1",
     }
   env_secret: ""
   env_external_secret:
@@ -32,8 +32,8 @@ global:
   headless: false
 
 image:
-  repository: artifactory.rnd-hub.com:6543/locust-ww
-  tag: 2.0.0
+  repository: acrarolibotnonprod.azurecr.io/proactive:1.0.0
+  tag: 1.0.0
   pullPolicy: IfNotPresent
 
 service:
@@ -42,7 +42,7 @@ service:
   annotations: {}
 
 master:
-  image: artifactory.rnd-hub.com:6543/locust-ww:2.0.0
+  image: acrarolibotnonprod.azurecr.io/proactive:1.0.0
   logLevel: INFO
   envs_include_default: true
   env: {}
@@ -62,7 +62,7 @@ master:
   restartPolicy: Always
 
 worker:
-  image: artifactory.rnd-hub.com:6543/locust-ww:2.0.0
+  image: acrarolibotnonprod.azurecr.io/proactive:1.0.0
   logLevel: INFO
   envs_include_default: true
   replicas: 1
@@ -94,14 +94,14 @@ pullSecretName: mapcolonies-secret
   #      - chart-example.local
 
 route:
-  enabled: false
-  path: /
+  enabled: true
+  path: /locust-proactive
   https: true
   timeout:
     enabled: false # defaults to 30s by openshift
     duration: 60s # supported units (us, ms, s, m, h, d)
 ingress:
-  enabled: true
+  enabled: false
   type: 'nginx-kubernetes' # supported values: 'nginx-org' | 'nginx-kubernetes'
   path: /locust-ww
   host: "lb-mapcolonies.gg.wwest.local"
