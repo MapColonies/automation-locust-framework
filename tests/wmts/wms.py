@@ -24,8 +24,7 @@ class User(FastHttpUser):
     @task(1)
     @tag('regular')
     def zoom_level_up(self):
-        print(delta_x)
-        print(delta_y)
+
         bbox[0] += 0.00005
         bbox[1] += 0.00005
         bbox[2] += 0.00005
