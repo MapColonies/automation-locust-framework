@@ -21,6 +21,8 @@ wmstileNoToken = lambda \
 
 
 class User(FastHttpUser):
+
+
     @task(1)
     @tag('regular')
     def zoom_level_up(self):
@@ -29,14 +31,10 @@ class User(FastHttpUser):
         bbox[1] += 0.00005
         bbox[2] += 0.00005
         bbox[3] += 0.00005
-        if config_obj['WmsConfig'].TOKEN is True:
+        if config_obj['wms'].TOKEN is True:
             resp = self.client.get(wmstileT(bbox))
         else:
             resp = self.client.get(wmstileNoToken(bbox))
-        if resp.status_code != 200:
-            logging.error(resp.status_code + " " + resp.status)
-        else:
-            resp.success()
 
     @task(1)
     @tag('zoom')
@@ -44,14 +42,11 @@ class User(FastHttpUser):
         zoom = bbox
         zoom[2] -= delta_y
         zoom[3] -= delta_x
-        if config_obj['WmsConfig'].TOKEN is True:
+        if config_obj['wms'].TOKEN is True:
             resp = self.client.get(wmstileT(zoom))
         else:
             resp = self.client.get(wmstileNoToken(zoom))
-        if resp.status_code != 200:
-            logging.error(resp.status_code + " " + resp.status)
-        else:
-            resp.success()
+
 
     # host = config_obj['wms'].HOST
     host = 'https://mapproxy-raster-qa-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/'
