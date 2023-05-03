@@ -1,32 +1,32 @@
-import logging
-
 from locust import task, FastHttpUser, tag
 
 from config.config import config_obj
 
-bbox = [35.06068, 31.93225, 35.06270, 31.93316]
+bbox = config_obj['wms'].BBOX
 delta_x = bbox[3] - bbox[1]
 delta_y = bbox[2] - bbox[0]
+
 wmstileT = lambda l: f"api/raster/v1/service?LAYERS={config_obj['wms'].LAYER_TYPE}&FORMAT=image%2Fpng&SRS=EPSG%3A4326" \
                      f"&EXCEPTIONS=application%252Fvnd.ogc.se_inimage" \
                      f"&TRANSPARENT=TRUE&service=wms&VERSION=1.1.1&REQUEST=GetMap&STYLES=" \
                      f"&BBOX={l[0]}%2C{l[1]}%2C{l[2]}%2C{l[3]}&WIDTH={config_obj['wms'].WIDTH}" \
                      f"&HEIGHT={config_obj['wms'].HEIGHT}&token={config_obj['wms'].TOK}"
-wmstileNoToken = lambda \
-        l: f"api/raster/v1/service?LAYERS={config_obj['wms'].LAYER_TYPE}&FORMAT=image%2Fpng&SRS=EPSG%3A4326" \
+
+wmstileNoToken = lambda l: f"api/raster/v1/service?LAYERS={config_obj['wms'].LAYER_TYPE}&FORMAT=image%2Fpng&SRS=EPSG%3A4326" \
            f"&EXCEPTIONS=application%252Fvnd.ogc.se_inimage" \
            f"&TRANSPARENT=TRUE&service=wms&VERSION=1.1.1&REQUEST=GetMap&STYLES=" \
            f"&BBOX={l[0]}%2C{l[1]}%2C{l[2]}%2C{l[3]}&WIDTH={config_obj['wms'].WIDTH}" \
            f"&HEIGHT={config_obj['wms'].HEIGHT}"
 
+if config_obj['wms'].WEB_MERCATOR_FLAG:
+    wmstileT += '&web-mercator=true'
+    wmstileNoToken += '&web-mercator=true'
+
 
 class User(FastHttpUser):
-
-
     @task(1)
     @tag('regular')
     def zoom_level_up(self):
-
         bbox[0] += 0.00005
         bbox[1] += 0.00005
         bbox[2] += 0.00005
@@ -46,7 +46,6 @@ class User(FastHttpUser):
             resp = self.client.get(wmstileT(zoom))
         else:
             resp = self.client.get(wmstileNoToken(zoom))
-
 
     # host = config_obj['wms'].HOST
     host = 'https://mapproxy-raster-qa-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/'
