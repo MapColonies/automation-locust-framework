@@ -1,6 +1,6 @@
 global:
   name: locust-global
-  test_file: test_wmts.py
+  test_file: pro_active_wmts_stage_2.py
   test_file_path: "/mnt/locust/tests/proactive"
   host: https://mapproxy-raster-qa-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1
   env: {
@@ -31,7 +31,7 @@ global:
   headless: false
 
 image:
-  repository: acrarolibotnonprod.azurecr.io/proactive:1.0.0
+  repository: acrarolibotnonprod.azurecr.io/proactive:1.1.0
   tag: 1.0.0
   pullPolicy: IfNotPresent
 
@@ -41,13 +41,13 @@ service:
   annotations: {}
 
 master:
-  image: acrarolibotnonprod.azurecr.io/proactive:1.0.0
+  image: acrarolibotnonprod.azurecr.io/proactive:1.1.0
   logLevel: INFO
   envs_include_default: true
   env: {}
   args: []
   pvc:
-    enabled: true
+    enabled: false
   strategy:
     type: RollingUpdate
   auth:
@@ -61,14 +61,14 @@ master:
   restartPolicy: Always
 
 worker:
-  image: acrarolibotnonprod.azurecr.io/proactive:1.0.0
+  image: acrarolibotnonprod.azurecr.io/proactive:1.1.0
   logLevel: INFO
   envs_include_default: true
   replicas: 1
   env: { SUB_URL_FOR_IDS: "https://www.google.com" }
   args: []
   pvc:
-    enabled: true
+    enabled: false
   strategy:
     type: RollingUpdate
   restartPolicy: Always
@@ -110,6 +110,7 @@ route:
 #    tls: []
 
 storage:
+  enabled: false
   pvcName: ortho-pvc
   volumeName: ingestion-storage
   mountPathName: /layerSources
