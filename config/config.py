@@ -23,7 +23,7 @@ class Database:
 
 
 class Config:
-    TOKEN = os.environ.get("SECRET_VALUE_API") or None
+    TOKEN = os.environ.get("SECRET_VALUE_API",) or None
     HOST = os.environ.get("HOST", "enter a host")
     WAIT_TIME_FUNC = int(os.environ.get("wait_function", "4"))
     WAIT_TIME = int(os.environ.get("wait_time", "4"))
@@ -67,7 +67,6 @@ class Config3D(Config):
 
 class WmsConfig(Config):
     """
-    HD: 720p image resolution (1,280 x 720 pixels )
 
     """
     TOKEN = os.environ.get("TOKEN", True)
@@ -78,7 +77,13 @@ class WmsConfig(Config):
     GRID_NAME = os.environ.get("gridName", "default")
     IMAGE_FORMAT = os.environ.get("imageType", ".png")
     REQUESTS_RECORDS_CSV = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/stats.csv")
-    HOST = os.environ.get("Host",'https://mapproxy-raster-qa-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/')
+    HOST = os.environ.get("Host", 'https://mapproxy-raster-qa-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/')
+    BBOX = os.environ.get("BBOX", [35.06068, 31.93225, 35.06270, 31.93316])
+    WEB_MERCATOR_FLAG = os.environ.get("webMeractorFlag", False)
+    WEB_MERCATOR = os.environ.get("webMeractor", None)
+
+
+
 
 
 config_obj = {
