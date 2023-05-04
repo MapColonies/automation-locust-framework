@@ -1,26 +1,13 @@
-import json
 import os
 
 
 class Database:
-    CONF_FILE = os.environ.get("CONF_FILE", None)
-    if not CONF_FILE:
-        raise EnvironmentError("Should provide path for CONF_FILE")
-    try:
-        with open(CONF_FILE, "r", encoding="utf-8") as fp:
-            conf = json.load(fp)
-    except Exception as e:
-        raise EnvironmentError("Failed to load JSON for configuration") from e
-    PG_CREDENTIAL =conf.get("pg_credential")
-    PG_SCHEMAS = conf.get("pg_schemas")
-    PG_TABLES = conf.get("pg_tables")
-    PG_USER = PG_CREDENTIAL["pg_user"]
-    PG_PASS = PG_CREDENTIAL["pg_pass"]
-    PG_PORT = PG_CREDENTIAL["pg_port"]
-    PG_HOST = PG_CREDENTIAL["pg_host"]
-    PG_RECORD_PYCSW_DB = PG_CREDENTIAL["pg_pycsw_record_table"]
-    # PG_RECORD_PYCSW_DB = PG_SCHEMAS["pg_pycsw_record_table"]
+    PG_USER = os.environ.get("pg_user")
+    PG_PASS = os.environ.get("pg_pass")
+    PG_PORT = os.environ.get("pg_port")
+    PG_HOST = os.environ.get("pg_host")
     PG_JOB_TASK_DB_NAME = os.environ.get("pg_job_task_table")
+    PG_RECORD_PYCSW_DB = os.environ.get("pg_pycsw_record_table")
     PG_MAPPROXY_CONFIG = os.environ.get("pg_mapproxy_table")
     PG_AGENT = os.environ.get("pg_agent_table")
     DISCRETE_AGENT_DB = os.environ.get("discrete_agent_db")
@@ -28,7 +15,7 @@ class Database:
     JOB_MANAGER = os.environ.get("job_manager")
     LAYER_SPEC = os.environ.get("layer_spec")
     MAPPROXY_CONFIG = os.environ.get("mapproxy_config")
-    RASTER_CATALOG = PG_SCHEMAS["raster_catalog_manager"]
+    RASTER_CATALOG = os.environ.get("raster_catalog_manager")
     PUBLIC = os.environ.get("public")
 
 
