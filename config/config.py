@@ -30,15 +30,17 @@ class Config:
     MAX_WAIT = int(os.environ.get("max_wait", 1))
     MIN_WAIT = int(os.environ.get("min_wait", 1))
     LAYERS_LIST = (os.environ.get("layer_list", "test-update,shay")).split(",")
+    os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/stats.csv")
 
 
 class WmtsConfig(Config):
     LAYER_TYPE = os.environ.get("layer_type", "wmts")
-    LAYER_NAME = os.environ.get("layer", "OrthophotoHistory")
+    LAYER_NAME = os.environ.get("layer", "Orthophoto") #History
     GRID_NAME = os.environ.get("gridName", "default")
     IMAGE_FORMAT = os.environ.get("imageType", ".png")
     WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "csv_data/data/new.csv")
-    REQUESTS_RECORDS_CSV = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/stats.csv")
+    REQUESTS_RECORDS_CS = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/stats.csv")
+
 
 
 class PycswConfig(Config):
@@ -61,14 +63,11 @@ class ProActiveConfig(Config):
 
 class Config3D(Config):
     CSV_DATA_PATH = os.environ.get(
-        "CSV_3D_DATA_PATH", "/home/shayavr/Desktop/git/automation-locust/urls_data.csv"
+        "CSV_3D_DATA_PATH", " /home/shayperp/Desktop/Auto-projects/automation-locust-framework/urls_data.csv"
     )
 
 
 class WmsConfig(Config):
-    """
-
-    """
     TOKEN = os.environ.get("TOKEN", True)
     TOK = os.environ.get("TOK", 'eyJhbGciOiJSUzI1NiIsImtpZCI6Ik1hcENvbG9uaWVzUUEifQ.eyJkIjpbInJhc3RlciIsInJhc3RlcldtcyIsInJhc3RlckV4cG9ydCIsImRlbSIsInZlY3RvciIsIjNkIl0sImlhdCI6MTY2Mzg2MzM0Mywic3ViIjoiTWFwQ29sb25pZXNRQSIsImlzcyI6Im1hcGNvbG9uaWVzLXRva2VuLWNsaSJ9.U_sx0Rsy96MA3xpIcWQHJ76xvK0PlHa--J1YILBYm2fCwtDdM4HLGagwq-OQQnBqi2e8KwktQ7sgt27hOJIPBHuONQS0ezBbuByk6UqN2S7P8WERdt8_lejuR1c94owQq7FOkhEaj_PKJ64ehXuMMHskfNeAIBf8GBN6QUGEenVx2w5k2rYBULoU30rpFkQVo8TtmiK2yGx0Ssx2k6LqSgCZfyZJbFzZ2MH3BPeCVleP1-zypaF9DS7SxS-EutL-gZ1e9bEccNktxQA4VMcjeTv45KYJLTIrccs_8gtPlzfaeNQFTIUKD-cRD1gyd_uLatPsl0wwHyFZIgRuJtcvfw')
     WIDTH = os.environ.get("WIDTH", 1800)
@@ -81,9 +80,7 @@ class WmsConfig(Config):
     BBOX = os.environ.get("BBOX", [35.06068, 31.93225, 35.06270, 31.93316])
     WEB_MERCATOR_FLAG = os.environ.get("webMeractorFlag", False)
     WEB_MERCATOR = os.environ.get("webMeractor", None)
-
-
-
+    REQUESTS_RECORDS_CS = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/stats.csv")
 
 
 config_obj = {

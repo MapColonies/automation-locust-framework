@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import time
 
 myDir = os.getcwd()
 sys.path.append(myDir)
@@ -29,7 +30,8 @@ from locust_plugins.csvreader import CSVReader
 from utils.percentile_calculation import extract_response_time_from_record, count_rsp_time_by_rsp_time_ranges, \
     get_percentile_value, write_rsp_time_percentile_ranges
 
-stat_file = open('stats.csv', 'w')
+file_name = __name__ +'- stats.csv'
+stat_file = open(file_name, 'w')
 wmts_csv_path = WmtsConfig.WMTS_CSV_PATH
 # wmts_csv_path = "/home/shayavr/Desktop/git/automation-locust-framework/csv_data/data/wmts_shaziri.csv"
 
@@ -83,7 +85,7 @@ class User(HttpUser):
 
     def on_stop(self):
         rsp_list = extract_response_time_from_record(
-            csv_path=config_obj["wmts"].REQUESTS_RECORDS_CSV)
+            csv_path=file_name)
 
         # rsp_list_millisecond = convert_to_millisecond(response_time_list=rsp_list)
         percentile_rages_dict = {}
@@ -93,7 +95,7 @@ class User(HttpUser):
 
             percentile = get_percentile_value(rsp_counter=counter, rsp_time_list=rsp_list)
             percentile_rages_dict[str(rsp_time_ranges[idx])] = percentile
-        write_rsp_time_percentile_ranges(percentile_rages_dict)
+        write_rsp_time_percentile_ranges(percentile_rages_dict, file_name)
 
 
 @events.request.add_listener

@@ -202,3 +202,7 @@ yarl==1.9.2
 zipp==1.0.0
 zope.event==4.6
 zope.interface==6.0
+
+hyper~=0.7.0
+setuptools~=45.2.0
+httpx~=0.24.0
