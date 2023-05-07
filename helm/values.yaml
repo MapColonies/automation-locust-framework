@@ -3,7 +3,14 @@ global:
   test_file: pro_active_wmts_stage_2.py
   test_file_path: "/mnt/locust/tests/proactive"
   host: https://mapproxy-raster-qa-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1
-  env: {
+
+  env:
+      name: "SECRET_VALUE_API"
+      valueFrom:
+        secretKeyRef:
+          name: "automation-secret"
+          key: "x-api-key",
+      envs1: {
       measure_time: false,
       pro_active_wmts_bbox: [35.024411528661574, 32.79419004139809, 35.37597717328861, 32.947998391903226],
       mc_region_value: "ישראל, ירדן",
@@ -14,19 +21,18 @@ global:
       wmts_csv_path: "test_data/data/wmts_shaziri.csv",
       requests_records_csv: "test_data/data/stats.csv",
       gridName: "newGrids",
-      imageType: ".png",
+      imageType: ".jpeg",
       layer: "artzi1-Orthophoto",
       users: 15,
       port: 8080,
       CONF_FILE: "/layerSources/shay_avr/new_locust_configuration.json",
       layer_type: "wmts",
       test_to_run: "Lateron",
-      sub_url_for_pycsw: "https://pycsw-raster-qa-nginx-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1",
-    }
-  env_secret: ""
+      sub_url_for_pycsw: "https://pycsw-raster-qa-nginx-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1"}
+  env_secret: "" ,
   env_external_secret:
     {}
-  secret_name_api_key_locust: "automation-secret-v2"
+  secret_name_api_key_locust: "automation-secret"
   sub_url_secret: "automation-secret"
   headless: false
 
