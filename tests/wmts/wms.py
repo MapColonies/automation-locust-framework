@@ -1,3 +1,5 @@
+import datetime
+import logging
 import os
 import httpx
 from hyper.contrib import HTTP20Adapter
@@ -5,12 +7,10 @@ from locust import task, FastHttpUser, tag, HttpUser, events
 from hyper import HTTP20Connection
 from utils.ClientX import HttpxUser
 from config.config import config_obj
-from utils.percentile_calculation import write_rsp_time_percentile_ranges, count_rsp_time_by_rsp_time_ranges, \
-    extract_response_time_from_record, get_percentile_value
+from utils.percentile_calculation import calculate_times, generate_name
 import time
 
-
-file_name = __name__ + '-stats.csv'
+file_name = generate_name(__name__)
 stat_file = open(file_name, 'w')
 bbox = config_obj['wms'].BBOX
 delta_x = bbox[3] - bbox[1]
@@ -62,24 +62,12 @@ class User(HttpxUser):
 
     # host = 'https://mapproxy-raster-qa-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/' __name__ #'
     def on_stop(self):
-        rsp_list = extract_response_time_from_record(
-            csv_path=file_name)
-
-        # rsp_list_millisecond = convert_to_millisecond(response_time_list=rsp_list)
-        percentile_rages_dict = {}
-        rsp_time_ranges = [(0, 100), (101, 500), (501, None)]
-        for idx, rsp_t_range in enumerate(rsp_time_ranges):
-            counter = count_rsp_time_by_rsp_time_ranges(rsp_time_data=rsp_list, rsp_range=rsp_t_range)
-
-            percentile = get_percentile_value(rsp_counter=counter, rsp_time_list=rsp_list)
-            percentile_rages_dict[str(rsp_time_ranges[idx])] = percentile
-        write_rsp_time_percentile_ranges(percentile_rages_dict, str(__name__))
+        calculate_times(file_name, __name__)
 
 
 @events.request.add_listener
-def hook_request_success(request_type, name, response_time, response_length, response, **kw):
-    stat_file.write(str(response) + ";" + request_type + ";" + name + ";" + str(response_time) + ";" + str(
-        response_length) + "\n")
+def hook_request_success(request_type, name, response_time, response_length, **kwargs):
+    stat_file.write(f"{request_type};{name} ; {response_time};{response_length}  \n")
 
 
 @events.quitting.add_listener
