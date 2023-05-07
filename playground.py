@@ -3,8 +3,7 @@ import os
 
 
 class Database:
-    CONF_FILE = os.environ.get("CONF_FILE", "/home/shayavr/Downloads/new_locust_configuration.json")
-    # CONF_FILE = os.environ.get("CONF_FILE", None)
+    CONF_FILE = os.environ.get("CONF_FILE", None)
     if not CONF_FILE:
         raise EnvironmentError("Should provide path for CONF_FILE")
     try:
@@ -41,17 +40,18 @@ class Config:
     WAIT_TIME = int(os.environ.get("wait_time", 4))
     MAX_WAIT = int(os.environ.get("max_wait", 1))
     MIN_WAIT = int(os.environ.get("min_wait", 1))
-    LAYERS_LIST = os.environ.get("layer_list", "ronen_test,shay44").split(",")
+    LAYERS_LIST = os.environ.get("layer_list", "test-update,shay").split(",")
 
 
 class WmtsConfig(Config):
     LAYER_TYPE = os.environ.get("layer_type", "wmts")
     LAYER_NAME = os.environ.get("layer", "bluemarble-Orthophoto")
     GRID_NAME = os.environ.get("gridName", "newGrids")
-    # IMAGE_FORMAT = os.environ.get("imageType", ".png")
-    IMAGE_FORMAT = os.environ.get("imageType", ".jpeg")
+    IMAGE_FORMAT = os.environ.get("imageType", ".png")
     WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "test_data/wmts_shaziri.csv")
-    REQUESTS_RECORDS_CSV = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/stats.csv")
+    REQUESTS_RECORDS_CSV = os.environ.get(
+        "requests_records_csv", f"{os.getcwd()}/tests/stats.csv"
+    )
 
 
 class PycswConfig(Config):
@@ -85,3 +85,9 @@ config_obj = {
     "_3d": Config3D,
     "default": Config,
 }
+
+# token: "SECRET_VALUE_API",
+# valueFrom:
+# secretKeyRef:
+# name: "automation-secret"
+# key: "x-api-key"

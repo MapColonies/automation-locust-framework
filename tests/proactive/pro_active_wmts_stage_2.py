@@ -1,6 +1,10 @@
 import os
 import sys
 from pathlib import Path
+myDir = os.getcwd()
+sys.path.insert(0, '../..')
+print(myDir)
+# sys.path.append(myDir)
 
 from locust import (
     HttpUser,
@@ -54,6 +58,7 @@ class SizingUser(HttpUser):
 
     def on_start(self):
         self.layers_tiles_urls = create_layers_urls()
+        print(self.layers_tiles_urls)
 
     @task(1)
     def index(self):
