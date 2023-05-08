@@ -34,11 +34,10 @@ def get_percentile_value(rsp_avarage: list, rsp_total: int):
     :return:
     percentile_value: percent value : float
     """
-    pive = 0
+
     dict_results = {}
-    for index in Config.RSP_TIME_RANGES:
-        dict_results[str(index)] = [rsp_avarage[pive] / rsp_total * 100]
-        pive += 1
+    for index, range in enumerate(Config.RSP_TIME_RANGES):
+        dict_results[str(range)] = [rsp_avarage[index] / rsp_total * 100]
     return dict_results
 
 
