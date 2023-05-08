@@ -36,10 +36,14 @@ class Config:
 class WmtsConfig(Config):
     LAYER_TYPE = os.environ.get("layer_type", "wmts")
     LAYER_NAME = os.environ.get("layer", "Orthophoto")  # History
-    GRID_NAME = os.environ.get("gridName", "default")
+    GRID_NAME = os.environ.get("gridName", "osm")
     IMAGE_FORMAT = os.environ.get("imageType", ".png")
     WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "csv_data/data/new.csv")
-    REQUESTS_RECORDS_CS = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/F.csv")
+    REQUESTS_RECORDS_CS = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/wmts_records.csv")
+    WMTS_CSV_PATH_UPSCALE = os.environ.get("requests_records_upscale_csv", f"{os.getcwd()}/tests/upscale.csv")
+    UP_SCALE_FLAG = os.environ.get("up_sacle_flag", False)
+    WMTS_FLAG = os.environ.get("up_sacle_flag", False)
+
 
 
 class PycswConfig(Config):
