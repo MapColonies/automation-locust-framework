@@ -4,7 +4,7 @@ import os
 import logging
 import time
 
-from config.config import Config
+from config.config import Config, config_obj
 
 
 def extract_response_time_from_record(csv_path: str):
@@ -43,12 +43,12 @@ def get_percentile_value(rsp_avarage: list, rsp_total: int):
 
 def write_rsp_time_percentile_ranges(percentile_value: dict, file_name: str):
     json_obj = json.dumps(percentile_value)
-    with open(f" {file_name}-time_percentile_ran.json", 'w') as f:
+    with open(f"{config_obj['wmts'].root_dir}/{file_name}-time_percentile_ran.json", 'w') as f:
         f.write(json_obj)
 
 
 def calculate_times(csv_record_path, test_name):
-    rsp_list = extract_response_time_from_record(csv_path=csv_record_path)
+    rsp_list = extract_response_time_from_record(csv_path=f"{config_obj['wmts'].root_dir}/{csv_record_path}")
     if len(rsp_list) == 0:
         logging.info(" List empty ")
         return None
@@ -74,5 +74,14 @@ def calculate_average(list_of_times: list):
 def generate_name(name: str):
     t = time.localtime()
     current_time = time.strftime("%H:%M", t)
-    file_name = name + current_time + '-stats.csv'
+    file_name = f"{name}-{current_time}-stats.csv'"
     return file_name
+
+
+"""
+Read me .
+
+
+
+
+"""
