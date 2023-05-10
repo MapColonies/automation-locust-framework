@@ -24,7 +24,11 @@ from common.utils.constants.strings import (
     CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
 )
-
+myDir = os.getcwd()
+sys.path.append(myDir)
+path = Path(myDir)
+a = str(path.parent.absolute())
+sys.path.append(a)
 
 def set_wait_time(timer_selection, wait_time):
     if timer_selection == 1:
@@ -42,11 +46,11 @@ def set_wait_time(timer_selection, wait_time):
         return None, INVALID_TIMER_STR
 
 
-myDir = os.getcwd()
-sys.path.append(myDir)
-path = Path(myDir)
-a = str(path.parent.absolute())
-sys.path.append(a)
+# myDir = os.getcwd()
+# sys.path.append(myDir)
+# path = Path(myDir)
+# a = str(path.parent.absolute())
+# sys.path.append(a)
 
 
 class SizingUser(HttpUser):
@@ -54,11 +58,11 @@ class SizingUser(HttpUser):
     wait_time = config_obj["default"].WAIT_TIME
 
     wait_time, timer_message = set_wait_time(timer_selection, wait_time)
-    print(timer_message)
+
 
     def on_start(self):
         self.layers_tiles_urls = create_layers_urls()
-        print(self.layers_tiles_urls)
+        print("on start function")
 
     @task(1)
     def index(self):
