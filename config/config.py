@@ -31,6 +31,7 @@ class Config:
     MIN_WAIT = int(os.environ.get("min_wait", 1))
     LAYERS_LIST = (os.environ.get("layer_list", "test-update,shay")).split(",")
     RSP_TIME_RANGES = os.environ.get('rsp_time_ranges', [(0, 100), (101, 500), (501, None)])
+    root_dir = os.environ.get('root_dir', '..') or None
 
 
 class WmtsConfig(Config):
@@ -43,7 +44,6 @@ class WmtsConfig(Config):
     WMTS_CSV_PATH_UPSCALE = os.environ.get("requests_records_upscale_csv", f"{os.getcwd()}/tests/upscale.csv")
     UP_SCALE_FLAG = os.environ.get("up_sacle_flag", False)
     WMTS_FLAG = os.environ.get("up_sacle_flag", False)
-
 
 
 class PycswConfig(Config):
@@ -85,6 +85,11 @@ class WmsConfig(Config):
     WEB_MERCATOR_FLAG = os.environ.get("webMeractorFlag", False)
     WEB_MERCATOR = os.environ.get("webMeractor", None)
     REQUESTS_RECORDS_CS = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/stats.csv")
+    SRS = os.environ.get("srs", "ESPG%3A4326")
+    WMS_VERSION = os.environ.get("wms_version", "1.1.1")
+    WMS_TRANSPARENT = os.environ.get("TRANSPARENT", True)
+    STYLE = os.environ.get('STYLE', '')
+    WMS_ZOOM_FLAG = os.environ.get("zoom_upscale_wms", False)
 
 
 config_obj = {

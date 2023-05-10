@@ -10,8 +10,6 @@ from common.strings import BETWEEN_TIMER_STR, CONSTANT_PACING_TIMER_STR, CONSTAN
     CONSTANT_TIMER_STR, INVALID_TIMER_STR
 import time
 
-t = time.localtime()
-current_time = time.strftime("%H:%M:%S", t)
 myDir = os.getcwd()
 sys.path.append(myDir)
 files = os.listdir(myDir)
@@ -20,20 +18,21 @@ path = Path(myDir)
 # a = str(path.parent.absolute())
 # sys.path.append(a)
 
-file_name = generate_name(__name__)
-stat_file = open(file_name, 'w')
 
-s_file = "tests/wmts/sacleup.csv"
 wmts_csv_path = WmtsConfig.WMTS_CSV_PATH
+
 wmts_csv_path_up_scale = WmtsConfig.WMTS_CSV_PATH_UPSCALE
-stat_file = open(__name__ + ' ' + current_time + ' ' + '- stats.csv', 'w')
+file_name = generate_name(__name__)
+stat_file = open(f"{config_obj['wmts'].root_dir}/{file_name}", 'w')
 # wmts_csv_path = "/home/shayavr/Desktop/git/automation-locust-framework/csv_data/data/wmts_shaziri.csv"
 
 ssn_reader = CSVReader(wmts_csv_path)
-Upscale_reader = CSVReader(wmts_csv_path_up_scale)
+if config_obj['wmts'].UP_SCALE_FLAG:
+    Upscale_reader = CSVReader(wmts_csv_path_up_scale)
 
 
 class User(HttpxUser):
+
     timer_selection = config_obj["wmts"].WAIT_TIME_FUNC
     wait_time = config_obj["wmts"].WAIT_TIME
     if isinstance(timer_selection, list) and isinstance(wait_time, list):
