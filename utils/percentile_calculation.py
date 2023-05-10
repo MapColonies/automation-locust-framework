@@ -36,8 +36,8 @@ def get_percentile_value(rsp_avarage: list, rsp_total: int):
     """
 
     dict_results = {}
-    for index, range in enumerate(Config.RSP_TIME_RANGES):
-        dict_results[str(range)] = [rsp_avarage[index] / rsp_total * 100]
+    for index, ran in enumerate(Config.RSP_TIME_RANGES):
+        dict_results[str(ran)] = [rsp_avarage[index] / rsp_total * 100]
     return dict_results
 
 
