@@ -1,6 +1,7 @@
 import itertools
 import os
 import sys
+
 myDir = os.getcwd()
 sys.path.append(myDir)
 from typing import List
@@ -9,8 +10,6 @@ from mc_automation_tools import postgres
 
 from common.config.config import Database, config_obj
 from common.data_modules.mapproxy_layer import MapproxyLayer, zoom_level_convertor
-
-
 
 
 def get_layers_list(is_all_records: bool = False) -> dict:
@@ -24,6 +23,7 @@ def get_layers_list(is_all_records: bool = False) -> dict:
         try:
             layer_list = config_obj["wmts"].LAYERS_LIST
             if layer_list:
+                print(layer_list)
                 return {"all_records": is_all_records, "layer_list": layer_list}
         except Exception as e:
             raise e
@@ -40,9 +40,7 @@ def get_all_layers_tiles_data(db_name=Database.PG_RECORD_PYCSW_DB):
         Database.RASTER_CATALOG,
         port=int(Database.PG_PORT),
     )
-    columns_names = """
-     max_resolution_deg , product_bbox , product_id
-    """
+    columns_names = """ max_resolution_deg , product_bbox , product_id"""
     res = client.get_column_by_name(table_name="records", column_name=columns_names)
     return [res]
 
@@ -57,7 +55,7 @@ def get_layer_list_tile_data(layer_list, db_name=Database.PG_RECORD_PYCSW_DB):
     columns_names = """
      max_resolution_deg , product_bbox , product_id
     """
-    print(f"--------------db_name={Database.PG_RECORD_PYCSW_DB}")
+
     client = postgres.PGClass(
         Database.PG_HOST,
         db_name,
@@ -67,22 +65,14 @@ def get_layer_list_tile_data(layer_list, db_name=Database.PG_RECORD_PYCSW_DB):
         port=int(Database.PG_PORT),
     )
     layers_data_list = []
-    print("LayerList : ")
-    print(layer_list)
     for layer_name in layer_list:
-        print("columns_names " + columns_names)
-        print("layer name " + layer_name )
         res = client.get_columns_by_pk_equality(
             columns=columns_names,
             table_name="records",
             pk="product_id",
             pk_value=layer_name,
-
-
         )
-        print(res)
         layers_data_list.append(res)
-
     return layers_data_list
 
 
@@ -99,6 +89,7 @@ def create_mapproxy_layer_objects(layers_data_list: list) -> list:
     mapproxy_objects = []
 
     for layer in itertools.chain.from_iterable(layers_data_list):
+        # layer = layer[0]
         layer_bbox = convert_bbox_str_value_to_string(layer[1])
         zoom_deg = layer[0]
         zoom_level = zoom_level_convertor(deg_value=zoom_deg)
@@ -107,6 +98,7 @@ def create_mapproxy_layer_objects(layers_data_list: list) -> list:
         mapproxy_objects.append(
             MapproxyLayer(zoom=zoom_level, product_bbox=layer_bbox, layer_id=layer[2])
         )
+        print(mapproxy_objects)
     return mapproxy_objects
 
 
@@ -148,10 +140,11 @@ def create_zyx_tiles_structure(zoom_value: int, y_range: tuple, x_range: tuple):
 def create_layer_tiles_urls(layer_name, tiles_list: List[tuple]):
     """
     This methid return urls according to the z/y/x conventions from the list
-    :param tiles_list: list  z/y/x of tile
+    :param tiles_list: list of tile z/y/x
     :return: urls with the tile values
     """
     layer_tiles_urls = []
+
     for tile_value in tiles_list:
         url = (
             f"/{config_obj['wmts'].LAYER_TYPE}"
@@ -162,6 +155,7 @@ def create_layer_tiles_urls(layer_name, tiles_list: List[tuple]):
             f"?token={config_obj['wmts'].TOKEN}"
         )
         layer_tiles_urls.append(url)
+        print(layer_tiles_urls)
     return layer_tiles_urls
 
 
@@ -172,20 +166,15 @@ def get_layers_data_pro_active():
     layers_tiles_ranges : dict of the layers ids and ranges
 
     """
-    print("get_layers_data_pro_active")
-    layers_list_res = get_layers_list(False)
+    layers_list_res = get_layers_list(is_all_records=False)
     if layers_list_res["all_records"] is True:
-        print("inside the true")
         layers_tiles_data = get_all_layers_tiles_data()
-        print("All-layers_tiles_data", layers_tiles_data)
-
+        print(layers_tiles_data)
     else:
-        print("Inside the else")
         layers_tiles_data = get_layer_list_tile_data(
             layer_list=layers_list_res["layer_list"]
         )
-        print("selected - layers_tiles_data", layers_tiles_data)
-
+        print(layers_tiles_data)
     mapproxy_objects_list = create_mapproxy_layer_objects(
         layers_data_list=layers_tiles_data
     )
@@ -205,7 +194,6 @@ def create_layers_urls() -> list:
     """
     layers_urls = []
     layers_ranges = get_layers_data_pro_active()
-    print(" stage 1", layers_ranges)
     for layers_range in layers_ranges:
         z_y_x_structure = create_zyx_tiles_structure(
             zoom_value=layers_range["zoom_value"],
@@ -215,3 +203,4 @@ def create_layers_urls() -> list:
         layer_url = create_layer_tiles_urls(layers_range["layer_id"], z_y_x_structure)
         layers_urls.append(layer_url)
     return layers_urls
+
