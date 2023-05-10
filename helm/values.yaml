@@ -5,6 +5,7 @@ global:
   host: https://mapproxy-raster-qa-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1
 
   env: {
+#      layer_list: ,
       measure_time: false,
       pro_active_wmts_bbox: [35.024411528661574, 32.79419004139809, 35.37597717328861, 32.947998391903226],
       mc_region_value: "ישראל, ירדן",
@@ -16,7 +17,7 @@ global:
       requests_records_csv: "test_data/data/stats.csv",
       gridName: "newGrids",
       imageType: ".jpeg",
-      layer: "artzi1-Orthophoto",
+      layer: "Orthophoto",
       users: 15,
       port: 8080,
       CONF_FILE: "/layerSources/shay_avr/new_locust_configuration.json",
@@ -31,8 +32,8 @@ global:
   headless: false
 
 image:
-  repository: acrarolibotnonprod.azurecr.io/proactive:1.2.6
-  tag: 1.2.4
+  repository: acrarolibotnonprod.azurecr.io/locust-proactive:1.2.1
+  tag: 1.2.0
   pullPolicy: Always
 
 service:
@@ -41,7 +42,7 @@ service:
   annotations: {}
 
 master:
-  image: acrarolibotnonprod.azurecr.io/proactive:1.2.6
+  image: acrarolibotnonprod.azurecr.io/locust-proactive:1.2.1
   logLevel: INFO
   envs_include_default: true
   env: {}
@@ -61,7 +62,7 @@ master:
   restartPolicy: Always
 
 worker:
-  image: acrarolibotnonprod.azurecr.io/proactive:1.2.6
+  image: acrarolibotnonprod.azurecr.io/locust-proactive:1.2.1
   logLevel: INFO
   envs_include_default: true
   replicas: 1

@@ -35,19 +35,20 @@ class Database:
 
 
 class Config:
-    TOKEN = os.environ.get("SECRET_VALUE_API")
+    TOKEN = os.environ.get("SECRET_VALUE_API", None)
     HOST = os.environ.get("HOST", "enter a host")
     WAIT_TIME_FUNC = int(os.environ.get("wait_function", 4))
     WAIT_TIME = int(os.environ.get("wait_time", 4))
     MAX_WAIT = int(os.environ.get("max_wait", 1))
     MIN_WAIT = int(os.environ.get("min_wait", 1))
-    LAYERS_LIST = os.environ.get("layer_list", "ronen_test,shay44").split(",")
+    LAYERS_LIST = os.environ.get("layer_list", "ronen_test, shay44").split(",")
 
 
 class WmtsConfig(Config):
     LAYER_TYPE = os.environ.get("layer_type", "wmts")
-    LAYER_NAME = os.environ.get("layer", "bluemarble-Orthophoto")
+    LAYER_NAME = os.environ.get("layer", "Orthophoto")
     GRID_NAME = os.environ.get("gridName", "newGrids")
+    TOKEN = os.environ.get("SECRET_VALUE_API", None)
     # IMAGE_FORMAT = os.environ.get("imageType", ".png")
     IMAGE_FORMAT = os.environ.get("imageType", ".jpeg")
     WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "test_data/wmts_shaziri.csv")
