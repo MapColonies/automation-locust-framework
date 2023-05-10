@@ -80,8 +80,29 @@ def generate_name(name: str):
 
 """
 Read me .
+import the file to Your test class 
+In configurion file add dir_root variable and give him path to the folder in your Environment 
+
+For the  util to work at your Script test add the 2 lines in the start of the script after the imports out from the class  
+
+file_name = generate_name(__name__)
+stat_file = open(f"{config_obj['wmts'].root_dir}/{file_name}", 'w')
+
+in the End of the Test class (Inside ) enter the next function
+
+    def on_stop(self):
+        calculate_times(file_name, __name__)
+        
+        
+out of the class in the bottom add 2 listeners    
+
+@events.request.add_listener
+def hook_request_success(request_type, name, response_time, response_length, **kwargs):
+    stat_file.write(f"{request_type};{name} ; {response_time};{response_length}  \n")
 
 
-
+@events.quitting.add_listener
+def hook_quitting(environment, **kw):
+    stat_file.close()    
 
 """
