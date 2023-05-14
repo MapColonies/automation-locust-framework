@@ -90,6 +90,7 @@ class WmsConfig(Config):
     WMS_TRANSPARENT = os.environ.get("TRANSPARENT", True)
     STYLE = os.environ.get('STYLE', '')
     WMS_ZOOM_FLAG = os.environ.get("zoom_upscale_wms", False)
+    # check git Capbility
 
 
 config_obj = {
