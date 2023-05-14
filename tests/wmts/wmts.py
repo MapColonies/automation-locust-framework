@@ -22,11 +22,13 @@ path = Path(myDir)
 wmts_csv_path = WmtsConfig.WMTS_CSV_PATH
 
 wmts_csv_path_up_scale = WmtsConfig.WMTS_CSV_PATH_UPSCALE
+
 file_name = generate_name(__name__)
 stat_file = open(f"{config_obj['wmts'].root_dir}/{file_name}", 'w')
 # wmts_csv_path = "/home/shayavr/Desktop/git/automation-locust-framework/csv_data/data/wmts_shaziri.csv"
 
 ssn_reader = CSVReader(wmts_csv_path)
+
 if config_obj['wmts'].UP_SCALE_FLAG:
     Upscale_reader = CSVReader(wmts_csv_path_up_scale)
 
