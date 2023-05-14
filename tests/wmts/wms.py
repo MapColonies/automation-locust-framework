@@ -8,6 +8,7 @@ delta_x = bbox[3] - bbox[1]
 delta_y = bbox[2] - bbox[0]
 file_name = generate_name(__name__)
 stat_file = open(f"{config_obj['wmts'].root_dir}/{file_name}", 'w')
+
 wmstileT = lambda l: f"api/raster/v1/service?LAYERS={config_obj['wms'].LAYER_TYPE}&FORMAT=image%2Fpng&SRS=EPSG%3A4326" \
                      f"&EXCEPTIONS=application%252Fvnd.ogc.se_inimage" \
                      f"&TRANSPARENT=TRUE&service=wms&VERSION=1.1.1&REQUEST=GetMap&STYLES=" \
