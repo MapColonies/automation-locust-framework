@@ -62,12 +62,12 @@ class SizingUser(HttpUser):
 
     def on_start(self):
         self.layers_tiles_urls = create_layers_urls()
-        print("on start function")
+        # print("on start function")
 
     @task(1)
     def index(self):
         for layer_urls in self.layers_tiles_urls:
             for tile_url in layer_urls:
-                self.client.get(f"{tile_url}", verify=False)
+                self.client.get(f"{tile_url}", headers={"Cache-Control": "no-cache"}, verify=False)
 
     host = config_obj["default"].HOST
