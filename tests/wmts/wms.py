@@ -1,4 +1,4 @@
-from locust import task, FastHttpUser, tag, HttpUser, events
+from locust import task, FastHttpUser, tag, HttpUser, events, between
 from utils.ClientX import HttpxUser
 from config.config import config_obj
 from utils.percentile_calculation import calculate_times, generate_name
@@ -22,13 +22,10 @@ wmstileNoToken = lambda \
            f"&BBOX={l[0]}%2C{l[1]}%2C{l[2]}%2C{l[3]}&WIDTH={config_obj['wms'].WIDTH}" \
            f"&HEIGHT={config_obj['wms'].HEIGHT}"
 
-if config_obj['wms'].WEB_MERCATOR_FLAG:
-    wmstileT += '&web-mercator=true'
-    wmstileNoToken += '&web-mercator=true'
-
 
 class User(HttpxUser):
     host = config_obj['wms'].HOST
+    between(1, 1)
 
     @task(1)
     @tag('regular')
