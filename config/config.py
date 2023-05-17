@@ -43,7 +43,6 @@ class WmtsConfig(Config):
     REQUESTS_RECORDS_CS = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/wmts_records.csv")
     WMTS_CSV_PATH_UPSCALE = os.environ.get("requests_records_upscale_csv", f"{os.getcwd()}/tests/upscale.csv")
     UP_SCALE_FLAG = os.environ.get("up_sacle_flag", False)
-    WMTS_FLAG = os.environ.get("up_sacle_flag", False)
 
 
 class PycswConfig(Config):
