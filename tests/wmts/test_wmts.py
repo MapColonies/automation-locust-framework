@@ -98,7 +98,7 @@ class User(FastHttpUser):
 
 
 @events.request.add_listener
-def hook_request_success(
+def hook_request_(
     request_type, name, response_time, response_length, response, **kw
 ):
     stat_file.write(
