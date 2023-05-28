@@ -33,7 +33,7 @@ outputSchema="http://schema.mapcolonies.com/raster" version="2.0.2" xmlns:mc="ht
 
 ID_RECORD_XML = rf"""<?xml version="1.0" encoding="UTF-8"?>
 
-<csw:GetRecords xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" service="CSW" maxRecords="1" startPosition="1" \
+<csw:GetRecords xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" service="CSW" maxRecords="1" startPosition="1" 
 outputSchema="http://schema.mapcolonies.com/raster" version="2.0.2" xmlns:mc="http://schema.mapcolonies.com/raster" >
 
 <csw:Query typeNames="mc:MCRasterRecord">
@@ -63,7 +63,7 @@ outputSchema="http://schema.mapcolonies.com/raster" version="2.0.2" xmlns:mc="ht
 
 REGION_RECORD_XML = rf"""<?xml version="1.0" encoding="UTF-8"?>
 
-<csw:GetRecords xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" service="CSW" maxRecords="1" startPosition="1" \
+<csw:GetRecords xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" service="CSW" maxRecords="1" startPosition="1" 
 outputSchema="http://schema.mapcolonies.com/raster" version="2.0.2" xmlns:mc="http://schema.mapcolonies.com/raster" >
 
 <csw:Query typeNames="mc:MCRasterRecord">

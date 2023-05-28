@@ -13,7 +13,7 @@ class Database:
     except Exception as e:
         raise EnvironmentError("Failed to load JSON for configuration") from e
     print("-------------------------", conf)
-    PG_CREDENTIAL =conf.get("pg_credential")
+    PG_CREDENTIAL = conf.get("pg_credential")
     PG_SCHEMAS = conf.get("pg_schemas")
     PG_TABLES = conf.get("pg_tables")
     PG_USER = PG_CREDENTIAL["pg_user"]
@@ -69,6 +69,11 @@ class PycswConfig(Config):
 
 
 class ProActiveConfig(Config):
+    pyscw_host = os.environ.get("pyscw_host_value", None)
+    wmts_host = os.environ.get("wmts_host_value", None)
+    layers_amount = os.environ.get("layers_amount", None)
+    column_names = ["max_resolution_deg", "product_bbox", "product_id"]
+    db_for_query = "records"
     SHOH = (True,)
     LIRAN = False
 
