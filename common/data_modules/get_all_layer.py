@@ -98,7 +98,7 @@ def create_mapproxy_layer_objects(layers_data_list: list) -> list:
         mapproxy_objects.append(
             MapproxyLayer(zoom=zoom_level, product_bbox=layer_bbox, layer_id=layer[2])
         )
-        print(mapproxy_objects)
+        # print(mapproxy_objects)
     return mapproxy_objects
 
 
@@ -139,7 +139,7 @@ def create_zyx_tiles_structure(zoom_value: int, y_range: tuple, x_range: tuple):
 
 def create_layer_tiles_urls(layer_name, tiles_list: List[tuple]):
     """
-    This methid return urls according to the z/y/x conventions from the list
+    This method return urls according to the z/y/x conventions from the list
     :param tiles_list: list of tile z/y/x
     :return: urls with the tile values
     """
@@ -155,8 +155,9 @@ def create_layer_tiles_urls(layer_name, tiles_list: List[tuple]):
             f"?token={config_obj['wmts'].TOKEN}"
         )
         layer_tiles_urls.append(url)
-        print(layer_tiles_urls)
     return layer_tiles_urls
+
+
 
 
 def get_layers_data_pro_active():
