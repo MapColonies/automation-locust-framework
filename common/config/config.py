@@ -42,6 +42,8 @@ class Config:
     MAX_WAIT = int(os.environ.get("max_wait", 1))
     MIN_WAIT = int(os.environ.get("min_wait", 1))
     LAYERS_LIST = os.environ.get("layer_list", "shay44").split(",")
+    WMTS_CAPABILITIES_URL = os.environ.get("wmts_capabilities_url",
+                                           "")
 
 
 class WmtsConfig(Config):
@@ -72,10 +74,17 @@ class ProActiveConfig(Config):
     pyscw_host = os.environ.get("pyscw_host_value", None)
     wmts_host = os.environ.get("wmts_host_value", None)
     layers_amount = os.environ.get("layers_amount", None)
-    column_names = ["max_resolution_deg", "product_bbox", "product_id"]
+    column_names = ["product_id", "max_resolution_deg", "product_bbox"]
     db_for_query = "records"
     SHOH = (True,)
     LIRAN = False
+
+
+class ElevationConfig(Config):
+    elevation_host = os.environ.get("elevation_host_value", None)
+    positions_path = os.environ.get("positions_path_value", None)
+
+
 
 
 class Config3D(Config):
