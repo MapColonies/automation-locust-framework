@@ -3942,4 +3942,26 @@ for parent_elem in tree.findall('parent'):
         print(child_value)
         print("222222222")
 
-"https://mapproxy-no-auth-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1/wmts/1.0.0/WMTSCapabilities.xml"
+# "https://mapproxy-no-auth-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1/wmts/1.0.0/WMTSCapabilities.xml"
+
+
+from google.protobuf import json_format
+from my_proto_pb2 import MyMessage
+
+# JSON request body
+json_data = '''
+{
+    "field1": "value1",
+    "field2": 123,
+    "field3": true
+}
+'''
+
+# Parse JSON and convert to protobuf message
+message = MyMessage()
+json_format.Parse(json_data, message)
+
+# Access the protobuf message
+print(message.field1)
+print(message.field2)
+print(message.field3)
