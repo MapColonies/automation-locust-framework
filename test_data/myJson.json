@@ -1,0 +1,12 @@
+{
+  "positions": [
+    {
+      "longitude": 35.3196 ,
+      "latitude": 31.9550
+    }
+  ],
+  "productType": "MIXED",
+  "excludeFields": [
+    "productType"
+  ]
+}
