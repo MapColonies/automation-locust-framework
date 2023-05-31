@@ -12,7 +12,7 @@ class Database:
             conf = json.load(fp)
     except Exception as e:
         raise EnvironmentError("Failed to load JSON for configuration") from e
-    print("-------------------------", conf)
+    # print("-------------------------", conf)
     PG_CREDENTIAL = conf.get("pg_credential")
     PG_SCHEMAS = conf.get("pg_schemas")
     PG_TABLES = conf.get("pg_tables")
@@ -82,7 +82,9 @@ class ProActiveConfig(Config):
 
 class ElevationConfig(Config):
     elevation_host = os.environ.get("elevation_host_value", None)
-    positions_path = os.environ.get("positions_path_value", None)
+    positions_path = os.environ.get("positions_path_value", "/home/shayavr/Desktop/git/automation-locust-framework/test_data/myJson.json")
+    headers = os.environ.get("headers_value", {'Content-Type': 'application/json'})
+    request_type = os.environ.get("request_type", "json")
 
 
 
