@@ -4,23 +4,15 @@ import sys
 from pathlib import Path
 
 from locust import (
-    FastHttpUser,
     between,
     constant,
     constant_pacing,
-    constant_throughput,
     events,
-    task,
+    task, HttpUser,
 )
-from locust_plugins.csvreader import CSVReader
 
 from common.config.config import WmtsConfig, config_obj, ElevationConfig
-from common.utils import (
-    count_rsp_time_by_rsp_time_ranges,
-    extract_response_time_from_record,
-    get_percentile_value,
-    write_rsp_time_percentile_ranges,
-)
+
 from common.utils.constants.strings import (
     BETWEEN_TIMER_STR,
     CONSTANT_PACING_TIMER_STR,
@@ -38,35 +30,43 @@ sys.path.append(a)
 
 stat_file = open("stats.csv", "w")
 positions_list_path = ElevationConfig.positions_path
+print(positions_list_path)
 
 
-def set_wait_time(timer_selection, wait_time):
-    if timer_selection == 1:
-        return constant(wait_time), CONSTANT_TIMER_STR
-    elif timer_selection == 2:
-        return constant_throughput(wait_time), CONSTANT_THROUGHPUT_TIMER_STR
-    elif timer_selection == 3:
-        return (
-            between(config_obj["wmts"].MIN_WAIT, config_obj["wmts"].MAX_WAIT),
-            BETWEEN_TIMER_STR,
-        )
-    elif timer_selection == 4:
-        return constant_pacing(wait_time), CONSTANT_PACING_TIMER_STR
-    else:
-        return None, INVALID_TIMER_STR
+# def set_wait_time(timer_selection, wait_time):
+#     if timer_selection == 1:
+#         return constant(wait_time), CONSTANT_TIMER_STR
+#     elif timer_selection == 2:
+#         return constant_throughput(wait_time), CONSTANT_THROUGHPUT_TIMER_STR
+#     elif timer_selection == 3:
+#         return (
+#             between(config_obj["wmts"].MIN_WAIT, config_obj["wmts"].MAX_WAIT),
+#             BETWEEN_TIMER_STR,
+#         )
+#     elif timer_selection == 4:
+#         return constant_pacing(wait_time), CONSTANT_PACING_TIMER_STR
+#     else:
+#         return None, INVALID_TIMER_STR
 
- #todo: add flag for the requests body options (json or protobuf)
-class User(FastHttpUser):
-    timer_selection = config_obj["wmts"].WAIT_TIME_FUNC[0]
-    wait_time = config_obj["wmts"].WAIT_TIME[0]
 
-    wait_time, timer_message = set_wait_time(timer_selection, wait_time)
-    print(timer_message)
+class User(HttpUser):
+    # timer_selection = config_obj["wmts"].WAIT_TIME_FUNC[0]
+    wait_time = 1
+
+    # wait_time, timer_message = set_wait_time(timer_selection, wait_time)
+    # print(timer_message)
 
     def on_start(self):
-        with open(positions_list_path, 'r') as file:
-            self.request_body = json.load(file)
-
+        if ElevationConfig.request_type == "json":
+            with open(positions_list_path, 'r') as file:
+                self.request_body = json.load(file)
+                print(self.request_body)
+        elif ElevationConfig.request_type == "protobuf":
+            with open(positions_list_path, 'rb') as file:
+                self.request_body = file.read()
+                print(self.request_body)
+        else:
+            return FileNotFoundError
 
     @task(1)
     def index(self):
@@ -74,6 +74,7 @@ class User(FastHttpUser):
             "/",
             data=self.request_body,
             verify=False,
+            headers=ElevationConfig.headers
         )
 
     def on_stop(self):
