@@ -42,13 +42,15 @@ def get_percentile_value(rsp_avarage: list, rsp_total: int):
 
 
 def write_rsp_time_percentile_ranges(percentile_value: dict, file_name: str):
+    t = time.localtime()
+    current_time = time.strftime("%H:%M", t)
     json_obj = json.dumps(percentile_value)
-    with open(f"{config_obj['wmts'].root_dir}/{file_name}-time_percentile_ran.json", 'w') as f:
+    with open(f"{Config.root_dir}/{file_name}-{current_time}-RPS.json", 'w') as f:
         f.write(json_obj)
 
 
 def calculate_times(csv_record_path, test_name):
-    rsp_list = extract_response_time_from_record(csv_path=f"{config_obj['wmts'].root_dir}/{csv_record_path}")
+    rsp_list = extract_response_time_from_record(csv_path=f"{Config.root_dir}/{csv_record_path}")
     if len(rsp_list) == 0:
         logging.info(" List empty ")
         return None
@@ -79,14 +81,14 @@ def generate_name(name: str):
 
 
 """
-Read me .
+Read me . How to implement the function
 import the file to Your test class 
 In configurion file add dir_root variable and give him path to the folder in your Environment 
 
 For the  util to work at your Script test add the 2 lines in the start of the script after the imports out from the class  
 
 file_name = generate_name(__name__)
-stat_file = open(f"{config_obj['wmts'].root_dir}/{file_name}", 'w')
+stat_file = open(f"{Config.root_dir.root_dir}/{file_name}", 'w')
 
 in the End of the Test class (Inside ) enter the next function
 
