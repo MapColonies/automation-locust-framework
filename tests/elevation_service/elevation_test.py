@@ -8,7 +8,7 @@ from locust import (
     constant,
     constant_pacing,
     events,
-    task, HttpUser,
+    task, HttpUser, constant_throughput,
 )
 
 from common.config.config import WmtsConfig, config_obj, ElevationConfig
@@ -33,25 +33,25 @@ positions_list_path = ElevationConfig.positions_path
 print(positions_list_path)
 
 
-# def set_wait_time(timer_selection, wait_time):
-#     if timer_selection == 1:
-#         return constant(wait_time), CONSTANT_TIMER_STR
-#     elif timer_selection == 2:
-#         return constant_throughput(wait_time), CONSTANT_THROUGHPUT_TIMER_STR
-#     elif timer_selection == 3:
-#         return (
-#             between(config_obj["wmts"].MIN_WAIT, config_obj["wmts"].MAX_WAIT),
-#             BETWEEN_TIMER_STR,
-#         )
-#     elif timer_selection == 4:
-#         return constant_pacing(wait_time), CONSTANT_PACING_TIMER_STR
-#     else:
-#         return None, INVALID_TIMER_STR
+def set_wait_time(timer_selection, wait_time):
+    if timer_selection == 1:
+        return constant(wait_time), CONSTANT_TIMER_STR
+    elif timer_selection == 2:
+        return constant_throughput(wait_time), CONSTANT_THROUGHPUT_TIMER_STR
+    elif timer_selection == 3:
+        return (
+            between(config_obj["wmts"].MIN_WAIT, config_obj["wmts"].MAX_WAIT),
+            BETWEEN_TIMER_STR,
+        )
+    elif timer_selection == 4:
+        return constant_pacing(wait_time), CONSTANT_PACING_TIMER_STR
+    else:
+        return None, INVALID_TIMER_STR
 
 
 class User(HttpUser):
     # timer_selection = config_obj["wmts"].WAIT_TIME_FUNC[0]
-    wait_time = 1
+    wait_time = between(1, 5)
 
     # wait_time, timer_message = set_wait_time(timer_selection, wait_time)
     # print(timer_message)
@@ -70,12 +70,24 @@ class User(HttpUser):
 
     @task(1)
     def index(self):
-        self.client.post(
-            "/",
-            data=self.request_body,
-            verify=False,
-            headers=ElevationConfig.headers
-        )
+        if ElevationConfig.request_type == "json":
+            print("json")
+            self.client.post(
+                "/",
+                json=self.request_body,
+                headers=ElevationConfig.headers
+            )
+        elif ElevationConfig.request_type == "protobuf":
+            print("protobuf")
+            print(self.request_body)
+            self.client.post(
+                "/",
+                data=self.request_body,
+                headers=ElevationConfig.headers
+            )
+        else:
+            return "request type parameter is missing"
+
 
     def on_stop(self):
         pass
