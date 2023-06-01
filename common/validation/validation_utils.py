@@ -1,5 +1,6 @@
+import os
 import re
-from typing import Any, List, Union
+from typing import Any, List, Union, Optional
 
 
 class ValidationError(Exception):
@@ -31,7 +32,7 @@ def validate_response_status(response: Any, expected_status_code: int) -> None:
 
 
 def validate_json_key_value(
-    json_data: dict, key: str, expected_value: Union[str, int, float, bool]
+        json_data: dict, key: str, expected_value: Union[str, int, float, bool]
 ) -> None:
     if key not in json_data:
         raise KeyNotFoundError(f"Key '{key}' not found in JSON data")
@@ -84,3 +85,17 @@ def validate_json_key_regex(json_data: dict, key: str, regex_pattern: str) -> No
 def validate_json_key_not_present(json_data: dict, key: str) -> None:
     if key in json_data:
         raise KeyNotFoundError(f"Key '{key}' should not be present in JSON data")
+
+
+def extract_file_type(file_path: str) -> Optional[str]:
+    """
+    This function will extract from file path the file extension
+    :param file_path: file location
+    :return:
+    file type value as str
+    """
+    if file_path and os.path.isfile(file_path):
+        _, file_extension = os.path.splitext(file_path)
+        return file_extension[1:] if file_extension else None
+    else:
+        return None
