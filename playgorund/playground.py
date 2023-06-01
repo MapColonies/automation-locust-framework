@@ -1,5 +1,7 @@
 import xml.etree.ElementTree as ET
 
+import requests
+
 # Load the XML data
 xml_data = '''
 <Capabilities xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/wmts/1.0 http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd" version="1.0.0">
@@ -3965,3 +3967,5 @@ json_format.Parse(json_data, message)
 print(message.field1)
 print(message.field2)
 print(message.field3)
+
+
