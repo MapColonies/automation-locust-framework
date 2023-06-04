@@ -87,7 +87,7 @@ def validate_json_key_not_present(json_data: dict, key: str) -> None:
         raise KeyNotFoundError(f"Key '{key}' should not be present in JSON data")
 
 
-def extract_file_type(file_path: str) -> Optional[str]:
+def extract_file_type(file_path: str):
     """
     This function will extract from file path the file extension
     :param file_path: file location
@@ -98,4 +98,6 @@ def extract_file_type(file_path: str) -> Optional[str]:
         _, file_extension = os.path.splitext(file_path)
         return file_extension[1:] if file_extension else None
     else:
-        return None
+        return FileNotFoundError
+
+
