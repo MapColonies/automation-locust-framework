@@ -82,11 +82,10 @@ class ProActiveConfig(Config):
 
 class ElevationConfig(Config):
     elevation_host = os.environ.get("elevation_host_value", None)
-    positions_path = os.environ.get("positions_path_value", "/home/shayavr/Desktop/git/automation-locust-framework/test_data/myJson.json")
-    headers = os.environ.get("headers_value", {'Content-Type': 'application/json'})
-    request_type = os.environ.get("request_type", "json")
-
-
+    positions_path = os.environ.get("positions_path_value",
+                                    "/home/shayavr/Desktop/git/automation-locust-framework/test_data/result.bin")
+    # headers = os.environ.get("headers_value", {'Content-Type': 'application/json'})
+    headers = os.environ.get("headers_value", {'Content-Type': 'application/octet-stream', "Cache-Control": "no-cache"})
 
 
 class Config3D(Config):
