@@ -96,7 +96,7 @@ in the End of the Test class (Inside ) enter the next function
         calculate_times(file_name, __name__)
         
         
-out of the class in the bottom add 2 listeners    
+#out of the class in the bottom add 2 listeners    
 
 @events.request.add_listener
 def hook_request_success(request_type, name, response_time, response_length, **kwargs):
