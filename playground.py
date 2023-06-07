@@ -3,8 +3,7 @@ import os
 
 
 class Database:
-    CONF_FILE = os.environ.get("CONF_FILE", "/home/shayavr/Downloads/new_locust_configuration.json")
-    # CONF_FILE = os.environ.get("CONF_FILE", None)
+    CONF_FILE = os.environ.get("CONF_FILE", None)
     if not CONF_FILE:
         raise EnvironmentError("Should provide path for CONF_FILE")
     try:
@@ -12,8 +11,8 @@ class Database:
             conf = json.load(fp)
     except Exception as e:
         raise EnvironmentError("Failed to load JSON for configuration") from e
-    # print("-------------------------", conf)
-    PG_CREDENTIAL = conf.get("pg_credential")
+    print("-------------------------", conf)
+    PG_CREDENTIAL =conf.get("pg_credential")
     PG_SCHEMAS = conf.get("pg_schemas")
     PG_TABLES = conf.get("pg_tables")
     PG_USER = PG_CREDENTIAL["pg_user"]
@@ -35,26 +34,24 @@ class Database:
 
 
 class Config:
-    TOKEN = os.environ.get("SECRET_VALUE_API", None)
+    TOKEN = os.environ.get("SECRET_VALUE_API")
     HOST = os.environ.get("HOST", "enter a host")
     WAIT_TIME_FUNC = int(os.environ.get("wait_function", 4))
     WAIT_TIME = int(os.environ.get("wait_time", 4))
     MAX_WAIT = int(os.environ.get("max_wait", 1))
     MIN_WAIT = int(os.environ.get("min_wait", 1))
-    LAYERS_LIST = os.environ.get("layer_list", "shay44").split(",")
-    WMTS_CAPABILITIES_URL = os.environ.get("wmts_capabilities_url",
-                                           "")
+    LAYERS_LIST = os.environ.get("layer_list", "test-update,shay").split(",")
 
 
 class WmtsConfig(Config):
     LAYER_TYPE = os.environ.get("layer_type", "wmts")
-    LAYER_NAME = os.environ.get("layer", "Orthophoto")
+    LAYER_NAME = os.environ.get("layer", "bluemarble-Orthophoto")
     GRID_NAME = os.environ.get("gridName", "newGrids")
-    TOKEN = os.environ.get("SECRET_VALUE_API", None)
-    # IMAGE_FORMAT = os.environ.get("imageType", ".png")
-    IMAGE_FORMAT = os.environ.get("imageType", ".jpeg")
+    IMAGE_FORMAT = os.environ.get("imageType", ".png")
     WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "test_data/wmts_shaziri.csv")
-    REQUESTS_RECORDS_CSV = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/stats.csv")
+    REQUESTS_RECORDS_CSV = os.environ.get(
+        "requests_records_csv", f"{os.getcwd()}/tests/stats.csv"
+    )
 
 
 class PycswConfig(Config):
@@ -71,23 +68,8 @@ class PycswConfig(Config):
 
 
 class ProActiveConfig(Config):
-    pyscw_host = os.environ.get("pyscw_host_value", None)
-    wmts_host = os.environ.get("wmts_host_value", None)
-    layers_amount = os.environ.get("layers_amount", None)
-    column_names = ["product_id", "max_resolution_deg", "product_bbox"]
-    db_for_query = "records"
     SHOH = (True,)
     LIRAN = False
-
-
-class ElevationConfig(Config):
-    elevation_host = os.environ.get("elevation_host_value", None)
-    positions_path = os.environ.get("positions_path_value",
-                                    "/home/shayavr/Desktop/git/automation-locust-framework/test_data/myJson.json")
-    # headers = os.environ.get("headers_value", {'Content-Type': 'application/json', "Cache-Control": "no-cache"})
-    headers = os.environ.get("headers_value", {'Content-Type': 'application/json'})
-    # headers = os.environ.get("headers_value", {'Content-Type': 'application/octet-stream', "Cache-Control": "no-cache"})
-    results_path = os.environ.get("result_path", f"{os.getcwd()}")
 
 
 class Config3D(Config):
@@ -103,3 +85,9 @@ config_obj = {
     "_3d": Config3D,
     "default": Config,
 }
+
+# token: "SECRET_VALUE_API",
+# valueFrom:
+# secretKeyRef:
+# name: "automation-secret"
+# key: "x-api-key"

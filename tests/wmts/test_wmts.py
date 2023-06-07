@@ -83,7 +83,6 @@ class User(FastHttpUser):
         rsp_list = extract_response_time_from_record(
             csv_path=config_obj["wmts"].REQUESTS_RECORDS_CSV
         )
-
         percentile_rages_dict = {}
         rsp_time_ranges = [(0, 100), (101, 500), (501, None)]
         for idx, rsp_t_range in enumerate(rsp_time_ranges):
@@ -99,7 +98,7 @@ class User(FastHttpUser):
 
 
 @events.request.add_listener
-def hook_request_success(
+def hook_request_(
     request_type, name, response_time, response_length, response, **kw
 ):
     stat_file.write(

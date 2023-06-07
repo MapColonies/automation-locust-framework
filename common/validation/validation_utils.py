@@ -1,5 +1,9 @@
+import datetime
+import json
+import os
 import re
-from typing import Any, List, Union
+import time
+from typing import Any, List, Union, Optional
 
 
 class ValidationError(Exception):
@@ -31,7 +35,7 @@ def validate_response_status(response: Any, expected_status_code: int) -> None:
 
 
 def validate_json_key_value(
-    json_data: dict, key: str, expected_value: Union[str, int, float, bool]
+        json_data: dict, key: str, expected_value: Union[str, int, float, bool]
 ) -> None:
     if key not in json_data:
         raise KeyNotFoundError(f"Key '{key}' not found in JSON data")
@@ -84,3 +88,41 @@ def validate_json_key_regex(json_data: dict, key: str, regex_pattern: str) -> No
 def validate_json_key_not_present(json_data: dict, key: str) -> None:
     if key in json_data:
         raise KeyNotFoundError(f"Key '{key}' should not be present in JSON data")
+
+
+def extract_file_type(file_path: str):
+    """
+    This function will extract from file path the file extension
+    :param file_path: file location
+    :return:
+    file type value as str
+    """
+    if file_path and os.path.isfile(file_path):
+        _, file_extension = os.path.splitext(file_path)
+        return file_extension[1:] if file_extension else None
+    else:
+        return FileNotFoundError
+
+
+def write_rps_percent_results(custome_path: str, percente_value_by_range: dict):
+    """
+    this function writes the percent result of the request per second ranges to JSON that located in the given path
+    :param custome_path: a path that provided by user
+    :return:
+    """
+    json_obj = json.dumps(percente_value_by_range)
+    file_name = generate_unique_filename(file_base_name="percent_results")
+    with open(f"{custome_path}/{file_name}", "w") as f:
+        f.write(json_obj)
+
+
+def generate_unique_filename(file_base_name: str):
+    """
+    this function generate unique name for runs results
+    :return:
+    """
+    now = datetime.datetime.now()
+    formatted_date = now.strftime("%Y-%m-%d")
+    formatted_time = now.strftime("%H-%M-%S")
+    filename = f"{file_base_name}_{formatted_date}_{formatted_time}.json"
+    return filename

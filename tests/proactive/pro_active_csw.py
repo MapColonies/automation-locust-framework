@@ -3,7 +3,6 @@ from locust import (
     between,
     constant,
     constant_pacing,
-    constant_throughput,
     task,
 )
 
