@@ -4,7 +4,7 @@ kind: Route
 metadata:
   name: {{ template "locust.fullname" . }}-route
   annotations:
-    haproxy.router.openshift.io/rewrite-target:
+    haproxy.router.openshift.io/rewrite-target: /
     {{- if .Values.route.timeout.enabled }}
     haproxy.router.openshift.io/timeout: {{ .Values.route.timeout.duration }}
     {{- end }}
@@ -19,4 +19,4 @@ spec:
   tls:
     termination: edge
   {{- end }}
-  {{- end -}}
+  {{- end }}
