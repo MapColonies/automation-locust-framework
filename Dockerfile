@@ -1,4 +1,4 @@
-FROM locustio/locust:2.12.1
+FROM locustio/locust:2.15.1
 
 RUN pip3 install --no-cache-dir locust_plugins==2.6.12
 
