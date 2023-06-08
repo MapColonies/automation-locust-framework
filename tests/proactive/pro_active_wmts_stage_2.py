@@ -1,11 +1,3 @@
-import os
-import sys
-from pathlib import Path
-myDir = os.getcwd()
-sys.path.insert(0, '../..')
-print(myDir)
-# sys.path.append(myDir)
-
 from locust import (
     HttpUser,
     between,
@@ -24,11 +16,7 @@ from common.utils.constants.strings import (
     CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
 )
-myDir = os.getcwd()
-sys.path.append(myDir)
-path = Path(myDir)
-a = str(path.parent.absolute())
-sys.path.append(a)
+
 
 def set_wait_time(timer_selection, wait_time):
     if timer_selection == 1:
@@ -46,19 +34,11 @@ def set_wait_time(timer_selection, wait_time):
         return None, INVALID_TIMER_STR
 
 
-# myDir = os.getcwd()
-# sys.path.append(myDir)
-# path = Path(myDir)
-# a = str(path.parent.absolute())
-# sys.path.append(a)
-
-
 class SizingUser(HttpUser):
     timer_selection = config_obj["default"].WAIT_TIME_FUNC
     wait_time = config_obj["default"].WAIT_TIME
 
     wait_time, timer_message = set_wait_time(timer_selection, wait_time)
-
 
     def on_start(self):
         self.layers_tiles_urls = create_layers_urls()
@@ -68,6 +48,8 @@ class SizingUser(HttpUser):
     def index(self):
         for layer_urls in self.layers_tiles_urls:
             for tile_url in layer_urls:
-                self.client.get(f"{tile_url}", headers={"Cache-Control": "no-cache"}, verify=False)
+                self.client.get(
+                    f"{tile_url}", headers={"Cache-Control": "no-cache"}, verify=False
+                )
 
     host = config_obj["default"].HOST

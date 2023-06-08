@@ -5,14 +5,14 @@ import os
 class Database:
     CONF_FILE = os.environ.get("CONF_FILE", None)
     if not CONF_FILE:
-        raise EnvironmentError("Should provide path for CONF_FILE")
+        raise OSError("Should provide path for CONF_FILE")
     try:
-        with open(CONF_FILE, "r", encoding="utf-8") as fp:
+        with open(CONF_FILE, encoding="utf-8") as fp:
             conf = json.load(fp)
     except Exception as e:
-        raise EnvironmentError("Failed to load JSON for configuration") from e
+        raise OSError("Failed to load JSON for configuration") from e
     print("-------------------------", conf)
-    PG_CREDENTIAL =conf.get("pg_credential")
+    PG_CREDENTIAL = conf.get("pg_credential")
     PG_SCHEMAS = conf.get("pg_schemas")
     PG_TABLES = conf.get("pg_tables")
     PG_USER = PG_CREDENTIAL["pg_user"]
