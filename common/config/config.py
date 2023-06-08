@@ -3,15 +3,17 @@ import os
 
 
 class Database:
-    CONF_FILE = os.environ.get("CONF_FILE", "/home/shayavr/Downloads/new_locust_configuration.json")
+    CONF_FILE = os.environ.get(
+        "CONF_FILE", "/home/shayavr/Downloads/new_locust_configuration.json"
+    )
     # CONF_FILE = os.environ.get("CONF_FILE", None)
     if not CONF_FILE:
-        raise EnvironmentError("Should provide path for CONF_FILE")
+        raise OSError("Should provide path for CONF_FILE")
     try:
-        with open(CONF_FILE, "r", encoding="utf-8") as fp:
+        with open(CONF_FILE, encoding="utf-8") as fp:
             conf = json.load(fp)
     except Exception as e:
-        raise EnvironmentError("Failed to load JSON for configuration") from e
+        raise OSError("Failed to load JSON for configuration") from e
     # print("-------------------------", conf)
     PG_CREDENTIAL = conf.get("pg_credential")
     PG_SCHEMAS = conf.get("pg_schemas")
@@ -42,8 +44,8 @@ class Config:
     MAX_WAIT = int(os.environ.get("max_wait", 1))
     MIN_WAIT = int(os.environ.get("min_wait", 1))
     LAYERS_LIST = os.environ.get("layer_list", "shay44").split(",")
-    WMTS_CAPABILITIES_URL = os.environ.get("wmts_capabilities_url",
-                                           "")
+    WMTS_CAPABILITIES_URL = os.environ.get("wmts_capabilities_url", "")
+    RESULTS_PATH = os.environ.get("result_path", f"{os.getcwd()}")
 
 
 class WmtsConfig(Config):
@@ -54,7 +56,9 @@ class WmtsConfig(Config):
     # IMAGE_FORMAT = os.environ.get("imageType", ".png")
     IMAGE_FORMAT = os.environ.get("imageType", ".jpeg")
     WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "test_data/wmts_shaziri.csv")
-    REQUESTS_RECORDS_CSV = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/stats.csv")
+    REQUESTS_RECORDS_CSV = os.environ.get(
+        "requests_records_csv", f"{os.getcwd()}/tests/stats.csv"
+    )
 
 
 class PycswConfig(Config):
@@ -76,23 +80,24 @@ class ProActiveConfig(Config):
     layers_amount = os.environ.get("layers_amount", None)
     column_names = ["product_id", "max_resolution_deg", "product_bbox"]
     db_for_query = "records"
-    SHOH = (True,)
-    LIRAN = False
 
 
 class ElevationConfig(Config):
     elevation_host = os.environ.get("elevation_host_value", None)
-    positions_path = os.environ.get("positions_path_value",
-                                    "/home/shayavr/Desktop/git/automation-locust-framework/test_data/myJson.json")
+    positions_path = os.environ.get(
+        "positions_path_value",
+        "/home/shayavr/Desktop/git/automation-locust-framework/test_data/myJson.json",
+    )
     # headers = os.environ.get("headers_value", {'Content-Type': 'application/json', "Cache-Control": "no-cache"})
-    headers = os.environ.get("headers_value", {'Content-Type': 'application/json'})
+    headers = os.environ.get("headers_value", {"Content-Type": "application/json"})
     # headers = os.environ.get("headers_value", {'Content-Type': 'application/octet-stream', "Cache-Control": "no-cache"})
     results_path = os.environ.get("result_path", f"{os.getcwd()}")
 
 
 class Config3D(Config):
     CSV_DATA_PATH = os.environ.get(
-        "CSV_3D_DATA_PATH", "/home/shayavr/Desktop/git/automation-locust/urls_data.csv"
+        "CSV_3D_DATA_PATH",
+        "/home/shayavr/Desktop/git/automation-locust-framework/test_data/lol.csv",
     )
 
 
