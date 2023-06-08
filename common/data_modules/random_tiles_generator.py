@@ -1,15 +1,19 @@
+import xml.etree.ElementTree as ET
 from typing import List
+
 from mc_automation_tools import postgres
 
 from common.config.config import ProActiveConfig, config_obj
-from common.data_modules.get_all_layer import create_mapproxy_layer_objects, create_zyx_tiles_structure, \
-    create_layer_tiles_urls
-
-import xml.etree.ElementTree as ET
+from common.data_modules.get_all_layer import (
+    create_mapproxy_layer_objects,
+    create_zyx_tiles_structure,
+)
 from config_backup import Database
 
 
-def create_random_layer_tiles_urls(layer_name, tiles_list: List[tuple], image_format: str):
+def create_random_layer_tiles_urls(
+    layer_name, tiles_list: List[tuple], image_format: str
+):
     """
     This method return urls according to the z/y/x conventions from the list
     :param tiles_list: list of tile z/y/x
@@ -49,35 +53,28 @@ def query_random_layers_data() -> list:
     res = client.get_records_by_limitation(
         column_names=ProActiveConfig.column_names,
         table_name="records",
-        limitation_value=ProActiveConfig.layers_amount
+        limitation_value=ProActiveConfig.layers_amount,
     )
     return res
 
 
-
-
-def extract_values_from_nested_xml(xml_content:str, parent_name:str ):
-    #todo: edit the return object
+def extract_values_from_nested_xml(xml_content: str, parent_name: str):
+    # todo: edit the return object
     tree = ET.fromstring(xml_content)
     # Extract values from nested XML by parent name
-    for parent_elem in tree.findall('parent'):
-        if parent_elem.get('name') == parent_name:
-            child_value = parent_elem.find('child').text
+    for parent_elem in tree.findall("parent"):
+        if parent_elem.get("name") == parent_name:
+            child_value = parent_elem.find("child").text
             return child_value
 
 
-def get_image_format_from_capabilities(layers_data:list)-> dict:
+def get_image_format_from_capabilities(layers_data: list) -> dict:
     """
     This function returns the format of the image for each layer from  the selected layers
     :param layers_data: layer data from db query list ("product_id", max_resolution_deg", "product_bbox")
     :return:
     """
     pass
-
-
-
-
-
 
 
 def create_random_layers_urls() -> list:
@@ -97,7 +94,9 @@ def create_random_layers_urls() -> list:
             y_range=layers_range["y_ranges"],
             x_range=layers_range["x_ranges"],
         )
-        #todo: add function that return for each layer the image format!!
-        layer_url = create_random_layer_tiles_urls(layers_range["layer_id"], z_y_x_structure, image_format=".png")
+        # todo: add function that return for each layer the image format!!
+        layer_url = create_random_layer_tiles_urls(
+            layers_range["layer_id"], z_y_x_structure, image_format=".png"
+        )
         layers_urls.append(layer_url)
     return layers_urls
