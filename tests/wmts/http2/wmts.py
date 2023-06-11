@@ -1,13 +1,14 @@
 from config.config import WmtsConfig, config_obj
 from locust import  between, task, events, tag, FastHttpUser
 from locust_plugins.csvreader import CSVReader
+from utils.ClinetX import HttpxUser
 
 wmts_csv_path = WmtsConfig.WMTS_CSV_PATH
 
 ssn_reader = CSVReader(wmts_csv_path)
 
 
-class User(FastHttpUser):
+class User(HttpxUser):
     between(1, 1)
 
     @task(1)  # #WMTS - “HTTP_REQUEST_TYPE /SUB_DOMAIN/PROTOCOL/LAYER/TILE_MATRIX_SET/Z/X/Y.IMAGE_FORMAT HTTP_VERSION“
