@@ -1,5 +1,5 @@
 from config.config import WmtsConfig, config_obj
-from locust import  between, task, events, tag, FastHttpUser
+from locust import  between, task, tag
 from locust_plugins.csvreader import CSVReader
 from utils.ClinetX import HttpxUser
 

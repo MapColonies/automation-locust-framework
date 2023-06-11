@@ -1,3 +1,4 @@
+
 import re
 import time
 
@@ -68,7 +69,7 @@ class HttpSession(httpx.Client):
 
         # record the consumed time
         request_meta["response_time"] = (
-                                                time.monotonic() - request_meta["start_time"]) * 1000
+            time.monotonic() - request_meta["start_time"]) * 1000
 
         request_meta["name"] = str(name or response.request.url)
 
@@ -211,6 +212,7 @@ class ResponseContextManager(LocustResponse):
 
 
 class HttpxUser(User):
+
     abstract = True
     http2 = True
 
