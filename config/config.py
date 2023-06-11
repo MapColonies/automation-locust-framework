@@ -41,8 +41,13 @@ class WmtsConfig(Config):
     IMAGE_FORMAT = os.environ.get("imageType", ".png")
     WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "csv_data/data/new.csv")
     REQUESTS_RECORDS_CS = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/wmts_records.csv")
-    WMTS_CSV_PATH_UPSCALE = os.environ.get("requests_records_upscale_csv", f"{os.getcwd()}/tests/upscale.csv")
+    WMTS_CSV_PATH_UPSCALE = os.environ.get("requests_records_wmts_upscale_csv", f"{os.getcwd()}/tests/upscale.csv")
     UP_SCALE_FLAG = os.environ.get("up_sacle_flag", False)
+    ONE_BY_ONE_RECORDS = os.environ.get("onebyone_records", "csv_data/data/onebyone.csv")
+    LAYER_TYPE_UPSCALE = os.environ.get("layer_type_wmts_upscale", "wmts")
+    LAYER_NAME_UPSCALE = os.environ.get("layer_wmts_upscale", "Orthophoto")  # History
+    GRID_NAME_UPSCALE = os.environ.get("gridName_wmts_upscale", "osm")
+    IMAGE_FORMAT_UPSCALE = os.environ.get("imageType_wmts_upscale", ".png")
 
 
 class PycswConfig(Config):
@@ -52,6 +57,7 @@ class PycswConfig(Config):
     PYCSW_ID_VALUE = os.environ.get("mc_id_value", "d53a03e3-650b-4f4e-9047-071667741c08")
     PYCSW_REGION_VALUE = os.environ.get("mc_region_value", "string")
     PYCSW_POLYGON_VALUE = os.environ.get("mc_polygon_value", "s")
+    PYCSW_RETURN_NUMBER_PROPERTY = os.environ.get("pyscw_number_to_return", 10)
 
 
 class ProActiveConfig(Config):
@@ -66,25 +72,23 @@ class Config3D(Config):
 
 
 class WmsConfig(Config):
-    TOKEN = os.environ.get("TOKEN", True)
+    IS_TOKEN = os.environ.get("TOKEN_WMS", True)
     TOK = os.environ.get("TOK",
                          'eyJhbGciOiJSUzI1NiIsImtpZCI6Ik1hcENvbG9uaWVzUUEifQ.eyJkIjpbInJhc3RlciIsInJhc3RlcldtcyIsInJhc3RlckV4cG9ydCIsImRlbSIsInZlY3RvciIsIjNkIl0sImlhdCI6MTY2Mzg2MzM0Mywic3ViIjoiTWFwQ29sb25pZXNRQSIsImlzcyI6Im1hcGNvbG9uaWVzLXRva2VuLWNsaSJ9.U_sx0Rsy96MA3xpIcWQHJ76xvK0PlHa--J1YILBYm2fCwtDdM4HLGagwq-OQQnBqi2e8KwktQ7sgt27hOJIPBHuONQS0ezBbuByk6UqN2S7P8WERdt8_lejuR1c94owQq7FOkhEaj_PKJ64ehXuMMHskfNeAIBf8GBN6QUGEenVx2w5k2rYBULoU30rpFkQVo8TtmiK2yGx0Ssx2k6LqSgCZfyZJbFzZ2MH3BPeCVleP1-zypaF9DS7SxS-EutL-gZ1e9bEccNktxQA4VMcjeTv45KYJLTIrccs_8gtPlzfaeNQFTIUKD-cRD1gyd_uLatPsl0wwHyFZIgRuJtcvfw')
     WIDTH = os.environ.get("WIDTH", 1800)
     HEIGHT = os.environ.get("HEIGHT", 900)
     LAYER_TYPE = os.environ.get("layer_type_wms", "dev-test-transparent-Orthophoto")
     GRID_NAME = os.environ.get("gridName", "default")
-    IMAGE_FORMAT = os.environ.get("imageType", ".png")
     REQUESTS_RECORDS_CSV = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/stats.csv")
     HOST = os.environ.get("Host", 'https://mapproxy-raster-qa-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/')
     BBOX = os.environ.get("BBOX", [35.06068, 31.93225, 35.06270, 31.93316])
-    WEB_MERCATOR_FLAG = os.environ.get("webMeractorFlag", False)
-    WEB_MERCATOR = os.environ.get("webMeractor", None)
     REQUESTS_RECORDS_CS = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/stats.csv")
-    SRS = os.environ.get("srs", "ESPG%3A4326")
+    SRS = os.environ.get("srs", "ESPG:4326")
     WMS_VERSION = os.environ.get("wms_version", "1.1.1")
+    WMS_FORMAT = os.environ.get("WMS_FORMAT", ".png")
     WMS_TRANSPARENT = os.environ.get("TRANSPARENT", True)
     STYLE = os.environ.get('STYLE', '')
-    WMS_ZOOM_FLAG = os.environ.get("zoom_upscale_wms", False)
+    IS_UPSCALE = os.environ.get("zoom_upscale_wms", False)
     # check git Capbility
 
 
