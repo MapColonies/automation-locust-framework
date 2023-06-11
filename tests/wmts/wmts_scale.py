@@ -1,7 +1,6 @@
-import os
-import sys
+
 from config.config import WmtsConfig, config_obj
-from locust import HttpUser, between, constant, constant_pacing, constant_throughput, task, events, tag, FastHttpUser
+from locust import  between, task, tag, FastHttpUser
 from locust_plugins.csvreader import CSVReader
 
 wmts_csv_path_up_scale = WmtsConfig.WMTS_CSV_PATH_UPSCALE
