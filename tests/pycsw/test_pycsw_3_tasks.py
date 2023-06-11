@@ -1,19 +1,6 @@
-from common.strings import (
-    BETWEEN_TIMER_STR,
-    CONSTANT_PACING_TIMER_STR,
-    CONSTANT_THROUGHPUT_TIMER_STR,
-    CONSTANT_TIMER_STR,
-    INVALID_TIMER_STR,
-)
-from config.config import config_obj
-from locust import (
-    HttpUser,
-    between,
-    constant,
-    constant_pacing,
-    constant_throughput,
-    task,
-)
+from config.config import config_obj, Config
+from locust import between, task, FastHttpUser, events, tag
+
 from utils.percentile_calculation import generate_name, calculate_times
 from test_data.queries import QUERY_TEMPLATE
 
@@ -22,12 +9,13 @@ by_id = {'name': config_obj["pycsw"].PYCSW_ID_PROPERTY, 'value': config_obj["pyc
 by_region = {'name': config_obj["pycsw"].PYCSW_REGION_PROPERTY, 'value': config_obj["pycsw"].PYCSW_REGION_VALUE}
 
 file_name = generate_name(__name__)
-stat_file = open(f"{config_obj['wmts'].root_dir}/{file_name}", 'w')
+stat_file = open(f"{Config.root_dir}/{file_name}", 'w')
 
 
-class SizingUser(HttpUser):
+class SizingUser(FastHttpUser):
     between(1, 1)
 
+    @tag("GetRecordsByPolygon")
     @task(1)
     def get_records_by_polygon(self):
         if config_obj["pycsw"].TOKEN_FLAG:
@@ -43,6 +31,7 @@ class SizingUser(HttpUser):
                 verify=False,
             )
 
+    @tag("GetRecordsByID")
     @task(1)
     def get_records_by_id(self):
         if config_obj["pycsw"].TOKEN_FLAG:
@@ -58,6 +47,7 @@ class SizingUser(HttpUser):
                 verify=False,
             )
 
+    @tag("GetRecordsByRegion")
     @task(1)
     def get_records_by_region(self):
         if config_obj["pycsw"].TOKEN_FLAG:

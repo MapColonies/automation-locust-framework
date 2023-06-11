@@ -48,12 +48,8 @@ class WmtsConfig(Config):
 class PycswConfig(Config):
     PYCSW_ID_PROPERTY = os.environ.get("mc_id_property", "mc:id")
     PYCSW_REGION_PROPERTY = os.environ.get("mc_region_property", "mc:region")
-    PYCSW_POLYGON_PROPERTY = os.environ.get(
-        "mc_polygon_property", "mc:layerPolygonParts"
-    )
-    PYCSW_ID_VALUE = os.environ.get(
-        "mc_id_value", "d53a03e3-650b-4f4e-9047-071667741c08"
-    )
+    PYCSW_POLYGON_PROPERTY = os.environ.get("mc_polygon_property", "mc:layerPolygonParts")
+    PYCSW_ID_VALUE = os.environ.get("mc_id_value", "d53a03e3-650b-4f4e-9047-071667741c08")
     PYCSW_REGION_VALUE = os.environ.get("mc_region_value", "string")
     PYCSW_POLYGON_VALUE = os.environ.get("mc_polygon_value", "s")
 
