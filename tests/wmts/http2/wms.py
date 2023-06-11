@@ -1,5 +1,7 @@
 from locust import task, FastHttpUser, tag, between
 from config.config import config_obj
+from utils.ClinetX import HttpxUser
+
 
 bbox = config_obj['wms'].BBOX
 delta_x = bbox[3] - bbox[1]
@@ -10,7 +12,6 @@ wmstileT = lambda l: f"api/raster/v1/service?LAYERS={config_obj['wms'].LAYER_TYP
            f"&BBOX={'{:.6f}'.format(l[0])},{'{:.6f}'.format(l[1])},{'{:.6f}'.format(l[2])},{'{:.6f}'.format(l[3])}&WIDTH={config_obj['wms'].WIDTH}" \
            f"&HEIGHT={config_obj['wms'].HEIGHT}&token={config_obj['wms'].TOK}"
 
-
 wmstileNoToken = lambda \
     l: f"api/raster/v1/service?LAYERS={config_obj['wms'].LAYER_TYPE}&FORMAT={config_obj['wms'].WMS_FORMAT}&SRS={config_obj['wms'].SRS}" \
        f"&TRANSPARENT=TRUE&service=wms&VERSION={config_obj['wms'].WMS_VERSION}&REQUEST=GetMap&STYLES=" \
@@ -18,7 +19,7 @@ wmstileNoToken = lambda \
        f"&HEIGHT={config_obj['wms'].HEIGHT}"
 
 
-class User(FastHttpUser):
+class User(HttpxUser):
     host = config_obj['wms'].HOST
     between(1, 1)
 
