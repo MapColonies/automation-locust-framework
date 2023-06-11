@@ -1,15 +1,13 @@
 from config.config import config_obj, Config
-from locust import between, task, FastHttpUser, events, tag
+from locust import between, task, FastHttpUser, tag
 
-from utils.percentile_calculation import generate_name, calculate_times
 from test_data.queries import QUERY_TEMPLATE
 
 polygon = {'name': config_obj["pycsw"].PYCSW_POLYGON_PROPERTY, 'value': config_obj["pycsw"].PYCSW_POLYGON_VALUE}
 by_id = {'name': config_obj["pycsw"].PYCSW_ID_PROPERTY, 'value': config_obj["pycsw"].PYCSW_ID_VALUE}
 by_region = {'name': config_obj["pycsw"].PYCSW_REGION_PROPERTY, 'value': config_obj["pycsw"].PYCSW_REGION_VALUE}
 
-file_name = generate_name(__name__)
-stat_file = open(f"{Config.root_dir}/{file_name}", 'w')
+
 
 
 class SizingUser(FastHttpUser):
@@ -62,17 +60,3 @@ class SizingUser(FastHttpUser):
                 verify=False,
             )
 
-    def on_stop(self):
-        calculate_times(file_name, __name__)
-
-
-# out of the class in the bottom add 2 listeners
-
-@events.request.add_listener
-def hook_request_success(request_type, name, response_time, response_length, **kwargs):
-    stat_file.write(f"{request_type};{name} ; {response_time};{response_length}  \n")
-
-
-@events.quitting.add_listener
-def hook_quitting(environment, **kw):
-    stat_file.close()
