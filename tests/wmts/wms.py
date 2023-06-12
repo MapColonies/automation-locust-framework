@@ -5,17 +5,17 @@ bbox = config_obj['wms'].BBOX
 delta_x = bbox[3] - bbox[1]
 delta_y = bbox[2] - bbox[0]
 
-wmstileT = lambda l: f"api/raster/v1/service?LAYERS={config_obj['wms'].LAYER_TYPE}&FORMAT={config_obj['wms'].WMS_FORMAT}&SRS={config_obj['wms'].SRS}" \
-           f"&TRANSPARENT=TRUE&service=wms&VERSION={config_obj['wms'].WMS_VERSION}&REQUEST=GetMap&STYLES=" \
-           f"&BBOX={'{:.6f}'.format(l[0])},{'{:.6f}'.format(l[1])},{'{:.6f}'.format(l[2])},{'{:.6f}'.format(l[3])}&WIDTH={config_obj['wms'].WIDTH}" \
-           f"&HEIGHT={config_obj['wms'].HEIGHT}&token={config_obj['wms'].TOK}"
-
+wmstileT = lambda \
+    l: f"api/raster/v1/service?LAYERS={config_obj['wms'].LAYER_TYPE}&FORMAT={config_obj['wms'].WMS_FORMAT}&SRS={config_obj['wms'].SRS}" \
+       f"&service=wms&version={config_obj['wms'].WMS_VERSION}&REQUEST=GetMap&STYLES={config_obj['wms'].STYLE}" \
+       f"&BBOX={str.format('{:6f}', l[0])},{str.format('{:6f}', l[1])},{str.format('{:6f}', l[2])},{str.format('{:6f}', l[3])}&WIDTH={config_obj['wms'].WIDTH}" \
+       f"&HEIGHT={config_obj['wms'].HEIGHT}&token={config_obj['wms'].TOK}"
 
 wmstileNoToken = lambda \
-    l: f"api/raster/v1/service?LAYERS={config_obj['wms'].LAYER_TYPE}&FORMAT={config_obj['wms'].WMS_FORMAT}&SRS={config_obj['wms'].SRS}" \
-       f"&TRANSPARENT=TRUE&service=wms&VERSION={config_obj['wms'].WMS_VERSION}&REQUEST=GetMap&STYLES=" \
-       f"&BBOX={'{:.6f}'.format(l[0])},{'{:.6f}'.format(l[1])},{'{:.6f}'.format(l[2])},{'{:.6f}'.format(l[3])}&WIDTH={config_obj['wms'].WIDTH}" \
-       f"&HEIGHT={config_obj['wms'].HEIGHT}"
+        l: f"api/raster/v1/service?LAYERS={config_obj['wms'].LAYER_TYPE}&FORMAT={config_obj['wms'].WMS_FORMAT}&SRS={config_obj['wms'].SRS}" \
+           f"&service=wms&version={config_obj['wms'].WMS_VERSION}&REQUEST=GetMap&STYLES={config_obj['wms'].STYLE}" \
+           f"&BBOX={str.format('{:6f}', l[0])},{str.format('{:6f}', l[1])},{str.format('{:6f}', l[2])},{str.format('{:6f}', l[3])}&WIDTH={config_obj['wms'].WIDTH}" \
+           f"&HEIGHT={config_obj['wms'].HEIGHT}"
 
 
 class User(FastHttpUser):
@@ -47,4 +47,3 @@ class User(FastHttpUser):
                 self.client.get(wmstileNoToken(zoom))
 
     # host = 'https://mapproxy-raster-qa-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/' __name__ #'
-
