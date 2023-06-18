@@ -1,3 +1,11 @@
+import os
+import sys
+from pathlib import Path
+myDir = os.getcwd()
+sys.path.insert(0, '../..')
+print(myDir)
+# sys.path.append(myDir)
+
 from locust import (
     HttpUser,
     between,
@@ -39,6 +47,7 @@ class SizingUser(HttpUser):
     wait_time = config_obj["default"].WAIT_TIME
 
     wait_time, timer_message = set_wait_time(timer_selection, wait_time)
+
 
     def on_start(self):
         self.layers_tiles_urls = create_layers_urls()
