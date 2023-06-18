@@ -1,8 +1,9 @@
 import random
 
 from locust import HttpUser, between, constant, constant_pacing, task
+from locust_plugins.csvreader import CSVReader
 
-from common.config.config import Config, ProActiveConfig, config_obj
+from common.config.config import Config, ProActiveConfig, config_obj, WmtsConfig
 from common.data_modules.random_tiles_generator import create_random_layers_urls
 from common.utils.constants.strings import (
     BETWEEN_TIMER_STR,
@@ -28,6 +29,10 @@ def set_wait_time(timer_selection, wait_time):
         return constant_pacing(wait_time), CONSTANT_PACING_TIMER_STR
     else:
         return None, INVALID_TIMER_STR
+
+
+wmts_csv_path = WmtsConfig.WMTS_CSV_PATH
+ssn_reader = CSVReader(wmts_csv_path)
 
 
 class PycswInquiries(HttpUser):
@@ -64,18 +69,29 @@ class PycswInquiries(HttpUser):
 class WmtsInquiries(HttpUser):
     wmts_host = ProActiveConfig.wmts_host
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(args, kwargs)
-        self.random_layers_tiles_urls = None
-
     @task
     def wmts_requests(self):
         # Task 2 logic goes here
-        for layer_urls in self.random_layers_tiles_urls:
-            for tile_url in layer_urls:
-                self.client.get(
-                    f"{tile_url}", headers={"Cache-Control": "no-cache"}, verify=False
-                )
+        points = next(ssn_reader)
+        if config_obj["wmts"].TOKEN is None:
+            self.client.get(
+                f"/{config_obj['wmts'].LAYER_TYPE}/"
+                f"{config_obj['wmts'].LAYER_NAME}/"
+                f"{config_obj['wmts'].GRID_NAME}/"
+                f"{points[0]}/{points[1]}/{points[2]}"
+                f"{config_obj['wmts'].IMAGE_FORMAT}",
+            )
+        else:
+            self.client.get(
+                f"/{config_obj['wmts'].LAYER_TYPE}/"
+                f"{config_obj['wmts'].LAYER_NAME}/"
+                f"{config_obj['wmts'].GRID_NAME}/"
+                f"{points[0]}/{points[1]}/{points[2]}"
+                f"{config_obj['wmts'].IMAGE_FORMAT}"
+                f"?token={config_obj['wmts'].TOKEN}",
+            )
+
+    host = config_obj["wmts"].HOST
 
 
 class MyLocust(HttpUser):
@@ -83,7 +99,7 @@ class MyLocust(HttpUser):
 
     # Common tasks for all user behaviors can be defined here
 
-    def on_start(self):
-        # Logic to execute when a user starts a task
-        self.random_layers_tiles_urls = create_random_layers_urls()
-        random.shuffle(self.random_layers_tiles_urls)
+    # def on_start(self):
+    #     # Logic to execute when a user starts a task
+    #     self.random_layers_tiles_urls = create_random_layers_urls()
+    #     random.shuffle(self.random_layers_tiles_urls)
