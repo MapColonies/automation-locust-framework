@@ -1,13 +1,10 @@
-import os
-import sys
-from pathlib import Path
-
 from locust import (
     HttpUser,
     between,
     constant,
     constant_pacing,
     constant_throughput,
+    events,
     task,
 )
 from locust_plugins.csvreader import CSVReader
@@ -20,6 +17,10 @@ from common.utils.constants.strings import (
     CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
 )
+from common.validation.validation_utils import write_rps_percent_results
+
+ssn_reader = CSVReader(config_obj["_3d"].CSV_DATA_PATH)
+results_path = config_obj["_3d"].RESULTS_PATH
 
 
 def set_wait_time(timer_selection, wait_time):
@@ -35,21 +36,6 @@ def set_wait_time(timer_selection, wait_time):
         return None, INVALID_TIMER_STR
 
 
-myDir = os.getcwd()
-sys.path.append(myDir)
-
-path = Path(myDir)
-a = str(path.parent.absolute())
-sys.path.append(a)
-
-
-# pvc_url = cfg.PVC_HANDLER_ROUTE
-# response_param = requests.get(url=f'http://{pvc_url}{config.UPDATE_LAYER_DATA_DIR}/',
-#                               params={'file': layers_name})
-# "/home/shayavr/Desktop/git/automation-locust/urls_data.csv"
-ssn_reader = CSVReader(config_obj["_3d"].CSV_DATA_PATH)
-
-
 class User(HttpUser):
     timer_selection = config_obj["wmts"].WAIT_TIME_FUNC
     wait_time_config = config_obj["wmts"].WAIT_TIME
@@ -62,3 +48,56 @@ class User(HttpUser):
         self.client.get(url=url[1], verify=False)
 
     host = config_obj["default"].HOST
+
+    def on_stop(self):
+        # Calculate and present the percentage results
+        percent_range_1 = (counter_range_1 / total_requests) * 100
+        percent_range_2 = (counter_range_2 / total_requests) * 100
+        percent_range_3 = (counter_range_3 / total_requests) * 100
+
+        percent_value_by_range = {
+            f"{range_1}": f"{percent_range_1}%",
+            f"{range_2}": f"{percent_range_2}%",
+            f"{range_3}": f"{percent_range_3}%",
+            "total_requests": f"{total_requests}",
+        }
+        write_rps_percent_results(
+            custome_path=results_path, percente_value_by_range=percent_value_by_range
+        )
+
+
+# Define the response time counters
+counter_range_1 = 0
+counter_range_2 = 0
+counter_range_3 = 0
+total_requests = 0
+
+# Define the response time ranges
+range_1 = (0, 100)
+range_2 = (101, 500)
+range_3 = (501, None)
+
+
+# Define the response time event hook
+@events.request.add_listener
+def response_time_listener(response_time, **kwargs):
+    global counter_range_1, counter_range_2, counter_range_3, total_requests
+
+    if range_1[0] <= response_time <= range_1[1]:
+        counter_range_1 += 1
+    elif range_2[0] <= response_time <= range_2[1]:
+        counter_range_2 += 1
+    elif response_time >= range_3[0]:
+        counter_range_3 += 1
+
+    total_requests += 1
+
+
+@events.test_start.add_listener
+def reset_counters(**kwargs):
+    global counter_range_1, counter_range_2, counter_range_3, total_requests
+
+    counter_range_1 = 0
+    counter_range_2 = 0
+    counter_range_3 = 0
+    total_requests = 0
