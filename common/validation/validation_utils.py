@@ -2,8 +2,7 @@ import datetime
 import json
 import os
 import re
-import time
-from typing import Any, List, Union, Optional
+from typing import Any, List, Union
 
 
 class ValidationError(Exception):
@@ -35,7 +34,7 @@ def validate_response_status(response: Any, expected_status_code: int) -> None:
 
 
 def validate_json_key_value(
-        json_data: dict, key: str, expected_value: Union[str, int, float, bool]
+    json_data: dict, key: str, expected_value: Union[str, int, float, bool]
 ) -> None:
     if key not in json_data:
         raise KeyNotFoundError(f"Key '{key}' not found in JSON data")
