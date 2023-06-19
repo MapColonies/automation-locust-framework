@@ -3,12 +3,13 @@ import os
 import sys
 from pathlib import Path
 
-from locust import User, task, events, HttpUser, constant, constant_throughput, between, constant_pacing
+from locust import HttpUser, events, task
 
-from common.config.config import ElevationConfig, config_obj
-from common.utils.constants.strings import CONSTANT_TIMER_STR, CONSTANT_THROUGHPUT_TIMER_STR, BETWEEN_TIMER_STR, \
-    CONSTANT_PACING_TIMER_STR, INVALID_TIMER_STR
-from common.validation.validation_utils import extract_file_type, write_rps_percent_results
+from common.config.config import ElevationConfig
+from common.validation.validation_utils import (
+    extract_file_type,
+    write_rps_percent_results,
+)
 
 myDir = os.getcwd()
 sys.path.append(myDir)
@@ -29,11 +30,11 @@ class CustomUser(HttpUser):
     def on_start(self):
         request_type = extract_file_type(file_path=positions_list_path)
         if request_type == "json":
-            with open(positions_list_path, 'r') as file:
+            with open(positions_list_path) as file:
                 body = json.load(file)
                 self.request_body = {"request_type": request_type, "body": body}
         elif request_type == "bin":
-            with open(positions_list_path, 'rb') as file:
+            with open(positions_list_path, "rb") as file:
                 body = file.read()
                 self.request_body = {"request_type": request_type, "body": body}
         else:
@@ -46,9 +47,7 @@ class CustomUser(HttpUser):
         if self.request_body["request_type"] == "json":
             print("hello from json")
             self.client.post(
-                "/",
-                json=self.request_body["body"],
-                headers=ElevationConfig.headers
+                "/", json=self.request_body["body"], headers=ElevationConfig.headers
             )
         elif self.request_body["request_type"] == "bin":
             print("hello from bin")
@@ -65,12 +64,16 @@ class CustomUser(HttpUser):
         percent_range_2 = (counter_range_2 / total_requests) * 100
         percent_range_3 = (counter_range_3 / total_requests) * 100
 
-        percent_value_by_range = {f"{range_1}": f"{percent_range_1}%",
-                                  f"{range_2}": f"{percent_range_2}%",
-                                  f"{range_3}": f"{percent_range_3}%",
-                                  "total_requests": f"{total_requests}"}
+        percent_value_by_range = {
+            f"{range_1}": f"{percent_range_1}%",
+            f"{range_2}": f"{percent_range_2}%",
+            f"{range_3}": f"{percent_range_3}%",
+            "total_requests": f"{total_requests}",
+        }
 
-        write_rps_percent_results(custome_path=results_path, percente_value_by_range=percent_value_by_range)
+        write_rps_percent_results(
+            custome_path=results_path, percente_value_by_range=percent_value_by_range
+        )
         print(f"Percentage of requests in range {range_1}: {percent_range_1}%")
         print(f"Percentage of requests in range {range_2}: {percent_range_2}%")
         print(f"Percentage of requests in range {range_3}: {percent_range_3}%")

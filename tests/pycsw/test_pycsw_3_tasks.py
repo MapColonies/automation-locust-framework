@@ -1,13 +1,3 @@
-import sys
-sys.path.insert(0, '../..')
-from common.strings import (
-    BETWEEN_TIMER_STR,
-    CONSTANT_PACING_TIMER_STR,
-    CONSTANT_THROUGHPUT_TIMER_STR,
-    CONSTANT_TIMER_STR,
-    INVALID_TIMER_STR,
-)
-from config.config import config_obj
 from locust import (
     HttpUser,
     between,
@@ -17,6 +7,15 @@ from locust import (
     task,
 )
 from test_data.queries import ID_RECORD_XML, POLYGON_XML, REGION_RECORD_XML
+
+from common.config.config import config_obj
+from common.utils.constants.strings import (
+    BETWEEN_TIMER_STR,
+    CONSTANT_PACING_TIMER_STR,
+    CONSTANT_THROUGHPUT_TIMER_STR,
+    CONSTANT_TIMER_STR,
+    INVALID_TIMER_STR,
+)
 
 
 class SizingUser(HttpUser):
