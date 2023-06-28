@@ -2,7 +2,7 @@ import datetime
 import json
 import os
 import re
-from typing import Any, List, Union
+from typing import Any, List, Union, Optional
 
 
 class ValidationError(Exception):
@@ -34,7 +34,7 @@ def validate_response_status(response: Any, expected_status_code: int) -> None:
 
 
 def validate_json_key_value(
-    json_data: dict, key: str, expected_value: Union[str, int, float, bool]
+        json_data: dict, key: str, expected_value: Union[str, int, float, bool]
 ) -> None:
     if key not in json_data:
         raise KeyNotFoundError(f"Key '{key}' not found in JSON data")
@@ -103,15 +103,16 @@ def extract_file_type(file_path: str):
         return FileNotFoundError
 
 
-def write_rps_percent_results(custome_path: str, percente_value_by_range: dict):
+def write_rps_percent_results(custom_path: str, percente_value_by_range: dict):
     """
     this function writes the percent result of the request per second ranges to JSON that located in the given path
-    :param custome_path: a path that provided by user
+    :param percente_value_by_range:
+    :param custom_path: a path that provided by user
     :return:
     """
     json_obj = json.dumps(percente_value_by_range)
     file_name = generate_unique_filename(file_base_name="percent_results")
-    with open(f"{custome_path}/{file_name}", "w") as f:
+    with open(f"{custom_path}/{file_name}", "w") as f:
         f.write(json_obj)
 
 
@@ -125,3 +126,36 @@ def generate_unique_filename(file_base_name: str):
     formatted_time = now.strftime("%H-%M-%S")
     filename = f"{file_base_name}_{formatted_date}_{formatted_time}.json"
     return filename
+
+
+def get_request_body_parameters(positions_list_path: str) -> [dict]:
+    """
+    this method will get the positions file path and return the body of the client request based on the type
+    of the given position file path
+    :param positions_list_path: position file path to be extract the request body type
+    :return:
+    dictionary of request parameters
+    """
+    request_type = extract_file_type(file_path=positions_list_path)
+    if request_type == "json":
+        with open(positions_list_path) as file:
+            body = json.load(file)
+            request_body = {"request_type": request_type, "body": body,
+                            "header": {"Content-Type": "application/json"}}
+            return request_body
+    elif request_type == "bin":
+        with open(positions_list_path, "rb") as file:
+            body = file.read()
+            request_body = {"request_type": request_type, "body": body,
+                            "header": {'Content-Type': 'application/octet-stream'}}
+            return request_body
+    else:
+        return {"request_type": None, "body": "invalid position file path",
+                "header": None}
+
+
+def create_ranges_counters(ranges_list):
+    ranges_counters = {}
+    for range_val in ranges_list:
+        ranges_counters[range_val] = 0
+    return ranges_counters
