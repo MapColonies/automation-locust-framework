@@ -128,7 +128,7 @@ def generate_unique_filename(file_base_name: str):
     return filename
 
 
-def get_request_body_parameters(positions_list_path: str) -> [dict]:
+def get_request_parameters(positions_list_path: str) -> [dict]:
     """
     this method will get the positions file path and return the body of the client request based on the type
     of the given position file path
@@ -159,3 +159,5 @@ def create_ranges_counters(ranges_list):
     for range_val in ranges_list:
         ranges_counters[range_val] = 0
     return ranges_counters
+
+
