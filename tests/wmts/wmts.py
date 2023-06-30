@@ -21,6 +21,8 @@ class User(FastHttpUser):
                 f"{config_obj['wmts'].GRID_NAME}/"
                 f"{points[0]}/{points[1]}/{points[2]}"
                 f"{config_obj['wmts'].IMAGE_FORMAT}",
+                f"?token={config_obj['wmts'].TOKEN}"
+
             )
         else:
             self.client.get(
@@ -29,7 +31,6 @@ class User(FastHttpUser):
                 f"{config_obj['wmts'].GRID_NAME}/"
                 f"{points[0]}/{points[1]}/{points[2]}"
                 f"{config_obj['wmts'].IMAGE_FORMAT}"
-                f"?token={config_obj['wmts'].TOKEN}",
             )
 
     host = 'https://mapproxy-no-auth-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1'
