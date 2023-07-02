@@ -10,7 +10,7 @@ from common.validation.validation_utils import (
 results_path = os.getcwd()
 positions_list_path = ElevationConfig.positions_path
 
-if type(ElevationConfig.percent_ranges) == str:
+if type(ElevationConfig.percent_ranges_counters) == str:
     percent_ranges = json.loads(ElevationConfig.percent_ranges_counters)
 else:
     percent_ranges = ElevationConfig.percent_ranges_counters
@@ -80,3 +80,4 @@ def reset_counters(**kwargs):
 class MyUser(CustomUser):
     min_wait = 100
     max_wait = 1000
+#todo:ask alex which wait time to set to insure that we create the next task only if we get reponse from the first task
