@@ -1,6 +1,7 @@
 from locust import task, FastHttpUser, tag, between
 from config.config import config_obj
 
+#check bbox from EastBank
 bbox = config_obj['wms'].BBOX
 delta_x = bbox[3] - bbox[1]
 delta_y = bbox[2] - bbox[0]
