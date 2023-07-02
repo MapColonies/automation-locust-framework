@@ -83,7 +83,7 @@ class WmsConfig(Config):
     GRID_NAME = os.environ.get("gridName", "default")
     REQUESTS_RECORDS_CSV = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/stats.csv")
     HOST = os.environ.get("Host", 'https://mapproxy-raster-qa-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/')
-    BBOX = os.environ.get("BBOX", [35.06068, 31.93225, 35.06270, 31.93316])
+    BBOX = os.environ.get("BBOX_WMS", [35.06068, 31.93225, 35.06270, 31.93316])
     REQUESTS_RECORDS_CS = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/stats.csv")
     SRS = os.environ.get("srs", "ESPG:4326")
     WMS_VERSION = os.environ.get("wms_version", "1.1.1")
