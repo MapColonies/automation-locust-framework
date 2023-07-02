@@ -1,13 +1,13 @@
 import json
-import os
 from locust import HttpUser, events, task
 
-from common.config.config import ElevationConfig
+from common.config.config import ElevationConfig, Config
 from common.validation.validation_utils import (
-    write_rps_percent_results, get_request_parameters,
+    write_rps_percent_results, get_request_parameters, read_tests_data_folder,
 )
 
-results_path = os.getcwd()
+results_path = ElevationConfig.results_path
+
 positions_list_path = ElevationConfig.positions_path
 
 if type(ElevationConfig.percent_ranges_counters) == str:
@@ -17,26 +17,35 @@ else:
 
 request_body = get_request_parameters(positions_list_path=positions_list_path)
 
+request_data_bodies = read_tests_data_folder(folder_path=ElevationConfig.bulks_root_folder)
+
 
 class CustomUser(HttpUser):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.request_body = request_body
+        # bulks_amount = ElevationConfig.bulks_amount  # Number of tasks per user, configurable
+        bulks_amount = len(request_data_bodies)
+        self.tasks_per_user = request_data_bodies
 
-    @task(1)
+    task(1)
+
     def index(self):
-        if self.request_body["request_type"] == "json":
-            self.client.post(
-                "/", json=self.request_body["body"], headers=self.request_body["header"]
-            )
-        elif self.request_body["request_type"] == "bin":
-            self.client.post(
-                "/",
-                data=self.request_body["body"],
-                headers=self.request_body["header"],
-            )
-
-        # Process the response as needed
+        for file_name, body in self.tasks_per_user.items():
+            if "json" in file_name:
+                self.client.post(
+                    "/", json=body, headers={"Content-Type": "application/json"}
+                )
+            elif "bin" in file_name:
+                self.client.post(
+                    "/",
+                    data=body,
+                    headers={"Content-Type": "application/octet-stream"},
+                )
+            else:
+                return "Invalid file type"
+                # Process the response as needed
 
     def on_stop(self):
         # Calculate and present the percentage results
@@ -80,23 +89,3 @@ def reset_counters(**kwargs):
 class MyUser(CustomUser):
     min_wait = 100
     max_wait = 1000
-
-
-import random
-from locust import HttpUser, task
-
-
-class MyUser(HttpUser):
-    tasks_per_user = 5  # Number of tasks per user, configurable
-    body_variations = [
-        {"key": "value1"},
-        {"key": "value2"},
-        {"key": "value3"}
-    ]
-
-    @task
-    def my_task(self):
-        for _ in range(self.tasks_per_user):
-            body = random.choice(self.body_variations)
-            response = self.client.post("/endpoint", json=body)
-            # Process the response as needed
