@@ -3,17 +3,17 @@ from locust import HttpUser, events, task
 
 from common.config.config import ElevationConfig, Config
 from common.validation.validation_utils import (
-    write_rps_percent_results, get_request_parameters, read_tests_data_folder,
+    write_rps_percent_results, get_request_parameters, read_tests_data_folder, initiate_counters_by_ranges,
 )
 
 results_path = ElevationConfig.results_path
 
 positions_list_path = ElevationConfig.positions_path
 
-if type(ElevationConfig.percent_ranges_counters) == str:
-    percent_ranges = json.loads(ElevationConfig.percent_ranges_counters)
+if type(ElevationConfig.percent_ranges) == str:
+    percent_ranges = list(ElevationConfig.percent_ranges)
 else:
-    percent_ranges = ElevationConfig.percent_ranges_counters
+    percent_ranges = ElevationConfig.percent_ranges
 
 request_body = get_request_parameters(positions_list_path=positions_list_path)
 
@@ -60,8 +60,8 @@ class CustomUser(HttpUser):
         )
 
 
-counters = percent_ranges
 
+counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
 total_requests = 0
 
 
@@ -69,11 +69,11 @@ total_requests = 0
 def response_time_listener(response_time, **kwargs):
     global counters, total_requests
 
-    for k in counters:
-        if k[1] is None and response_time >= k[0]:
-            counters[k] = counters.get(k, 0) + 1
-        elif k[0] <= response_time <= k[1]:
-            counters[k] = counters.get(k, 0) + 1
+    for index, range in enumerate(percent_ranges):
+        if range[1] is None and response_time >= range[0]:
+            counters[f"counter{index + 1}"] += 1
+        elif range[0] <= response_time <= range[1]:
+            counters[f"counter{index + 1}"] += 1
 
     total_requests += 1
 
@@ -81,7 +81,7 @@ def response_time_listener(response_time, **kwargs):
 @events.test_start.add_listener
 def reset_counters(**kwargs):
     global counters, total_requests
-    counters = percent_ranges
+    counters = counters
     total_requests = 0
 
 
