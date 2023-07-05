@@ -1,7 +1,7 @@
 import json
 import os
 from locust import HttpUser, events, task
-
+from itertools import cycle
 from common.config.config import ElevationConfig
 from common.validation.validation_utils import (
     write_rps_percent_results, get_request_parameters, extract_points_from_json, initiate_counters_by_ranges,
@@ -14,10 +14,11 @@ if type(ElevationConfig.percent_ranges) == str:
 else:
     percent_ranges = ElevationConfig.percent_ranges
 
-
 # request_body = get_request_parameters(positions_list_path=positions_list_path)
 
 positions_bodies = extract_points_from_json(json_file=positions_list_path)
+
+
 # print(positions_bodies)
 
 
@@ -25,19 +26,17 @@ class CustomUser(HttpUser):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.request_bodies = positions_bodies
-        self.bodies_length = len(self.request_bodies)
-        self.index = 0
-
+        self.request_bodies_cycle = cycle(self.request_bodies)
 
     @task(1)
     def index(self):
-        body = self.request_bodies[self.index]
-        print(self.index , body)
+        # num_users = self.environment.runner.user_count
+        # print(f"Number of users: {num_users}")
+        body = next(self.request_bodies_cycle)
+        self.body = json.loads(body)
         # if self.request_bodies["request_type"] == "json":
-        self.client.post(
-            "/", json=body, headers={'Content-Type': 'application/json'}
-        )
-        self.index += 1
+        self.client.post("/", json=self.body, headers={'Content-Type': 'application/json'}, verify=True)
+        print("done")
         # elif self.request_bodies["request_type"] == "bin":
         #     self.client.post(
         #         "/",
@@ -86,7 +85,7 @@ def reset_counters(**kwargs):
 
 # Run the Locust test
 class MyUser(CustomUser):
-    min_wait = 100
-    max_wait = 1000
+    min_wait = 1
+    max_wait = 1
 # todo:ask alex which wait time to set to insure that we create the next task only if we get reponse from the first task
 # todo: check the ranges validation - json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)

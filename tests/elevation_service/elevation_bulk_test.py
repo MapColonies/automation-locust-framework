@@ -25,12 +25,10 @@ class CustomUser(HttpUser):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.request_body = request_body
-        # bulks_amount = ElevationConfig.bulks_amount  # Number of tasks per user, configurable
         bulks_amount = len(request_data_bodies)
         self.tasks_per_user = request_data_bodies
 
     task(1)
-
     def index(self):
         for file_name, body in self.tasks_per_user.items():
             if "json" in file_name:
@@ -50,15 +48,14 @@ class CustomUser(HttpUser):
     def on_stop(self):
         # Calculate and present the percentage results
         percent_value_by_range = {}
-        for k in counters:
-            percent_range = (counters[k] / total_requests) * 100
-            percent_value_by_range[f"{k}"] = percent_range
+        for index, (key, value) in enumerate(counters.items()):
+            percent_range = (value / total_requests) * 100
+            percent_value_by_range[f"{percent_ranges[index]}"] = percent_range
 
         percent_value_by_range["total_requests"] = total_requests
         write_rps_percent_results(
-            custom_path=results_path, percente_value_by_range=percent_value_by_range
+            custom_path=ElevationConfig.results_path, percente_value_by_range=percent_value_by_range
         )
-
 
 
 counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
