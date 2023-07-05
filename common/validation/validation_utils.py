@@ -189,6 +189,42 @@ def read_tests_data_folder(folder_path: str):
                 folder_files_content[f"{file_name}"] = file_content
     return folder_files_content
 
-folder_path = "/home/shayavr/Desktop/test_data/update_new_fixed/check_something"
 
-print(read_tests_data_folder(folder_path=folder_path))
+def extract_points_from_json(json_file, payload_flag=True):
+    """
+    This function will be used as a ssn reader for json
+    :param json_file: positions points file
+    :param payload_flag : indicate if to send filed to be excluded
+    :return:
+    list of one point body
+    """
+    point_list = []
+    # Read the JSON file
+    with open(json_file, "r") as file:
+        data = json.load(file)
+    if payload_flag:
+        for point in data["positions"]:
+            point_value = {"positions": [point]}
+            point_list.append(json.dumps(point_value))
+    else:
+        for point in data["positions"]:
+            point_value = {"positions": [point], "excludeFields": ["productType", "updateDate", "resolutionMeter"]}
+            point_list.append(json.dumps(point_value))
+    return point_list
+
+
+# Access and work with the JSON data
+
+def initiate_counters_by_ranges(config_ranges):
+    """
+    this function will extract the ranges and counter values for each value of range on the configuration
+    :param config_range_counter_data: selected configuration ranges data
+    :return:
+    pass
+    """
+    counters = {}
+    for i in range(len(config_ranges)):
+        counters[f"counter{i + 1}"] = 0
+    return counters
+
+# print(initiate_counters_by_ranges(config_ranges=[(0, 100), (101, 500), (501, None)]))
