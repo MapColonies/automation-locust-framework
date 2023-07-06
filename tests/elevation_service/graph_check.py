@@ -24,24 +24,29 @@ positions_bodies = extract_points_from_json(json_file=positions_list_path)
 
 class CustomUser(HttpUser):
 
-        # self.test_start_time = None
+    # self.test_start_time = None
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.test_results = []
         self.request_bodies = positions_bodies
         self.request_bodies_cycle = cycle(self.request_bodies)
         self.test_start_time = time.time()
-
-
+        self.average_response_time = 0
+        self.total_requests = 0
+        self.total_response_time = 0
+        self.total_users = 0
 
     @task(1)
     def index(self):
         # num_users = self.environment.runner.user_count
         # print(f"Number of users: {num_users}")
-        body = next(self.request_bodies_cycle)
-        self.body = json.loads(body)
+        # body = next(self.request_bodies_cycle)
+        # self.body = json.loads(body)
         # if self.request_bodies["request_type"] == "json":
-        self.client.post("/", json=self.body, headers={'Content-Type': 'application/json'}, verify=True)
+        response = self.client.get("https://www.ynet.co.il/home")
+        response_time = response.elapsed.total_seconds() * 1000
+        self.total_requests += 1
+        self.total_response_time += response_time
         # elif self.request_bodies["request_type"] == "bin":
         #     self.client.post(
         #         "/",
@@ -52,19 +57,19 @@ class CustomUser(HttpUser):
         # Process the response as needed
 
     def on_stop(self):
-        users = self.environment.runner.user_count
-        print(users)
+        self.total_users = self.environment.runner.user_count
+
+
+
         # Calculate the test duration
-        test_duration = time.time() - self.test_start_time
-        print("test_duration is", test_duration)
-
-        # Calculate the average RPS
-        avg_rps = total_requests / test_duration if test_duration else 0
-
-        print("avg_rps is", avg_rps)
+        if self.total_requests > 0:
+            self.average_response_time = self.total_response_time / self.total_requests
+        else:
+            self.average_response_time = 0
 
         # Store the data in the test_results list
-        self.test_results.append({"users": users, "rps": avg_rps})
+        self.test_results.append({"users": self.total_users, "rps": self.average_response_time})
+
 
         # Plot the graph after the final test execution
         # if self.environment.runner.user_count == 0:
@@ -86,7 +91,7 @@ class CustomUser(HttpUser):
         rps = [result["rps"] for result in self.test_results]
 
         # Plotting the graph
-        plt.plot(users, avg_total_requests, marker='o')
+        plt.plot(users, rps, marker='o')
         plt.xlabel('Number of Users')
         plt.ylabel('Average Total Requests')
         plt.title('Test Set: Users vs Average Total Requests')
