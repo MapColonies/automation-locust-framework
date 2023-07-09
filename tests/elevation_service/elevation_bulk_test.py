@@ -42,12 +42,14 @@ class CustomUser(HttpUser):
                 self.client.post(
                     "/", json=body, headers={"Content-Type": "application/json"}
                 )
+                self.users_count = self.environment.runner.user_count
             elif "bin" in file_name:
                 self.client.post(
                     "/",
                     data=body,
                     headers={"Content-Type": "application/octet-stream"},
                 )
+                self.users_count = self.environment.runner.user_count
             else:
                 return "Invalid file type"
                 # Process the response as needed
@@ -78,6 +80,7 @@ class CustomUser(HttpUser):
         plt.title("User amount vs Average Response Time")
         plt.grid(True)
         plt.savefig(f'{graph_path}/{graph_name}.png')
+        plt.close()
 
 
 counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
