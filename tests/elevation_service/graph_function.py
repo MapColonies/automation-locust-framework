@@ -7,7 +7,6 @@ import gevent
 from locust import events
 from locust.runners import STATE_STOPPED, STATE_CLEANUP, MasterRunner, LocalRunner, STATE_STOPPING
 
-
 # def print_current_users(environment):
 #     while not environment.runner.state in [STATE_STOPPED, STATE_CLEANUP]:
 #         time.sleep(2)
@@ -21,6 +20,10 @@ from locust.runners import STATE_STOPPED, STATE_CLEANUP, MasterRunner, LocalRunn
 
 
 # Print the last user count after the test execution
+total_requests = 0
+total_time = 0
+avg_requests_per_second = 0
+
 
 class MyUser(HttpUser):
     wait_time = between(1, 2)
@@ -46,16 +49,18 @@ class MyUser(HttpUser):
         # self.total_response_time += response_time
 
     def on_stop(self, **kwargs):
+        print(avg_requests_per_second)
         average_response_time = self.environment.runner.stats.total.avg_response_time
         self.test_results.append({"users": self.user_count
                                      , "avg_response_time": average_response_time})
         self.plot_graph()
+        print("rps is", self.environment.runner.stats.total.total_rps)
 
     def plot_graph(self):
         users = [result["users"] for result in self.test_results]
         avg_response_times = [result["avg_response_time"] for result in self.test_results]
 
-        plt.plot( users,avg_response_times, marker='o')
+        plt.plot(users, avg_response_times, marker='o')
         plt.ylabel('Average Response Time')
         plt.xlabel('Number of Users')
         plt.title("User amount vs Average Response Time")
@@ -65,6 +70,22 @@ class MyUser(HttpUser):
         # plt.ylabel('User Count')
         # plt.title('User Count vs. Average Response Time')
         plt.savefig('graph.png')
+        plt.close()
+
+
+@events.request.add_listener
+def on_request_success(request_type, name, response_time, response_length, **kwargs):
+    global total_requests
+    global total_time
+
+    total_requests += 1
+    total_time += response_time
+    avg_requests_per_second = total_requests / total_time
+
+# @events.quitting.add_listener
+# def on_locust_quit(environment, **kwargs):
+#     avg_requests_per_second = total_requests / total_time
+#     print(f"Average Requests/s: {avg_requests_per_second}")
 
 # @events.quitting.add_listener
 # def on_locust_quit(environment, **kwargs):
