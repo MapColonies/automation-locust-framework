@@ -1,3 +1,4 @@
+import datetime
 import json
 from locust import HttpUser, events, task, constant
 from itertools import cycle
@@ -46,6 +47,7 @@ class CustomUser(HttpUser):
         self.test_results.append({"users": self.users_count, "avg_response_time": average_response_time})
         self.plot_graph(graph_name=self.graph_name, graph_path=reports_path)
 
+
         percent_value_by_range = {}
         if total_requests != 0:
             for index, (key, value) in enumerate(counters.items()):
@@ -72,15 +74,26 @@ class CustomUser(HttpUser):
 counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
 total_requests = 0
 
+start_time_data = []
+response_time_data = []
+
+
+@events.request.add_listener
+def on_request(response_time, **kwargs):
+    start_time = kwargs['start_time']
+    start_time_formatted = datetime.datetime.fromtimestamp(start_time).strftime('%H:%M:%S.%f')
+    start_time_data.append(start_time_formatted)
+    response_time_data.append(response_time)
+
 
 @events.request.add_listener
 def response_time_listener(response_time, **kwargs):
     global counters, total_requests
 
-    for index, range in enumerate(percent_ranges):
-        if range[1] is None and response_time >= range[0]:
+    for index, range_val in enumerate(percent_ranges):
+        if range_val[1] is None and response_time >= range_val[0]:
             counters[f"counter{index + 1}"] += 1
-        elif range[0] <= response_time <= range[1]:
+        elif range_val[0] <= response_time <= range_val[1]:
             counters[f"counter{index + 1}"] += 1
 
     total_requests += 1
