@@ -59,10 +59,8 @@ class CustomUser(HttpUser):
             percent_value_by_range["total_requests"] = total_requests
 
     def plot_graph(self, graph_name, graph_path):
-        # Plotting the graph
         users = [result["users"] for result in self.test_results]
         avg_response_times = [result["avg_response_time"] for result in self.test_results]
-
         plt.plot(users, avg_response_times, marker='o')
         plt.ylabel('Average Response Time')
         plt.xlabel('Number of Users')
