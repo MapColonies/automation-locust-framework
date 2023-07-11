@@ -9,7 +9,7 @@ from locust import events
 from locust.runners import STATE_STOPPED, STATE_CLEANUP, MasterRunner, LocalRunner, STATE_STOPPING
 
 from common.config.config import ElevationConfig
-from common.validation.validation_utils import create_custom_graph
+from common.validation.validation_utils import create_custom_graph, create_graph_results_data_format
 
 # def print_current_users(environment):
 #     while not environment.runner.state in [STATE_STOPPED, STATE_CLEANUP]:
@@ -32,6 +32,7 @@ avg_requests_per_second = 0
 class MyUser(HttpUser):
     wait_time = between(1, 2)
     test_results = []
+    req_start_t_rsp_t = []
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -57,37 +58,44 @@ class MyUser(HttpUser):
         average_response_time = self.environment.runner.stats.total.avg_response_time
         self.test_results.append({"users": self.user_count
                                      , "avg_response_time": average_response_time})
-        self.plot_graph()
-        print("rps is", self.environment.runner.stats.total.total_rps)
 
-    def plot_graph(self):
         create_custom_graph(graph_name="Users_vs_AvgResponseTime", graph_path=reports_path,
                             test_results=self.test_results, graph_title=None)
 
-        create_custom_graph(graph_name='RequestStartTime_vs_ResponseTime',graph_path=reports_path,test_results=)
-        #todo think how to deal with the Request Start Time vs. Response Time graph for the generic function of creating custom graph
+        self.req_start_t_rsp_t = create_graph_results_data_format(["start_time", "response_time"],
+                                                                  [start_time_data, response_time_data])
+        create_custom_graph(graph_name="RequestStartTime_vs_ResponseTime", graph_path=reports_path,
+                            test_results=self.req_start_t_rsp_t, graph_title=None, marker=None)
 
-        # users = [result["users"] for result in self.test_results]
-        # avg_response_times = [result["avg_response_time"] for result in self.test_results]
-        #
-        # plt.plot(users, avg_response_times, marker='o')
-        # plt.ylabel('Average Response Time')
-        # plt.xlabel('Number of Users')
-        # plt.title("User amount vs Average Response Time")
-        # plt.grid(True)
-        # # plt.plot(avg_response_times, users, marker='o')
-        # # plt.xlabel('Average Response Time (ms)')
-        # # plt.ylabel('User Count')
-        # # plt.title('User Count vs. Average Response Time')
-        # plt.savefig('graph.png')
-        # plt.close()
+        print("rps is", self.environment.runner.stats.total.total_rps)
 
-        plt.scatter(start_time_data, response_time_data)
-        plt.xlabel('Request Start Time')
-        plt.ylabel('Response Time (ms)')
-        plt.title('Request Start Time vs. Response Time')
-        plt.savefig('POINTS.png')
-        plt.close()
+    # def plot_graph(self):
+    #     create_custom_graph(graph_name="Users_vs_AvgResponseTime", graph_path=reports_path,
+    #                         test_results=self.test_results, graph_title=None)
+    #     create_custom_graph(graph_name='RequestStartTime_vs_ResponseTime',graph_path=reports_path,test_results=)
+    #     #todo think how to deal with the Request Start Time vs. Response Time graph for the generic function of creating custom graph
+    #
+    #     # users = [result["users"] for result in self.test_results]
+    #     # avg_response_times = [result["avg_response_time"] for result in self.test_results]
+    #     #
+    #     # plt.plot(users, avg_response_times, marker='o')
+    #     # plt.ylabel('Average Response Time')
+    #     # plt.xlabel('Number of Users')
+    #     # plt.title("User amount vs Average Response Time")
+    #     # plt.grid(True)
+    #     # # plt.plot(avg_response_times, users, marker='o')
+    #     # # plt.xlabel('Average Response Time (ms)')
+    #     # # plt.ylabel('User Count')
+    #     # # plt.title('User Count vs. Average Response Time')
+    #     # plt.savefig('graph.png')
+    #     # plt.close()
+    #
+    #     plt.scatter(start_time_data, response_time_data)
+    #     plt.xlabel('Request Start Time')
+    #     plt.ylabel('Response Time (ms)')
+    #     plt.title('Request Start Time vs. Response Time')
+    #     plt.savefig('POINTS.png')
+    #     plt.close()
 
 
 start_time_data = []
@@ -97,7 +105,7 @@ response_time_data = []
 @events.request.add_listener
 def on_request(request_type, name, response_time, **kwargs):
     start_time = kwargs['start_time']
-    start_time_formatted = datetime.datetime.fromtimestamp(start_time).strftime('%H:%M:%S.%f')
+    start_time_formatted = datetime.datetime.fromtimestamp(start_time).strftime('%H:%M:%S')
     start_time_data.append(start_time_formatted)
     response_time_data.append(response_time)
 
