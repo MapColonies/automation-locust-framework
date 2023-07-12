@@ -7,7 +7,6 @@ from common.validation.validation_utils import (
     write_rps_percent_results, get_request_parameters, initiate_counters_by_ranges,
 )
 
-results_path = os.getcwd()
 positions_list_path = ElevationConfig.positions_path
 
 if type(ElevationConfig.percent_ranges) == str:
@@ -27,14 +26,13 @@ class CustomUser(HttpUser):
     def index(self):
         if self.request_body["request_type"] == "json":
             self.client.post(
-                "/", json=self.request_body["body"], headers=self.request_body["header"]
-            )
+                "/", json=self.request_body["body"], headers=self.request_body["header"], verify=False)
         elif self.request_body["request_type"] == "bin":
             self.client.post(
                 "/",
                 data=self.request_body["body"],
                 headers=self.request_body["header"],
-            )
+                verify=False)
 
         # Process the response as needed
 
@@ -79,4 +77,3 @@ def reset_counters(**kwargs):
 class MyUser(CustomUser):
     min_wait = 100
     max_wait = 1000
-# todo:ask alex which wait time to set to insure that we create the next task only if we get reponse from the first task
