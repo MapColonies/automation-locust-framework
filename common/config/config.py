@@ -89,9 +89,13 @@ class ElevationConfig(Config):
         "/home/shayavr/Desktop/git/automation-locust-framework/test_data/myJson.json",
     )
     # headers = os.environ.get("headers_value", {'Content-Type': 'application/json', "Cache-Control": "no-cache"})
-    headers = os.environ.get("headers_value", {"Content-Type": "application/json"})
-    # headers = os.environ.get("headers_value", {'Content-Type': 'application/octet-stream', "Cache-Control": "no-cache"})
-    results_path = os.environ.get("result_path", f"{os.getcwd()}")
+    # headers = os.environ.get("headers_value", {"Content-Type": "application/json"})
+    headers = os.environ.get("headers_value", {'Content-Type': 'application/octet-stream', "Cache-Control": "no-cache"})
+    results_path = os.environ.get("results_path", f"{os.getcwd()}")
+    # percent_ranges_counters = os.environ.get("percent_ranges_counters",
+    #                                          "{(0, 100): 0 , (101, 500):0, (501, None): 0  }")
+    percent_ranges = os.environ.get("percent_ranges", [(0, 100), (101, 500), (501, None)])
+    bulks_root_folder = os.environ.get("bulks_root_folder", 1)
 
 
 class Config3D(Config):
