@@ -1,4 +1,3 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -49,21 +48,23 @@ spec:
           - --csv-full-history
 {{- end }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+{{- if .Values.worker.pvc.enabled }}
         volumeMounts:
-          - name: ingestion-storage
-            mountPath: /layerSources
+          - name: {{ .Values.storage.volumeName }}
+            mountPath: {{ .Values.storage.mountPathName }}
             {{- if .Values.storage.subPath }}
             subPath: {{ .Values.storage.subPath }}
             {{- end }}
+{{- end }}
 {{- if or .Values.master.envs_include_default .Values.global.env .Values.master.env .Values.global.env_external_secret }}
         env:
 {{- if .Values.master.envs_include_default }}
-          - name: LOCUST_HOST
-            value: "{{ .Values.global.locust_host }}"
+          - name: host
+            value: "{{ .Values.global.host }}"
           - name: LOCUST_LOGLEVEL
             value: "{{ .Values.master.logLevel }}"
           - name: LOCUST_LOCUSTFILE
-            value: "{{ .Values.global.locust_file_path }}/{{ .Values.global.locust_file }}"
+            value: "{{ .Values.global.test_file_path }}/{{ .Values.global.test_file }}"
           {{- if .Values.global.env_secret }}
           - name: SECRET_VALUE_API
             valueFrom:
@@ -110,7 +111,9 @@ spec:
 {{- end }}
 {{- end }}
       restartPolicy: {{ .Values.master.restartPolicy }}
+{{- if .Values.worker.pvc.enabled }}
       volumes:
-        - name: ingestion-storage
+        - name: {{ .Values.storage.volumeName }}
           persistentVolumeClaim:
             claimName: {{ .Values.storage.pvcName }}
+{{- end }}

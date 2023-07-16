@@ -1,14 +1,10 @@
 import itertools
-import os
-import sys
 from typing import List
 
-from config.config import Database, config_obj
 from mc_automation_tools import postgres
-from utils.mapproxy_layer import MapproxyLayer, zoom_level_convertor
 
-myDir = os.getcwd()
-sys.path.append(myDir)
+from common.config.config import Database, config_obj
+from common.data_modules.mapproxy_layer import MapproxyLayer, zoom_level_convertor
 
 
 def get_layers_list(is_all_records: bool = False) -> dict:
@@ -38,9 +34,7 @@ def get_all_layers_tiles_data(db_name=Database.PG_RECORD_PYCSW_DB):
         Database.RASTER_CATALOG,
         port=int(Database.PG_PORT),
     )
-    columns_names = """
-     max_resolution_deg , product_bbox , product_id
-    """
+    columns_names = """ max_resolution_deg , product_bbox , product_id"""
     res = client.get_column_by_name(table_name="records", column_name=columns_names)
     return [res]
 
@@ -55,6 +49,7 @@ def get_layer_list_tile_data(layer_list, db_name=Database.PG_RECORD_PYCSW_DB):
     columns_names = """
      max_resolution_deg , product_bbox , product_id
     """
+
     client = postgres.PGClass(
         Database.PG_HOST,
         db_name,
@@ -72,7 +67,6 @@ def get_layer_list_tile_data(layer_list, db_name=Database.PG_RECORD_PYCSW_DB):
             pk_value=layer_name,
         )
         layers_data_list.append(res)
-
     return layers_data_list
 
 
@@ -129,19 +123,17 @@ def create_zyx_tiles_structure(zoom_value: int, y_range: tuple, x_range: tuple):
     x_tile_values = [*range(x_range[0], x_range[1] + 1, 1)]
     y_tile_values = [*range(y_range[0], y_range[1] + 1, 1)]
     zoom_tiles_value = [zoom_value]
-    # optional_tiles_url = []
-    # for element in itertools.product(zoom_tiles_values, y_tile_values, x_tile_values):
-    #     optional_tiles_url.append(element)
     return list(itertools.product(zoom_tiles_value, x_tile_values, y_tile_values))
 
 
 def create_layer_tiles_urls(layer_name, tiles_list: List[tuple]):
     """
-    This methid return urls according to the z/y/x conventions from the list
-    :param tiles_list: list  z/y/x of tile
+    This method return urls according to the z/y/x conventions from the list
+    :param tiles_list: list of tile z/y/x
     :return: urls with the tile values
     """
     layer_tiles_urls = []
+
     for tile_value in tiles_list:
         url = (
             f"/{config_obj['wmts'].LAYER_TYPE}"
@@ -162,14 +154,13 @@ def get_layers_data_pro_active():
     layers_tiles_ranges : dict of the layers ids and ranges
 
     """
-    layers_list_res = get_layers_list(False)
+    layers_list_res = get_layers_list(is_all_records=False)
     if layers_list_res["all_records"] is True:
         layers_tiles_data = get_all_layers_tiles_data()
     else:
         layers_tiles_data = get_layer_list_tile_data(
             layer_list=layers_list_res["layer_list"]
         )
-
     mapproxy_objects_list = create_mapproxy_layer_objects(
         layers_data_list=layers_tiles_data
     )

@@ -1,6 +1,7 @@
 from config.config import config_obj
 
 # Constants for XML post requests - with data
+
 # POLYGON_XML = rf"""<?xml version="1.0" encoding="UTF-8"?>
 #
 # <csw:GetRecords xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" service="CSW" maxRecords="1" startPosition="1" \
