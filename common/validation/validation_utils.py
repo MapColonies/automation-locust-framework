@@ -2,7 +2,9 @@ import datetime
 import json
 import os
 import re
-from typing import Any, List, Union, Optional
+from typing import Any, List, Union
+import matplotlib.dates as mdates
+from matplotlib import pyplot as plt
 
 
 class ValidationError(Exception):
@@ -103,14 +105,14 @@ def extract_file_type(file_path: str):
         return FileNotFoundError
 
 
-def write_rps_percent_results(custom_path: str, percente_value_by_range: dict):
+def write_rps_percent_results(custom_path: str, percent_value_by_range: dict):
     """
     this function writes the percent result of the request per second ranges to JSON that located in the given path
-    :param percente_value_by_range:
+    :param percent_value_by_range: dict of mill second range keys and the percent value of the request
     :param custom_path: a path that provided by user
     :return:
     """
-    json_obj = json.dumps(percente_value_by_range)
+    json_obj = json.dumps(percent_value_by_range)
     file_name = generate_unique_filename(file_base_name="percent_results")
     with open(f"{custom_path}/{file_name}", "w") as f:
         f.write(json_obj)
@@ -154,13 +156,6 @@ def get_request_parameters(positions_list_path: str) -> [dict]:
                 "header": None}
 
 
-def create_ranges_counters(ranges_list):
-    ranges_counters = {}
-    for range_val in ranges_list:
-        ranges_counters[range_val] = 0
-    return ranges_counters
-
-
 def read_tests_data_folder(folder_path: str):
     """
     this function will read the files that exist on the given folder path and return all file content as dictionary
@@ -176,7 +171,6 @@ def read_tests_data_folder(folder_path: str):
             if file_type == "json":
                 with open(file_path, "r") as file:
                     file_content = json.load(file)
-                    # Process the file data as needed
                 folder_files_content[f"{file_name}"] = file_content
             elif file_type == "bin":
                 with open(file_path, "rb") as file:
@@ -185,12 +179,11 @@ def read_tests_data_folder(folder_path: str):
             else:
                 with open(file_path, "r") as file:
                     file_content = file.read()
-                    # Process the file data as needed
                 folder_files_content[f"{file_name}"] = file_content
     return folder_files_content
 
 
-def extract_points_from_json(json_file, payload_flag=True):
+def extract_points_from_json(json_file, payload_flag=True, product_type="MIXED"):
     """
     This function will be used as a ssn reader for json
     :param json_file: positions points file
@@ -199,32 +192,124 @@ def extract_points_from_json(json_file, payload_flag=True):
     list of one point body
     """
     point_list = []
-    # Read the JSON file
     with open(json_file, "r") as file:
         data = json.load(file)
     if payload_flag:
         for point in data["positions"]:
-            point_value = {"positions": [point]}
+            point_value = {"positions": [point], "productType": product_type, "excludeFields": []}
             point_list.append(json.dumps(point_value))
     else:
         for point in data["positions"]:
-            point_value = {"positions": [point], "excludeFields": ["productType", "updateDate", "resolutionMeter"]}
+            point_value = {"positions": [point], "productType": product_type,
+                           "excludeFields": ["productType", "updateDate", "resolutionMeter"]}
             point_list.append(json.dumps(point_value))
     return point_list
 
 
-# Access and work with the JSON data
-
-def initiate_counters_by_ranges(config_ranges):
+def initiate_counters_by_ranges(config_ranges: List[tuple]) -> dict:
     """
     this function will extract the ranges and counter values for each value of range on the configuration
     :param config_range_counter_data: selected configuration ranges data
     :return:
-    pass
+    counters (dict): counter for each given range
     """
     counters = {}
     for i in range(len(config_ranges)):
         counters[f"counter{i + 1}"] = 0
     return counters
 
-# print(initiate_counters_by_ranges(config_ranges=[(0, 100), (101, 500), (501, None)]))
+
+def create_custom_graph(graph_name, graph_path, test_results, graph_title=None):
+    """
+    This function will create graph from selected test results parameters
+    :param graph_name: name of the output graph
+    :param graph_path: path to store the graph file that created
+    :param test_results: the selected parameters values for the graph presentation
+    :param graph_title: graph name header
+    :return: creating graph png file
+    """
+    parameters_names = list(test_results[0].keys())
+    x_axis = parameters_names[0]
+    y_axis = parameters_names[1]
+    x_axis_data = [result[x_axis] for result in test_results]
+    y_axis_data = [result[y_axis] for result in test_results]
+    plt.plot(x_axis_data, y_axis_data, marker="o")
+    plt.xlabel(x_axis)
+    plt.ylabel(y_axis)
+    if not graph_title:
+        plt.title(f"{x_axis} vs {y_axis}")
+    else:
+        plt.title(graph_title)
+    plt.grid(True)
+    plt.savefig(f'{graph_path}/{graph_name}.png')
+
+
+def create_graph_results_data_format(keys_names: list, x_y_axis_values: list) -> list:
+    """
+    This function will prepare the results data for graph creation funciton
+    :param keys_names: the name of the data result (x axis data ,  y axis data )
+    :param x_y_axis_values: list that contains two lists for each x-axis and y-axis results data
+    :return:
+    list of the results data by x axis and y axis keys
+    """
+    formatted_results = [{k: v for k, v in zip(keys_names, values)} for values in zip(*x_y_axis_values)]
+    return formatted_results
+
+
+def create_start_time_response_time_graph(start_time_data, response_time_data, graph_name):
+    fig, ax = plt.subplots()
+    ax.scatter(start_time_data, response_time_data)
+    ax.set_xlabel('Request Start Time')
+    ax.set_ylabel('Response Time (ms)')
+    ax.set_title('Request Start Time vs. Response Time')
+
+    # Set the x-axis formatter
+    formatter = mdates.DateFormatter('%H:%M:%S')
+    formatter._useOffset = False  # Disable offset
+    ax.xaxis.set_major_formatter(formatter)
+    fig.autofmt_xdate()  # Auto-format the x-axis date labels
+
+    plt.savefig(f'{graph_name}.png')
+    plt.close()
+
+
+def get_bulks_points_amount(bulk_content: dict):
+    """
+    This function will get bulk content and return the points amount by extracting
+    the len of the positions
+    :param bulk_content: the request's body of the bulk that contains points
+    :return:
+    points amount : int
+
+    """
+    points_amount = len(bulk_content["positions"])
+    return points_amount
+
+
+def calculate_response_time_percent(response_times, range_values):
+    """
+    This function will calculate response time percent by given ranges of response time
+    :param response_times: list of response time values
+    :param range_values: list of ranges values tuples of the min response time and max response time
+    :return:
+    dict of percent value by range
+
+    """
+    total = len(response_times)
+    percent_dict = {}
+
+    if total == 0:
+        return percent_dict
+
+    for range_min, range_max in range_values:
+        if range_max is not None:
+            count = sum(1 for time in response_times if range_min <= time <= range_max)
+            percent = (count / total) * 100
+            percent_dict[(range_min, range_max)] = percent
+        else:
+            count = sum(1 for time in response_times if range_min <= time)
+            percent = (count / total) * 100
+            percent_dict[f"({range_min}, {range_max})"] = percent
+
+    return percent_dict
+
