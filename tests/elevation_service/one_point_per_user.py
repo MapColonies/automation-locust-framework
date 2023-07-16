@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from common.config.config import ElevationConfig
 from common.validation.validation_utils import (
     write_rps_percent_results, extract_points_from_json, initiate_counters_by_ranges, create_custom_graph,
-    create_graph_results_data_format, create_start_time_response_time_graph,
+    create_graph_results_data_format, create_start_time_response_time_graph, calculate_response_time_percent,
 )
 
 positions_list_path = ElevationConfig.positions_path
@@ -16,7 +16,7 @@ if type(ElevationConfig.percent_ranges) == str:
 else:
     percent_ranges = ElevationConfig.percent_ranges
 
-positions_bodies = extract_points_from_json(json_file=positions_list_path)
+positions_bodies = extract_points_from_json(json_file=positions_list_path, payload_flag=ElevationConfig.payload_flag)
 
 reports_path = ElevationConfig.results_path
 
@@ -45,11 +45,12 @@ class CustomUser(HttpUser):
         self.users_count = self.environment.runner.user_count
 
     def on_stop(self):
+
         average_response_time = self.environment.runner.stats.total.avg_response_time
         self.test_results.append({"users": self.users_count, "avg_response_time": average_response_time})
         # print(self.test_results)
         create_custom_graph(graph_name="Users_vs_AvgResponseTime", graph_path=reports_path,
-                            test_results=self.test_results, graph_title=None, rotation=None)
+                            test_results=self.test_results, graph_title=None)
 
         # self.req_start_t_rsp_t = create_graph_results_data_format(["start_time", "response_time"],
         #                                                           [])
@@ -85,17 +86,17 @@ def on_request(response_time, **kwargs):
     start_time_data.append(start_time)
 
 
-@events.request.add_listener
-def response_time_listener(response_time, **kwargs):
-    global counters, total_requests
-
-    for index, range_val in enumerate(percent_ranges):
-        if range_val[1] is None and response_time >= range_val[0]:
-            counters[f"counter{index + 1}"] += 1
-        elif range_val[0] <= response_time <= range_val[1]:
-            counters[f"counter{index + 1}"] += 1
-
-    total_requests += 1
+# @events.request.add_listener
+# def response_time_listener(response_time, **kwargs):
+#     global counters, total_requests
+#
+#     for index, range_val in enumerate(percent_ranges):
+#         if range_val[1] is None and response_time >= range_val[0]:
+#             counters[f"counter{index + 1}"] += 1
+#         elif range_val[0] <= response_time <= range_val[1]:
+#             counters[f"counter{index + 1}"] += 1
+#
+#     total_requests += 1
 
 
 @events.test_start.add_listener
@@ -111,21 +112,32 @@ def reset_counters(**kwargs):
 # Run the Locust test
 class MyUser(CustomUser):
     wait_time = constant(ElevationConfig.wait_time)
+    # wait_time = constant("5")
+
 
 @events.test_stop.add_listener
 def on_locust_stop(environment, **kwargs):
     global file_created
+    percent_value_by_ranges = calculate_response_time_percent(response_times=response_time_data, range_values=percent_ranges)
+    write_rps_percent_results(
+                custom_path=reports_path, percent_value_by_range=percent_value_by_ranges
+            )
 
     # Ensure file creation code is executed only once
-    if not file_created:
-        percent_value_by_range = {}
-        if total_requests != 0:
-            for index, (key, value) in enumerate(counters.items()):
-                range_percent_val = (value / total_requests) * 100
-                percent_value_by_range[f"{percent_ranges[index]}"] = range_percent_val
-            percent_value_by_range["total_requests"] = total_requests
-            write_rps_percent_results(
-                custom_path=reports_path, percente_value_by_range=percent_value_by_range
-            )
-        else:
-            percent_value_by_range["total_requests"] = total_requests
+    # if not file_created:
+    #     percent_value_by_range = {}
+    #     print(total_requests)
+    #     if total_requests != 0:
+    #         for index, (key, value) in enumerate(counters.items()):
+    #             print("index", index)
+    #             print("key", key)
+    #             print("value", value)
+    #             range_percent_val = (value / total_requests) * 100
+    #             percent_value_by_range[f"{percent_ranges[index]}"] = range_percent_val
+    #         percent_value_by_range["total_requests"] = total_requests
+    #         write_rps_percent_results(
+    #             custom_path=reports_path, percent_value_by_range=percent_value_by_range
+    #         )
+    #     else:
+    #         percent_value_by_range["total_requests"] = total_requests
+
