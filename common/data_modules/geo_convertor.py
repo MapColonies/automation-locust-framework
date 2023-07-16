@@ -53,6 +53,6 @@ def get_min_tile_y(max_y_deg):
     return min_tile_y
 
 
-print(get_min_tile_x(35.024411528661574))
-print(get_max_tile_x(32.79419004139809))
-print(get_min_tile_y(32.947998391903226))
+# print(get_min_tile_x(35.024411528661574))
+# print(get_max_tile_x(32.79419004139809))
+# print(get_min_tile_y(32.947998391903226))
