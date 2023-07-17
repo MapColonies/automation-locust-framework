@@ -1,10 +1,10 @@
-import json
-import os
 from locust import HttpUser, events, task
 
 from common.config.config import ElevationConfig
 from common.validation.validation_utils import (
-    write_rps_percent_results, get_request_parameters, initiate_counters_by_ranges,
+    get_request_parameters,
+    initiate_counters_by_ranges,
+    write_rps_percent_results,
 )
 
 positions_list_path = ElevationConfig.positions_path
@@ -26,13 +26,18 @@ class CustomUser(HttpUser):
     def index(self):
         if self.request_body["request_type"] == "json":
             self.client.post(
-                "/", json=self.request_body["body"], headers=self.request_body["header"], verify=False)
+                "/",
+                json=self.request_body["body"],
+                headers=self.request_body["header"],
+                verify=False,
+            )
         elif self.request_body["request_type"] == "bin":
             self.client.post(
                 "/",
                 data=self.request_body["body"],
                 headers=self.request_body["header"],
-                verify=False)
+                verify=False,
+            )
 
         # Process the response as needed
 
@@ -45,7 +50,8 @@ class CustomUser(HttpUser):
 
         percent_value_by_range["total_requests"] = total_requests
         write_rps_percent_results(
-            custom_path=ElevationConfig.results_path, percente_value_by_range=percent_value_by_range
+            custom_path=ElevationConfig.results_path,
+            percente_value_by_range=percent_value_by_range,
         )
 
 

@@ -1,15 +1,12 @@
 import datetime
-import time
 
-from locust import task, events, HttpUser, between
-import matplotlib.pyplot as plt
-
-import gevent
-from locust import events
-from locust.runners import STATE_STOPPED, STATE_CLEANUP, MasterRunner, LocalRunner, STATE_STOPPING
+from locust import HttpUser, between, events, task
 
 from common.config.config import ElevationConfig
-from common.validation.validation_utils import create_custom_graph, create_graph_results_data_format
+from common.validation.validation_utils import (
+    create_custom_graph,
+    create_graph_results_data_format,
+)
 
 # def print_current_users(environment):
 #     while not environment.runner.state in [STATE_STOPPED, STATE_CLEANUP]:
@@ -43,7 +40,9 @@ class MyUser(HttpUser):
     @task
     def my_task(self):
         # Make the HTTP request and perform task logic
-        self.client.get("https://www.ynet.co.il/home")  # Replace with your actual task logic
+        self.client.get(
+            "https://www.ynet.co.il/home"
+        )  # Replace with your actual task logic
 
         self.user_count = self.environment.runner.user_count
 
@@ -56,16 +55,27 @@ class MyUser(HttpUser):
     def on_stop(self, **kwargs):
         print(avg_requests_per_second)
         average_response_time = self.environment.runner.stats.total.avg_response_time
-        self.test_results.append({"users": self.user_count
-                                     , "avg_response_time": average_response_time})
+        self.test_results.append(
+            {"users": self.user_count, "avg_response_time": average_response_time}
+        )
 
-        create_custom_graph(graph_name="Users_vs_AvgResponseTime", graph_path=reports_path,
-                            test_results=self.test_results, graph_title=None)
+        create_custom_graph(
+            graph_name="Users_vs_AvgResponseTime",
+            graph_path=reports_path,
+            test_results=self.test_results,
+            graph_title=None,
+        )
 
-        self.req_start_t_rsp_t = create_graph_results_data_format(["start_time", "response_time"],
-                                                                  [start_time_data, response_time_data])
-        create_custom_graph(graph_name="RequestStartTime_vs_ResponseTime", graph_path=reports_path,
-                            test_results=self.req_start_t_rsp_t, graph_title=None, marker=None)
+        self.req_start_t_rsp_t = create_graph_results_data_format(
+            ["start_time", "response_time"], [start_time_data, response_time_data]
+        )
+        create_custom_graph(
+            graph_name="RequestStartTime_vs_ResponseTime",
+            graph_path=reports_path,
+            test_results=self.req_start_t_rsp_t,
+            graph_title=None,
+            marker=None,
+        )
 
         print("rps is", self.environment.runner.stats.total.total_rps)
 
@@ -104,8 +114,10 @@ response_time_data = []
 
 @events.request.add_listener
 def on_request(request_type, name, response_time, **kwargs):
-    start_time = kwargs['start_time']
-    start_time_formatted = datetime.datetime.fromtimestamp(start_time).strftime('%H:%M:%S')
+    start_time = kwargs["start_time"]
+    start_time_formatted = datetime.datetime.fromtimestamp(start_time).strftime(
+        "%H:%M:%S"
+    )
     start_time_data.append(start_time_formatted)
     response_time_data.append(response_time)
 

@@ -1,10 +1,12 @@
-import json
 from locust import HttpUser, events, task
 from matplotlib import pyplot as plt
 
-from common.config.config import ElevationConfig, Config
+from common.config.config import ElevationConfig
 from common.validation.validation_utils import (
-    write_rps_percent_results, get_request_parameters, read_tests_data_folder, initiate_counters_by_ranges,
+    get_request_parameters,
+    initiate_counters_by_ranges,
+    read_tests_data_folder,
+    write_rps_percent_results,
 )
 
 results_path = ElevationConfig.results_path
@@ -18,13 +20,14 @@ else:
 
 request_body = get_request_parameters(positions_list_path=positions_list_path)
 
-request_data_bodies = read_tests_data_folder(folder_path=ElevationConfig.bulks_root_folder)
+request_data_bodies = read_tests_data_folder(
+    folder_path=ElevationConfig.bulks_root_folder
+)
 
 reports_path = ElevationConfig.results_path
 
 
 class CustomUser(HttpUser):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.request_body = request_body
@@ -56,7 +59,9 @@ class CustomUser(HttpUser):
 
     def on_stop(self):
         average_response_time = self.environment.runner.stats.total.avg_response_time
-        self.test_results.append({"users": self.users_count, "avg_response_time": average_response_time})
+        self.test_results.append(
+            {"users": self.users_count, "avg_response_time": average_response_time}
+        )
         self.plot_graph(graph_name=self.graph_name, graph_path=reports_path)
         # Calculate and present the percentage results
         percent_value_by_range = {}
@@ -66,20 +71,23 @@ class CustomUser(HttpUser):
 
         percent_value_by_range["total_requests"] = total_requests
         write_rps_percent_results(
-            custom_path=ElevationConfig.results_path, percente_value_by_range=percent_value_by_range
+            custom_path=ElevationConfig.results_path,
+            percente_value_by_range=percent_value_by_range,
         )
 
     def plot_graph(self, graph_name, graph_path):
         # Plotting the graph
         users = [result["users"] for result in self.test_results]
-        avg_response_times = [result["avg_response_time"] for result in self.test_results]
+        avg_response_times = [
+            result["avg_response_time"] for result in self.test_results
+        ]
 
-        plt.plot(users, avg_response_times, marker='o')
-        plt.ylabel('Average Response Time')
-        plt.xlabel('Number of Users')
+        plt.plot(users, avg_response_times, marker="o")
+        plt.ylabel("Average Response Time")
+        plt.xlabel("Number of Users")
         plt.title("User amount vs Average Response Time")
         plt.grid(True)
-        plt.savefig(f'{graph_path}/{graph_name}.png')
+        plt.savefig(f"{graph_path}/{graph_name}.png")
         plt.close()
 
 
@@ -110,5 +118,6 @@ def reset_counters(**kwargs):
 # Run the Locust test
 class MyUser(CustomUser):
     wait_time = ElevationConfig.wait_time
+
 
 # todo: config the graph according to bulks amount
