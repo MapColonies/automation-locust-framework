@@ -4,17 +4,13 @@
 # has modifications to support breaking changes from locust 2.15.0
 import re
 import time
-
-from locust import User
-from locust.exception import LocustError
-import httpx
-from httpx import Request, Response
-from requests.auth import HTTPBasicAuth
-from httpx import InvalidURL, RequestError
-
 from urllib.parse import urlparse, urlunparse
 
-from locust.exception import CatchResponseError, ResponseError
+import httpx
+from httpx import InvalidURL, Request, RequestError, Response
+from locust import User
+from locust.exception import CatchResponseError, LocustError, ResponseError
+from requests.auth import HTTPBasicAuth
 
 absolute_http_url_regexp = re.compile(r"^https?://", re.I)
 
@@ -42,18 +38,24 @@ class HttpSession(httpx.Client):
 
             # remove username and password from the base_url
             self.base_url = urlunparse(
-                (parsed_url.scheme, netloc, parsed_url.path,
-                 parsed_url.params, parsed_url.query, parsed_url.fragment)
+                (
+                    parsed_url.scheme,
+                    netloc,
+                    parsed_url.path,
+                    parsed_url.params,
+                    parsed_url.query,
+                    parsed_url.fragment,
+                )
             )
             # configure requests to use basic auth
             self.auth = HTTPBasicAuth(parsed_url.username, parsed_url.password)
 
     def _build_url(self, path):
-        """ prepend url with hostname unless it's already an absolute URL """
+        """prepend url with hostname unless it's already an absolute URL"""
         if absolute_http_url_regexp.match(path):
             return path
         else:
-            return "%s%s" % (self.base_url, path)
+            return "{}{}".format(self.base_url, path)
 
     def request(self, method, url, name=None, catch_response=False, **kwargs):
         # prepend url with hostname unless it's already an absolute URL
@@ -71,7 +73,8 @@ class HttpSession(httpx.Client):
 
         # record the consumed time
         request_meta["response_time"] = (
-                                                time.monotonic() - request_meta["start_time"]) * 1000
+            time.monotonic() - request_meta["start_time"]
+        ) * 1000
 
         request_meta["name"] = str(name or response.request.url)
 
@@ -80,7 +83,8 @@ class HttpSession(httpx.Client):
         # not trigger fetching of the body
         if kwargs.get("stream", False):
             request_meta["content_size"] = int(
-                response.headers.get("content-length") or 0)
+                response.headers.get("content-length") or 0
+            )
         else:
             request_meta["content_size"] = len(response.content or b"")
 

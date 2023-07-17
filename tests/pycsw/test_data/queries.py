@@ -92,22 +92,6 @@ from config.config import config_obj
 # </csw:GetRecords>
 # """
 
-QUERY_TEMPLATE = lambda query: f"""
-<?xml version="1.0" encoding="UTF-8"?>
-<csw:GetRecords xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" service="CSW" maxRecords="{config_obj["pycsw"].PYCSW_RETURN_NUMBER_PROPERTY}"  startPosition="1"
-outputSchema="http://schema.mapcolonies.com/raster" version="2.0.2" xmlns:mc="mc:MCRasterRecord" >
-  <csw:Query typeNames="[SUB-SYSTEM-TYPENAME]">
-   <csw:ElementSetName>full</csw:ElementSetName>
-    <csw:Constraint version="1.1.0">
-      <Filter xmlns="http://www.opengis.net/ogc">
-        <PropertyIsLike wildCard="%" singleChar="_" escapeChar="\\">
-          <PropertyName>{query["name"]}</PropertyName>
-          <Literal>{query["value"]}</Literal>
-        </PropertyIsLike>
-      </Filter>
-    </csw:Constraint>
-  </csw:Query>
-</csw:GetRecords>
 
-
-"""
+def QUERY_TEMPLATE(query):
+    return f"\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<csw:GetRecords xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\" service=\"CSW\" maxRecords=\"{config_obj['pycsw'].PYCSW_RETURN_NUMBER_PROPERTY}\"  startPosition=\"1\"\noutputSchema=\"http://schema.mapcolonies.com/raster\" version=\"2.0.2\" xmlns:mc=\"mc:MCRasterRecord\" >\n  <csw:Query typeNames=\"[SUB-SYSTEM-TYPENAME]\">\n   <csw:ElementSetName>full</csw:ElementSetName>\n    <csw:Constraint version=\"1.1.0\">\n      <Filter xmlns=\"http://www.opengis.net/ogc\">\n        <PropertyIsLike wildCard=\"%\" singleChar=\"_\" escapeChar=\"\\\">\n          <PropertyName>{query['name']}</PropertyName>\n          <Literal>{query['value']}</Literal>\n        </PropertyIsLike>\n      </Filter>\n    </csw:Constraint>\n  </csw:Query>\n</csw:GetRecords>\n\n\n"

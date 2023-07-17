@@ -1,7 +1,7 @@
-from utils.ClinetX import HttpxUser
 from config.config import WmtsConfig, config_obj
-from locust import  between, task, tag, FastHttpUser
+from locust import between, tag, task
 from locust_plugins.csvreader import CSVReader
+from utils.ClinetX import HttpxUser
 
 wmts_csv_path_up_scale = WmtsConfig.WMTS_CSV_PATH_UPSCALE
 
@@ -11,7 +11,9 @@ upscale_reader = CSVReader(wmts_csv_path_up_scale)
 class User(HttpxUser):
     between(1, 1)
 
-    @task(1)  # #WMTS - “HTTP_REQUEST_TYPE /SUB_DOMAIN/PROTOCOL/LAYER/TILE_MATRIX_SET/Z/X/Y.IMAGE_FORMAT HTTP_VERSION“
+    @task(
+        1
+    )  # #WMTS - “HTTP_REQUEST_TYPE /SUB_DOMAIN/PROTOCOL/LAYER/TILE_MATRIX_SET/Z/X/Y.IMAGE_FORMAT HTTP_VERSION“
     @tag("WMTS-UpScale")
     def index(self):
         points = next(upscale_reader)
@@ -33,4 +35,4 @@ class User(HttpxUser):
                 f"?token={config_obj['wmts'].TOKEN}",
             )
 
-    host = 'https://mapproxy-no-auth-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1'
+    host = "https://mapproxy-no-auth-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1"

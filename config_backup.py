@@ -23,7 +23,12 @@ class Database:
 
 
 class Config:
-    TOKEN = os.environ.get("SECRET_VALUE_API", ) or None
+    TOKEN = (
+        os.environ.get(
+            "SECRET_VALUE_API",
+        )
+        or None
+    )
     IS_TOKEN = os.environ.get("TOKEN_NEEDED", True)
 
     HOST = os.environ.get("HOST", "enter a host")
@@ -31,10 +36,11 @@ class Config:
     WAIT_TIME = int(os.environ.get("wait_time", "4"))
     MAX_WAIT = int(os.environ.get("max_wait", 1))
     MIN_WAIT = int(os.environ.get("min_wait", 1))
-    LAYERS_LIST = (os.environ.get("layer_list", "test-update,shay")).split(",")
-    RSP_TIME_RANGES = os.environ.get('rsp_time_ranges', [(0, 100), (101, 500), (501, None)])
-    root_dir = os.environ.get('root_dir', '..') or None
-
+    LAYERS_LIST = os.environ.get("layer_list", "test-update,shay").split(",")
+    RSP_TIME_RANGES = os.environ.get(
+        "rsp_time_ranges", [(0, 100), (101, 500), (501, None)]
+    )
+    root_dir = os.environ.get("root_dir", "..") or None
 
 
 class WmtsConfig(Config):
@@ -43,10 +49,16 @@ class WmtsConfig(Config):
     GRID_NAME = os.environ.get("gridName", "osm")
     IMAGE_FORMAT = os.environ.get("imageType", ".png")
     WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "csv_data/data/new.csv")
-    REQUESTS_RECORDS_CS = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/wmts_records.csv")
-    WMTS_CSV_PATH_UPSCALE = os.environ.get("requests_records_wmts_upscale_csv", f"{os.getcwd()}/tests/upscale.csv")
+    REQUESTS_RECORDS_CS = os.environ.get(
+        "requests_records_csv", f"{os.getcwd()}/tests/wmts_records.csv"
+    )
+    WMTS_CSV_PATH_UPSCALE = os.environ.get(
+        "requests_records_wmts_upscale_csv", f"{os.getcwd()}/tests/upscale.csv"
+    )
     UP_SCALE_FLAG = os.environ.get("up_sacle_flag", False)
-    ONE_BY_ONE_RECORDS = os.environ.get("onebyone_records", "csv_data/data/onebyone.csv")
+    ONE_BY_ONE_RECORDS = os.environ.get(
+        "onebyone_records", "csv_data/data/onebyone.csv"
+    )
     LAYER_TYPE_UPSCALE = os.environ.get("layer_type_wmts_upscale", "wmts")
     LAYER_NAME_UPSCALE = os.environ.get("layer_wmts_upscale", "Orthophoto")  # History
     GRID_NAME_UPSCALE = os.environ.get("gridName_wmts_upscale", "osm")
@@ -56,8 +68,12 @@ class WmtsConfig(Config):
 class PycswConfig(Config):
     PYCSW_ID_PROPERTY = os.environ.get("mc_id_property", "mc:id")
     PYCSW_REGION_PROPERTY = os.environ.get("mc_region_property", "mc:region")
-    PYCSW_POLYGON_PROPERTY = os.environ.get("mc_polygon_property", "mc:layerPolygonParts")
-    PYCSW_ID_VALUE = os.environ.get("mc_id_value", "d53a03e3-650b-4f4e-9047-071667741c08")
+    PYCSW_POLYGON_PROPERTY = os.environ.get(
+        "mc_polygon_property", "mc:layerPolygonParts"
+    )
+    PYCSW_ID_VALUE = os.environ.get(
+        "mc_id_value", "d53a03e3-650b-4f4e-9047-071667741c08"
+    )
     PYCSW_REGION_VALUE = os.environ.get("mc_region_value", "string")
     PYCSW_POLYGON_VALUE = os.environ.get("mc_polygon_value", "s")
     PYCSW_RETURN_NUMBER_PROPERTY = os.environ.get("pyscw_number_to_return", 10)
@@ -70,7 +86,8 @@ class ProActiveConfig(Config):
 
 class Config3D(Config):
     CSV_DATA_PATH = os.environ.get(
-        "CSV_3D_DATA_PATH", " /home/shayperp/Desktop/Auto-projects/automation-locust-framework/urls_data.csv"
+        "CSV_3D_DATA_PATH",
+        " /home/shayperp/Desktop/Auto-projects/automation-locust-framework/urls_data.csv",
     )
 
 
@@ -80,15 +97,22 @@ class WmsConfig(Config):
     HEIGHT = os.environ.get("HEIGHT", 900)
     LAYER_TYPE = os.environ.get("layer_type_wms", "dev-test-transparent-Orthophoto")
     GRID_NAME = os.environ.get("gridName", "default")
-    REQUESTS_RECORDS_CSV = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/stats.csv")
-    HOST = os.environ.get("Host", 'https://mapproxy-raster-qa-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/')
+    REQUESTS_RECORDS_CSV = os.environ.get(
+        "requests_records_csv", f"{os.getcwd()}/tests/stats.csv"
+    )
+    HOST = os.environ.get(
+        "Host",
+        "https://mapproxy-raster-qa-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/",
+    )
     BBOX = os.environ.get("BBOX_WMS", [35.06068, 31.93225, 35.06270, 31.93316])
-    REQUESTS_RECORDS_CS = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/stats.csv")
+    REQUESTS_RECORDS_CS = os.environ.get(
+        "requests_records_csv", f"{os.getcwd()}/tests/stats.csv"
+    )
     SRS = os.environ.get("srs", "ESPG:4326")
     WMS_VERSION = os.environ.get("wms_version", "1.1.1")
     WMS_FORMAT = os.environ.get("WMS_FORMAT", ".png")
     WMS_TRANSPARENT = os.environ.get("TRANSPARENT", True)
-    STYLE = os.environ.get('STYLE', '')
+    STYLE = os.environ.get("STYLE", "")
     IS_UPSCALE = os.environ.get("zoom_upscale_wms", False)
 
     # check git Capbility

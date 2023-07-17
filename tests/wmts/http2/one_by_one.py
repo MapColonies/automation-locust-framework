@@ -1,7 +1,8 @@
 from config.config import config_obj
-from locust import between, task, tag
+from locust import between, tag, task
 from locust_plugins.csvreader import CSVReader
 from utils.ClinetX import HttpxUser
+
 ssn_reader = CSVReader(config_obj["wmts"].ONE_BY_ONE_RECORDS)
 
 

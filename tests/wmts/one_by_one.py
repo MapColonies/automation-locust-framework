@@ -1,5 +1,5 @@
 from config.config import config_obj
-from locust import between, task, FastHttpUser, tag
+from locust import FastHttpUser, between, tag, task
 from locust_plugins.csvreader import CSVReader
 
 ssn_reader = CSVReader(config_obj["wmts"].ONE_BY_ONE_RECORDS)
