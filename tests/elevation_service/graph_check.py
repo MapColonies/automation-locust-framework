@@ -1,15 +1,13 @@
-import json
-import os
 import time
-
-from locust import HttpUser, events, task, constant
 from itertools import cycle
 
+from locust import HttpUser, constant, events, task
 from matplotlib import pyplot as plt
 
 from common.config.config import ElevationConfig
 from common.validation.validation_utils import (
-    write_rps_percent_results, extract_points_from_json, initiate_counters_by_ranges,
+    extract_points_from_json,
+    initiate_counters_by_ranges,
 )
 
 positions_list_path = ElevationConfig.positions_path
@@ -23,7 +21,6 @@ positions_bodies = extract_points_from_json(json_file=positions_list_path)
 
 
 class CustomUser(HttpUser):
-
     # self.test_start_time = None
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -59,8 +56,6 @@ class CustomUser(HttpUser):
     def on_stop(self):
         self.total_users = self.environment.runner.user_count
 
-
-
         # Calculate the test duration
         if self.total_requests > 0:
             self.average_response_time = self.total_response_time / self.total_requests
@@ -68,8 +63,9 @@ class CustomUser(HttpUser):
             self.average_response_time = 0
 
         # Store the data in the test_results list
-        self.test_results.append({"users": self.total_users, "rps": self.average_response_time})
-
+        self.test_results.append(
+            {"users": self.total_users, "rps": self.average_response_time}
+        )
 
         # Plot the graph after the final test execution
         # if self.environment.runner.user_count == 0:
@@ -91,12 +87,12 @@ class CustomUser(HttpUser):
         rps = [result["rps"] for result in self.test_results]
 
         # Plotting the graph
-        plt.plot(users, rps, marker='o')
-        plt.xlabel('Number of Users')
-        plt.ylabel('Average Total Requests')
-        plt.title('Test Set: Users vs Average Total Requests')
+        plt.plot(users, rps, marker="o")
+        plt.xlabel("Number of Users")
+        plt.ylabel("Average Total Requests")
+        plt.title("Test Set: Users vs Average Total Requests")
         plt.grid(True)
-        plt.savefig('graph.png')
+        plt.savefig("graph.png")
         # plt.show()
 
 

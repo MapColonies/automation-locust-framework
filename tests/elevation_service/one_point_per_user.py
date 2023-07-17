@@ -1,12 +1,16 @@
 import datetime
 import json
-from locust import HttpUser, events, task, constant
 from itertools import cycle
-from matplotlib import pyplot as plt
+
+from locust import HttpUser, constant, events, task
+
 from common.config.config import ElevationConfig
 from common.validation.validation_utils import (
-    write_rps_percent_results, extract_points_from_json, initiate_counters_by_ranges, create_custom_graph,
-    create_graph_results_data_format, create_start_time_response_time_graph,
+    create_custom_graph,
+    create_start_time_response_time_graph,
+    extract_points_from_json,
+    initiate_counters_by_ranges,
+    write_rps_percent_results,
 )
 
 positions_list_path = ElevationConfig.positions_path
@@ -35,7 +39,9 @@ class CustomUser(HttpUser):
     def index(self):
         body = json.loads(next(self.request_bodies_cycle))
         # if self.request_bodies["request_type"] == "json":
-        self.client.post("/", json=body, headers={'Content-Type': 'application/json'}, verify=False)
+        self.client.post(
+            "/", json=body, headers={"Content-Type": "application/json"}, verify=False
+        )
         # elif self.request_bodies["request_type"] == "bin":
         #     self.client.post(
         #         "/",
@@ -46,16 +52,26 @@ class CustomUser(HttpUser):
 
     def on_stop(self):
         average_response_time = self.environment.runner.stats.total.avg_response_time
-        self.test_results.append({"users": self.users_count, "avg_response_time": average_response_time})
+        self.test_results.append(
+            {"users": self.users_count, "avg_response_time": average_response_time}
+        )
         # print(self.test_results)
-        create_custom_graph(graph_name="Users_vs_AvgResponseTime", graph_path=reports_path,
-                            test_results=self.test_results, graph_title=None, rotation=None)
+        create_custom_graph(
+            graph_name="Users_vs_AvgResponseTime",
+            graph_path=reports_path,
+            test_results=self.test_results,
+            graph_title=None,
+            rotation=None,
+        )
 
         # self.req_start_t_rsp_t = create_graph_results_data_format(["start_time", "response_time"],
         #                                                           [])
         # print(self.req_start_t_rsp_t)
-        create_start_time_response_time_graph(graph_name=f"RequestStartTime_vs_ResponseTime-{run_number}",
-                                              start_time_data=start_time_data, response_time_data=response_time_data)
+        create_start_time_response_time_graph(
+            graph_name=f"RequestStartTime_vs_ResponseTime-{run_number}",
+            start_time_data=start_time_data,
+            response_time_data=response_time_data,
+        )
 
         # percent_value_by_range = {}
         # if total_requests != 0:
@@ -80,7 +96,7 @@ file_created = False
 
 @events.request.add_listener
 def on_request(response_time, **kwargs):
-    start_time = datetime.datetime.fromtimestamp(kwargs['start_time'])
+    start_time = datetime.datetime.fromtimestamp(kwargs["start_time"])
     response_time_data.append(response_time)
     start_time_data.append(start_time)
 
@@ -111,6 +127,7 @@ def reset_counters(**kwargs):
 # Run the Locust test
 class MyUser(CustomUser):
     wait_time = constant(ElevationConfig.wait_time)
+
 
 @events.test_stop.add_listener
 def on_locust_stop(environment, **kwargs):

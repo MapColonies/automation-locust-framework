@@ -2,7 +2,7 @@ import datetime
 import json
 import os
 import re
-from typing import Any, List, Union, Optional
+from typing import Any, List, Union
 
 
 class ValidationError(Exception):
@@ -34,7 +34,7 @@ def validate_response_status(response: Any, expected_status_code: int) -> None:
 
 
 def validate_json_key_value(
-        json_data: dict, key: str, expected_value: Union[str, int, float, bool]
+    json_data: dict, key: str, expected_value: Union[str, int, float, bool]
 ) -> None:
     if key not in json_data:
         raise KeyNotFoundError(f"Key '{key}' not found in JSON data")
@@ -140,18 +140,27 @@ def get_request_parameters(positions_list_path: str) -> [dict]:
     if request_type == "json":
         with open(positions_list_path) as file:
             body = json.load(file)
-            request_body = {"request_type": request_type, "body": body,
-                            "header": {"Content-Type": "application/json"}}
+            request_body = {
+                "request_type": request_type,
+                "body": body,
+                "header": {"Content-Type": "application/json"},
+            }
             return request_body
     elif request_type == "bin":
         with open(positions_list_path, "rb") as file:
             body = file.read()
-            request_body = {"request_type": request_type, "body": body,
-                            "header": {'Content-Type': 'application/octet-stream'}}
+            request_body = {
+                "request_type": request_type,
+                "body": body,
+                "header": {"Content-Type": "application/octet-stream"},
+            }
             return request_body
     else:
-        return {"request_type": None, "body": "invalid position file path",
-                "header": None}
+        return {
+            "request_type": None,
+            "body": "invalid position file path",
+            "header": None,
+        }
 
 
 def create_ranges_counters(ranges_list):
@@ -174,7 +183,7 @@ def read_tests_data_folder(folder_path: str):
             file_type = extract_file_type(file_path=f"{root}/{file_name}")
             file_path = os.path.join(root, file_name)
             if file_type == "json":
-                with open(file_path, "r") as file:
+                with open(file_path) as file:
                     file_content = json.load(file)
                     # Process the file data as needed
                 folder_files_content[f"{file_name}"] = file_content
@@ -183,7 +192,7 @@ def read_tests_data_folder(folder_path: str):
                     file_content = file.read()
                 folder_files_content[f"{file_name}"] = f"{file_content}"
             else:
-                with open(file_path, "r") as file:
+                with open(file_path) as file:
                     file_content = file.read()
                     # Process the file data as needed
                 folder_files_content[f"{file_name}"] = file_content
@@ -200,7 +209,7 @@ def extract_points_from_json(json_file, payload_flag=True):
     """
     point_list = []
     # Read the JSON file
-    with open(json_file, "r") as file:
+    with open(json_file) as file:
         data = json.load(file)
     if payload_flag:
         for point in data["positions"]:
@@ -208,12 +217,16 @@ def extract_points_from_json(json_file, payload_flag=True):
             point_list.append(json.dumps(point_value))
     else:
         for point in data["positions"]:
-            point_value = {"positions": [point], "excludeFields": ["productType", "updateDate", "resolutionMeter"]}
+            point_value = {
+                "positions": [point],
+                "excludeFields": ["productType", "updateDate", "resolutionMeter"],
+            }
             point_list.append(json.dumps(point_value))
     return point_list
 
 
 # Access and work with the JSON data
+
 
 def initiate_counters_by_ranges(config_ranges):
     """
@@ -226,5 +239,6 @@ def initiate_counters_by_ranges(config_ranges):
     for i in range(len(config_ranges)):
         counters[f"counter{i + 1}"] = 0
     return counters
+
 
 # print(initiate_counters_by_ranges(config_ranges=[(0, 100), (101, 500), (501, None)]))
