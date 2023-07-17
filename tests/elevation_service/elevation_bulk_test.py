@@ -104,27 +104,28 @@ def reset_counters(**kwargs):
     total_requests = 0
     test_results = []
 
+
 @events.request.add_listener
 def on_request(response_time, **kwargs):
     response_time_data.append(response_time)
 
+
 @events.test_stop.add_listener
 def on_locust_stop(environment, **kwargs):
     avg_response_time = environment.runner.stats.total.avg_response_time
-    print(avg_response_time)
     test_results.append({"bulks_amount": bulks_amount, "avg_response_time": avg_response_time})
     print(test_results)
     points_amount_avg_rsp.append({"points_amount": points_amount, "avg_response_time": avg_response_time}
                                  )
-    print(points_amount_avg_rsp)
+    print(points_amount)
     create_custom_graph(graph_name="PointsVsAvgResponseTime", graph_title="Points amount VS Avg response time",
                         graph_path=reports_path, test_results=points_amount_avg_rsp)
     create_custom_graph(graph_name="BulkAmountVsAvgResponseTime", graph_title="Bulk amount VS Avg response time",
                         graph_path=reports_path, test_results=test_results)
 
-
     percent_value_by_ranges = calculate_response_time_percent(response_times=response_time_data,
                                                               range_values=percent_ranges)
+    percent_value_by_ranges["total_requests"] = total_requests
     write_rps_percent_results(
         custom_path=reports_path, percent_value_by_range=percent_value_by_ranges
     )
@@ -132,4 +133,4 @@ def on_locust_stop(environment, **kwargs):
 
 # Run the Locust test
 class MyUser(CustomUser):
-    wait_time = constant(ElevationConfig.wait_time)
+    wait_time = constant(int(ElevationConfig.wait_time))
