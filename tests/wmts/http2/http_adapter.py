@@ -1,7 +1,8 @@
-from locust import HttpUser, task, between
-import httpx
-from httpx import Client as http2client
 import select
+
+from httpx import Client as http2client
+from locust import HttpUser, between, task
+
 print(select.epoll)
 
 

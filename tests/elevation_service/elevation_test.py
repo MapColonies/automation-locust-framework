@@ -1,10 +1,12 @@
-import json
 import os
+
 from locust import HttpUser, events, task
 
 from common.config.config import ElevationConfig
 from common.validation.validation_utils import (
-    write_rps_percent_results, get_request_parameters, initiate_counters_by_ranges,
+    get_request_parameters,
+    initiate_counters_by_ranges,
+    write_rps_percent_results,
 )
 
 results_path = os.getcwd()
@@ -47,7 +49,8 @@ class CustomUser(HttpUser):
 
         percent_value_by_range["total_requests"] = total_requests
         write_rps_percent_results(
-            custom_path=ElevationConfig.results_path, percente_value_by_range=percent_value_by_range
+            custom_path=ElevationConfig.results_path,
+            percente_value_by_range=percent_value_by_range,
         )
 
 
@@ -79,4 +82,6 @@ def reset_counters(**kwargs):
 class MyUser(CustomUser):
     min_wait = 100
     max_wait = 1000
+
+
 # todo:ask alex which wait time to set to insure that we create the next task only if we get reponse from the first task
