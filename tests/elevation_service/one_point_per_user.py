@@ -34,7 +34,11 @@ class CustomUser(HttpUser):
     def index(self):
         body = json.loads(next(self.request_bodies_cycle))
         # if self.request_bodies["request_type"] == "json":
-        self.client.post("/", json=body, headers={'Content-Type': 'application/json'}, verify=False)
+        if not ElevationConfig.token_flag:
+            self.client.post("/", json=body, headers={'Content-Type': 'application/json'}, verify=False)
+        else:
+            self.client.post(f"?token={ElevationConfig.TOKEN}", json=body, headers={'Content-Type': 'application/json'})
+
         # elif self.request_bodies["request_type"] == "bin":
         #     self.client.post(
         #         "/",
@@ -76,8 +80,7 @@ def on_request(environment, response_time, **kwargs):
 
 @events.test_start.add_listener
 def reset_counters(**kwargs):
-    global counters, total_requests, run_number, start_time_data, response_time_data
-    counters = counters
+    global total_requests, run_number, start_time_data, response_time_data
     total_requests = 0
     run_number += 1
     start_time_data = []
