@@ -25,16 +25,29 @@ class CustomUser(HttpUser):
 
     @task(1)
     def index(self):
-        if self.request_body["request_type"] == "json":
-            self.client.post(
-                "/", json=self.request_body["body"], headers=self.request_body["header"]
-            )
-        elif self.request_body["request_type"] == "bin":
-            self.client.post(
-                "/",
-                data=self.request_body["body"],
-                headers=self.request_body["header"],
-            )
+        if not ElevationConfig.token_flag:
+            if self.request_body["request_type"] == "json":
+                self.client.post(
+                    "/", json=self.request_body["body"], headers=self.request_body["header"], verify=False
+                )
+            elif self.request_body["request_type"] == "bin":
+                self.client.post(
+                    "/",
+                    data=self.request_body["body"],
+                    headers=self.request_body["header"], verify=False
+                )
+        else:
+            if self.request_body["request_type"] == "json":
+                self.client.post(
+                    f"?token={ElevationConfig.TOKEN}", json=self.request_body["body"],
+                    headers=self.request_body["header"], verify=False
+                )
+            elif self.request_body["request_type"] == "bin":
+                self.client.post(
+                    f"?token={ElevationConfig.TOKEN}",
+                    data=self.request_body["body"],
+                    headers=self.request_body["header"]
+                )
 
         # Process the response as needed
 
@@ -47,7 +60,7 @@ class CustomUser(HttpUser):
 
         percent_value_by_range["total_requests"] = total_requests
         write_rps_percent_results(
-            custom_path=ElevationConfig.results_path, percente_value_by_range=percent_value_by_range
+            custom_path=ElevationConfig.results_path, percent_value_by_range=percent_value_by_range
         )
 
 

@@ -47,24 +47,44 @@ class CustomUser(HttpUser):
 
     @task(1)
     def index(self):
-        for bulk_name, body in self.tasks_per_user.items():
-            if "json" in bulk_name:
-                response = self.client.post(
-                    "/", json=body, headers={"Content-Type": "application/json"}
-                )
-                self.users_count = self.environment.runner.user_count
-                self.log_response_time(response.elapsed.total_seconds() * 1000)
+        if not ElevationConfig.token_flag:
+            for bulk_name, body in self.tasks_per_user.items():
+                if "json" in bulk_name:
+                    response = self.client.post(
+                        "/", json=body, headers={"Content-Type": "application/json"}
+                        , verify=False)
+                    self.users_count = self.environment.runner.user_count
+                    self.log_response_time(response.elapsed.total_seconds() * 1000)
 
-            elif "bin" in bulk_name:
-                self.client.post(
-                    "/",
-                    data=body,
-                    headers={"Content-Type": "application/octet-stream"},
-                )
-                self.users_count = self.environment.runner.user_count
-            else:
-                return "Invalid file type"
-                # Process the response as needed
+                elif "bin" in bulk_name:
+                    self.client.post(
+                        "/",
+                        data=body,
+                        headers={"Content-Type": "application/octet-stream"},
+                    )
+                    self.users_count = self.environment.runner.user_count
+                else:
+                    return "Invalid file type"
+                    # Process the response as needed
+        else:
+            for bulk_name, body in self.tasks_per_user.items():
+                if "json" in bulk_name:
+                    response = self.client.post(
+                        f"?token={ElevationConfig.TOKEN}", json=body, headers={"Content-Type": "application/json"}
+                    )
+                    self.users_count = self.environment.runner.user_count
+                    self.log_response_time(response.elapsed.total_seconds() * 1000)
+
+                elif "bin" in bulk_name:
+                    self.client.post(
+                        f"?token={ElevationConfig.TOKEN}",
+                        data=body,
+                        headers={"Content-Type": "application/octet-stream"},
+                    )
+                    self.users_count = self.environment.runner.user_count
+                else:
+                    return "Invalid file type"
+                    # Process the response as needed
 
     def log_response_time(self, response_time):
         self.response_times.append(response_time)

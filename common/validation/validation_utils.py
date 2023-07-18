@@ -4,6 +4,7 @@ import os
 import re
 from typing import Any, List, Union
 import matplotlib.dates as mdates
+import numpy as np
 from matplotlib import pyplot as plt
 
 
@@ -242,6 +243,7 @@ def create_custom_graph(graph_name, graph_path, test_results, graph_title=None):
         plt.title(graph_title)
     plt.grid(True)
     plt.savefig(f'{graph_path}/{graph_name}.png')
+    plt.close()
 
 
 def create_graph_results_data_format(keys_names: list, x_y_axis_values: list) -> list:
@@ -258,7 +260,14 @@ def create_graph_results_data_format(keys_names: list, x_y_axis_values: list) ->
 
 def create_start_time_response_time_graph(start_time_data, response_time_data, graph_name):
     fig, ax = plt.subplots()
-    ax.scatter(start_time_data, response_time_data)
+    x = np.array(start_time_data)  # X-coordinates of the data points
+    y = np.array(response_time_data)  # Y-coordinates of the data points
+
+    # Generate a unique color for each point
+    num_points = len(x)
+    colors = np.random.rand(num_points)
+
+    plt.scatter(x, y, c=colors, cmap='viridis')
     ax.set_xlabel('Request Start Time')
     ax.set_ylabel('Response Time (ms)')
     ax.set_title('Request Start Time vs. Response Time')
@@ -268,7 +277,8 @@ def create_start_time_response_time_graph(start_time_data, response_time_data, g
     formatter._useOffset = False  # Disable offset
     ax.xaxis.set_major_formatter(formatter)
     fig.autofmt_xdate()  # Auto-format the x-axis date labels
-
+    scatter = plt.scatter(x, y, c=colors, cmap='viridis')
+    plt.colorbar(scatter)
     plt.savefig(f'{graph_name}.png')
     plt.close()
 
@@ -305,7 +315,7 @@ def calculate_response_time_percent(response_times, range_values):
         if range_max is not None:
             count = sum(1 for time in response_times if range_min <= time <= range_max)
             percent = (count / total) * 100
-            percent_dict[(range_min, range_max)] = percent
+            percent_dict[f"({range_min}, {range_max})"] = percent
         else:
             count = sum(1 for time in response_times if range_min <= time)
             percent = (count / total) * 100
