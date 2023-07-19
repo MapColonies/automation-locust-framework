@@ -1,10 +1,4 @@
-import json
-from collections import defaultdict
-
-import numpy as np
 from locust import HttpUser, events, task, constant
-from matplotlib import pyplot as plt
-
 from common.config.config import ElevationConfig
 from common.validation.validation_utils import (
     write_rps_percent_results, get_request_parameters, read_tests_data_folder, initiate_counters_by_ranges,
@@ -27,14 +21,13 @@ request_data_bodies = read_tests_data_folder(folder_path=ElevationConfig.bulks_r
 reports_path = ElevationConfig.results_path
 
 points_amount = get_bulks_points_amount(bulk_content=next(iter(request_data_bodies.values())))
-print("points_amount=", points_amount)
 bulks_amount = len(request_data_bodies)
-print(bulks_amount)
 
 
 class CustomUser(HttpUser):
     response_times = []
     avg_response_time = None
+    wait_time = constant(int(ElevationConfig.wait_time))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -50,11 +43,9 @@ class CustomUser(HttpUser):
         if not ElevationConfig.token_flag:
             for bulk_name, body in self.tasks_per_user.items():
                 if "json" in bulk_name:
-                    response = self.client.post(
-                        "/", json=body, headers={"Content-Type": "application/json"}
-                        , verify=False)
-                    self.users_count = self.environment.runner.user_count
-                    self.log_response_time(response.elapsed.total_seconds() * 1000)
+                    self.client.post(
+                        "/", json=body, headers={"Content-Type": "application/json"}, verify=False)
+                    # self.log_response_time(response.elapsed.total_seconds() * 1000)
 
                 elif "bin" in bulk_name:
                     self.client.post(
@@ -69,11 +60,11 @@ class CustomUser(HttpUser):
         else:
             for bulk_name, body in self.tasks_per_user.items():
                 if "json" in bulk_name:
-                    response = self.client.post(
+                    self.client.post(
                         f"?token={ElevationConfig.TOKEN}", json=body, headers={"Content-Type": "application/json"}
                     )
                     self.users_count = self.environment.runner.user_count
-                    self.log_response_time(response.elapsed.total_seconds() * 1000)
+                    # self.log_response_time(response.elapsed.total_seconds() * 1000)
 
                 elif "bin" in bulk_name:
                     self.client.post(
@@ -85,14 +76,6 @@ class CustomUser(HttpUser):
                 else:
                     return "Invalid file type"
                     # Process the response as needed
-
-    def log_response_time(self, response_time):
-        self.response_times.append(response_time)
-        print(self.response_times)
-
-    def on_stop(self):
-        pass
-        # self.avg_response_time = self.environment.runner.stats.total.avg_response_time
 
 
 file_created = False
@@ -119,10 +102,10 @@ def response_time_listener(response_time, **kwargs):
 
 @events.test_start.add_listener
 def reset_counters(**kwargs):
-    global counters, total_requests
+    global counters, total_requests, response_time_data
     counters = counters
     total_requests = 0
-    test_results = []
+    response_time_data = []
 
 
 @events.request.add_listener
@@ -132,12 +115,10 @@ def on_request(response_time, **kwargs):
 
 @events.test_stop.add_listener
 def on_locust_stop(environment, **kwargs):
+    # global test_results
     avg_response_time = environment.runner.stats.total.avg_response_time
     test_results.append({"bulks_amount": bulks_amount, "avg_response_time": avg_response_time})
-    print(test_results)
-    points_amount_avg_rsp.append({"points_amount": points_amount, "avg_response_time": avg_response_time}
-                                 )
-    print(points_amount)
+    points_amount_avg_rsp.append({"points_amount": points_amount, "avg_response_time": avg_response_time})
     create_custom_graph(graph_name="PointsVsAvgResponseTime", graph_title="Points amount VS Avg response time",
                         graph_path=reports_path, test_results=points_amount_avg_rsp)
     create_custom_graph(graph_name="BulkAmountVsAvgResponseTime", graph_title="Bulk amount VS Avg response time",
@@ -150,7 +131,4 @@ def on_locust_stop(environment, **kwargs):
         custom_path=reports_path, percent_value_by_range=percent_value_by_ranges
     )
 
-
 # Run the Locust test
-class MyUser(CustomUser):
-    wait_time = constant(int(ElevationConfig.wait_time))
