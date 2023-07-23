@@ -45,7 +45,7 @@ class CustomUser(HttpUser):
 
         percent_value_by_range["total_requests"] = total_requests
         write_rps_percent_results(
-            custom_path=ElevationConfig.results_path, percente_value_by_range=percent_value_by_range
+            custom_path=ElevationConfig.results_path, percent_value_by_range=percent_value_by_range
         )
 
 
