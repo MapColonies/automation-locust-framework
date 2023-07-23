@@ -2,17 +2,19 @@ from locust import HttpUser, events, task, constant
 from common.config.config import ElevationConfig
 from common.validation.validation_utils import (
     write_rps_percent_results, get_request_parameters, read_tests_data_folder, initiate_counters_by_ranges,
-    create_custom_graph, get_bulks_points_amount, calculate_response_time_percent,
+    create_custom_graph, get_bulks_points_amount,
 )
 
 results_path = ElevationConfig.results_path
 
 positions_list_path = ElevationConfig.positions_path
-
-if type(ElevationConfig.percent_ranges) == str:
-    percent_ranges = list(ElevationConfig.percent_ranges)
-else:
-    percent_ranges = ElevationConfig.percent_ranges
+#
+# if isinstance(ElevationConfig.percent_ranges, str):
+#     percent_ranges = eval(ElevationConfig.percent_ranges)
+#     print(f"im string convert to {percent_ranges}")
+# else:
+#     percent_ranges = ElevationConfig.percent_ranges
+#     print("im already string")
 
 request_body = get_request_parameters(positions_list_path=positions_list_path)
 
@@ -22,6 +24,9 @@ reports_path = ElevationConfig.results_path
 
 points_amount = get_bulks_points_amount(bulk_content=next(iter(request_data_bodies.values())))
 bulks_amount = len(request_data_bodies)
+percent_ranges = [(0, 100), (101, 300), (301, 400), (401, 500), (501, 600), (601, 602)]
+ranges = [tup[1] for tup in percent_ranges]
+print("new ranges value", ranges)
 
 
 class CustomUser(HttpUser):
@@ -53,6 +58,7 @@ class CustomUser(HttpUser):
                         data=body,
                         headers={"Content-Type": "application/octet-stream"},
                     )
+                    # todo: remove the user counter
                     self.users_count = self.environment.runner.user_count
                 else:
                     return "Invalid file type"
@@ -63,6 +69,7 @@ class CustomUser(HttpUser):
                     self.client.post(
                         f"?token={ElevationConfig.TOKEN}", json=body, headers={"Content-Type": "application/json"}
                     )
+                    # todo: remove the user counter
                     self.users_count = self.environment.runner.user_count
                     # self.log_response_time(response.elapsed.total_seconds() * 1000)
 
@@ -72,13 +79,13 @@ class CustomUser(HttpUser):
                         data=body,
                         headers={"Content-Type": "application/octet-stream"},
                     )
+                    # todo: remove the user counter
                     self.users_count = self.environment.runner.user_count
                 else:
                     return "Invalid file type"
                     # Process the response as needed
 
 
-file_created = False
 counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
 total_requests = 0
 test_results = []
@@ -90,13 +97,21 @@ avg_response_time = 0
 @events.request.add_listener
 def response_time_listener(response_time, **kwargs):
     global counters, total_requests
-
-    for index, range_val in enumerate(percent_ranges):
-        if range_val[1] is None and response_time >= range_val[0]:
+    #
+    # for index, range_val in enumerate(percent_ranges):
+    #     if range_val[1] is None and response_time >= range_val[0]:
+    #         counters[f"counter{index + 1}"] += 1
+    #         break
+    #     elif range_val[0] <= response_time <= range_val[1]:
+    #         counters[f"counter{index + 1}"] += 1
+    #         break
+    # total_requests += 1
+    for index, value in enumerate(ranges[:-1]):
+        if value > response_time:
             counters[f"counter{index + 1}"] += 1
-        elif range_val[0] <= response_time <= range_val[1]:
-            counters[f"counter{index + 1}"] += 1
-
+            break
+    if ranges[-2] < response_time:
+        counters[f"counter{len(ranges)}"] += 1
     total_requests += 1
 
 
@@ -113,9 +128,21 @@ def on_request(response_time, **kwargs):
     response_time_data.append(response_time)
 
 
+@events.test_start.add_listener
+def reset_counters(**kwargs):
+    global counters, total_requests
+    counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
+    total_requests = 0
+
+
+# @events.test_start.add_listener
+# def on_locust_init(environment, **_kwargs):
+#     environment.users_count = environment.runner.target_user_count
+
+
 @events.test_stop.add_listener
 def on_locust_stop(environment, **kwargs):
-    # global test_results
+    global total_requests, counters
     avg_response_time = environment.runner.stats.total.avg_response_time
     test_results.append({"bulks_amount": bulks_amount, "avg_response_time": avg_response_time})
     points_amount_avg_rsp.append({"points_amount": points_amount, "avg_response_time": avg_response_time})
@@ -124,11 +151,16 @@ def on_locust_stop(environment, **kwargs):
     create_custom_graph(graph_name="BulkAmountVsAvgResponseTime", graph_title="Bulk amount VS Avg response time",
                         graph_path=reports_path, test_results=test_results)
 
-    percent_value_by_ranges = calculate_response_time_percent(response_times=response_time_data,
-                                                              range_values=percent_ranges)
-    percent_value_by_ranges["total_requests"] = total_requests
+    percent_value_by_range = {}
+    print("counters---------------", counters)
+    for index, (key, value) in enumerate(counters.items()):
+        percent_range = (value / total_requests) * 100
+        print("percent_ranges[index]---------------", percent_ranges[index])
+        percent_value_by_range[f"{percent_ranges[index]}"] = percent_range
+
+    percent_value_by_range["total_requests"] = total_requests
     write_rps_percent_results(
-        custom_path=reports_path, percent_value_by_range=percent_value_by_ranges
+        custom_path=ElevationConfig.results_path, percent_value_by_range=percent_value_by_range
     )
 
 # Run the Locust test
