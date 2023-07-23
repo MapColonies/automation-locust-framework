@@ -14,19 +14,23 @@ positions_list_path = ElevationConfig.positions_path
 
 if isinstance(ElevationConfig.percent_ranges, str):
     percent_ranges = eval(ElevationConfig.percent_ranges)
-    print(f"im string convert to {percent_ranges}")
 else:
     percent_ranges = ElevationConfig.percent_ranges
-    print("im already string")
-
 positions_bodies = extract_points_from_json(json_file=positions_list_path, payload_flag=ElevationConfig.payload_flag)
 
+# positions_bodies = extract_points_from_json(json_file=positions_list_path, payload_flag=ElevationConfig.payload_flag)
+
 reports_path = ElevationConfig.results_path
+
+ranges = [tup[1] for tup in percent_ranges]
+
+print(positions_bodies)
 
 total_requests = 0
 run_number = 1
 test_results = []
 user_num = 0
+index = 0
 
 
 class CustomUser(HttpUser):
@@ -34,23 +38,37 @@ class CustomUser(HttpUser):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.user_id = "user"
         self.request_bodies = positions_bodies
         self.request_bodies_cycle = cycle(self.request_bodies)
         self.graph_name = ElevationConfig.graph_name
+    #
+    # def create_body(self):
+    #     index = + 1
+    #     return positions_bodies[index]
 
     @task(1)
     def index(self):
+        print(f"User {self.client.user}")
         body = json.loads(next(self.request_bodies_cycle))
         if not ElevationConfig.token_flag:
+            print("sending ---- ", body)
             self.client.post("/", json=body, headers={'Content-Type': 'application/json'}, verify=False)
         else:
-            self.client.post(f"?token={ElevationConfig.TOKEN}", json=body, headers={'Content-Type': 'application/json'})
+            print(body)
+
+            self.client.post(f"?token={ElevationConfig.TOKEN}", json=body,
+                             headers={'Content-Type': 'application/json'})
+
+        print("user_finish requests ======== ")
 
     def on_stop(self):
+        # print(self.body)
         average_response_time = self.environment.runner.stats.total.avg_response_time
         # create_start_time_response_time_graph(graph_name=f"RequestStartTime_vs_ResponseTime-{run_number}",
         #                                       start_time_data=start_time_data, response_time_data=response_time_data)
+
+
+        # print(self.request_bodies_cycle)
 
 
 @events.test_start.add_listener
@@ -64,6 +82,13 @@ counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
 @events.request.add_listener
 def response_time_listener(response_time, **kwargs):
     global counters, total_requests
+    for index, value in enumerate(ranges[:-1]):
+        if value > response_time:
+            counters[f"counter{index + 1}"] += 1
+            break
+    if ranges[-2] < response_time:
+        counters[f"counter{len(ranges)}"] += 1
+    total_requests += 1
 
     # if response_time < percent_ranges[0][1]:
     #     counters[f"counter{0}"] += 1
@@ -71,15 +96,15 @@ def response_time_listener(response_time, **kwargs):
     #     counters[f"counter{1}"] += 1
     # else:
     #     counters[f"counter{2}"] += 1
-    for index, range_rsp in enumerate(percent_ranges):
-        if range_rsp[1] is None and response_time >= range_rsp[0]:
-            counters[f"counter{index + 1}"] += 1
-            break
-        elif range_rsp[0] <= response_time <= range_rsp[1]:
-            counters[f"counter{index + 1}"] += 1
-            break
-
-    total_requests += 1
+    # for index, range_rsp in enumerate(percent_ranges):
+    #     if range_rsp[1] is None and response_time >= range_rsp[0]:
+    #         counters[f"counter{index + 1}"] += 1
+    #         break
+    #     elif range_rsp[0] <= response_time <= range_rsp[1]:
+    #         counters[f"counter{index + 1}"] += 1
+    #         break
+    #
+    # total_requests += 1
 
 
 # @events.request.add_listener
@@ -93,11 +118,10 @@ def response_time_listener(response_time, **kwargs):
 
 @events.test_start.add_listener
 def reset_data_counters(**kwargs):
-    global total_requests, run_number, response_time_data, counters
+    global total_requests, run_number, counters
     total_requests = 0
     run_number += 1
     # start_time_data = []
-    # response_time_data = []
     counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
 
 

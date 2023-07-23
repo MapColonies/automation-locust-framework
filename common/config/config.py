@@ -94,12 +94,12 @@ class ElevationConfig(Config):
     results_path = os.environ.get("results_path", f"{os.getcwd()}")
     # percent_ranges_counters = os.environ.get("percent_ranges_counters",
     #                                          "{(0, 100): 0 , (101, 500):0, (501, None): 0  }")
-    percent_ranges = os.environ.get("percent_ranges", [(0, 100), (101, 500), (501, None)])
+    percent_ranges = os.environ.get("percent_ranges", [(0, 100), (101, 500), (501, 501)])
     bulks_root_folder = os.environ.get("bulks_root_folder", "/home/shayavr/Documents/bulks_input")
     wait_time = os.environ.get("wait_time", 1)
     graph_name = os.environ.get("graph_name", "avg_rps_vs_user_amount")
     payload_flag = os.environ.get("payload_flag", True)
-    token_flag = os.environ.get("token_flag", False)
+    token_flag = os.environ.get("token_flag", True)
 
 
 class Config3D(Config):
