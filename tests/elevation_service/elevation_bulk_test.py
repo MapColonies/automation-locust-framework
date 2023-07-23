@@ -8,13 +8,12 @@ from common.validation.validation_utils import (
 results_path = ElevationConfig.results_path
 
 positions_list_path = ElevationConfig.positions_path
-#
-# if isinstance(ElevationConfig.percent_ranges, str):
-#     percent_ranges = eval(ElevationConfig.percent_ranges)
-#     print(f"im string convert to {percent_ranges}")
-# else:
-#     percent_ranges = ElevationConfig.percent_ranges
-#     print("im already string")
+
+if isinstance(ElevationConfig.percent_ranges, str):
+    percent_ranges = eval(ElevationConfig.percent_ranges)
+else:
+    percent_ranges = ElevationConfig.percent_ranges
+
 
 request_body = get_request_parameters(positions_list_path=positions_list_path)
 
@@ -24,22 +23,18 @@ reports_path = ElevationConfig.results_path
 
 points_amount = get_bulks_points_amount(bulk_content=next(iter(request_data_bodies.values())))
 bulks_amount = len(request_data_bodies)
-percent_ranges = [(0, 100), (101, 300), (301, 400), (401, 500), (501, 600), (601, 602)]
+
 ranges = [tup[1] for tup in percent_ranges]
-print("new ranges value", ranges)
 
 
 class CustomUser(HttpUser):
     response_times = []
-    avg_response_time = None
     wait_time = constant(int(ElevationConfig.wait_time))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.request_body = request_body
-
         self.tasks_per_user = request_data_bodies
-        self.users_count = None
         self.graph_name = ElevationConfig.graph_name
         self.avg_response_time = None
 
@@ -58,8 +53,6 @@ class CustomUser(HttpUser):
                         data=body,
                         headers={"Content-Type": "application/octet-stream"},
                     )
-                    # todo: remove the user counter
-                    self.users_count = self.environment.runner.user_count
                 else:
                     return "Invalid file type"
                     # Process the response as needed
@@ -69,8 +62,6 @@ class CustomUser(HttpUser):
                     self.client.post(
                         f"?token={ElevationConfig.TOKEN}", json=body, headers={"Content-Type": "application/json"}
                     )
-                    # todo: remove the user counter
-                    self.users_count = self.environment.runner.user_count
                     # self.log_response_time(response.elapsed.total_seconds() * 1000)
 
                 elif "bin" in bulk_name:
@@ -79,8 +70,6 @@ class CustomUser(HttpUser):
                         data=body,
                         headers={"Content-Type": "application/octet-stream"},
                     )
-                    # todo: remove the user counter
-                    self.users_count = self.environment.runner.user_count
                 else:
                     return "Invalid file type"
                     # Process the response as needed
@@ -107,6 +96,7 @@ def response_time_listener(response_time, **kwargs):
     #         break
     # total_requests += 1
     for index, value in enumerate(ranges[:-1]):
+        print(value)
         if value > response_time:
             counters[f"counter{index + 1}"] += 1
             break
@@ -118,21 +108,9 @@ def response_time_listener(response_time, **kwargs):
 @events.test_start.add_listener
 def reset_counters(**kwargs):
     global counters, total_requests, response_time_data
-    counters = counters
-    total_requests = 0
-    response_time_data = []
-
-
-@events.request.add_listener
-def on_request(response_time, **kwargs):
-    response_time_data.append(response_time)
-
-
-@events.test_start.add_listener
-def reset_counters(**kwargs):
-    global counters, total_requests
     counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
     total_requests = 0
+    response_time_data = []
 
 
 # @events.test_start.add_listener

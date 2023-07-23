@@ -296,30 +296,32 @@ def get_bulks_points_amount(bulk_content: dict):
     return points_amount
 
 
-def calculate_response_time_percent(response_times, range_values):
-    """
-    This function will calculate response time percent by given ranges of response time
-    :param response_times: list of response time values
-    :param range_values: list of ranges values tuples of the min response time and max response time
-    :return:
-    dict of percent value by range
-
-    """
-    total = len(response_times)
-    percent_dict = {}
-
-    if total == 0:
-        return percent_dict
-
-    for range_min, range_max in range_values:
-        if range_max is not None:
-            count = sum(1 for time in response_times if range_min <= time <= range_max)
-            percent = (count / total) * 100
-            percent_dict[f"({range_min}, {range_max})"] = percent
-        else:
-            count = sum(1 for time in response_times if range_min <= time)
-            percent = (count / total) * 100
-            percent_dict[f"({range_min}, {range_max})"] = percent
-
-    return percent_dict
+# def calculate_response_time_percent(response_times, range_values):
+#     """
+#     This function will calculate response time percent by given ranges of response time
+#     :param response_times: list of response time values
+#     :param range_values: list of ranges values tuples of the min response time and max response time
+#     :return:
+#     dict of percent value by range
+#
+#     """
+#     total = len(response_times)
+#     percent_dict = {}
+#
+#     if total == 0:
+#         return percent_dict
+#     print(range_values)
+#     for range_min, range_max in range_values:
+#         print(range_min)
+#         print(range_max)
+#         if range_max is not None:
+#             count = sum(1 for time in response_times if range_min <= time <= range_max)
+#             percent = (count / total) * 100
+#             percent_dict[f"({range_min}, {range_max})"] = percent
+#         else:
+#             count = sum(1 for time in response_times if range_min <= time)
+#             percent = (count / total) * 100
+#             percent_dict[f"({range_min}, {range_max})"] = percent
+#
+#     return percent_dict
 
