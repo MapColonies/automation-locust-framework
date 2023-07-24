@@ -24,14 +24,11 @@ reports_path = ElevationConfig.results_path
 
 ranges = [tup[1] for tup in percent_ranges]
 
-print(positions_bodies)
+# print(positions_bodies)
 
 total_requests = 0
 run_number = 1
 test_results = []
-user_num = 0
-index = 0
-
 
 class CustomUser(HttpUser):
     wait_time = constant(int(ElevationConfig.wait_time))
@@ -41,6 +38,7 @@ class CustomUser(HttpUser):
         self.request_bodies = positions_bodies
         self.request_bodies_cycle = cycle(self.request_bodies)
         self.graph_name = ElevationConfig.graph_name
+
     #
     # def create_body(self):
     #     index = + 1
@@ -48,27 +46,20 @@ class CustomUser(HttpUser):
 
     @task(1)
     def index(self):
-        print(f"User {self.client.user}")
         body = json.loads(next(self.request_bodies_cycle))
         if not ElevationConfig.token_flag:
-            print("sending ---- ", body)
             self.client.post("/", json=body, headers={'Content-Type': 'application/json'}, verify=False)
         else:
-            print(body)
-
             self.client.post(f"?token={ElevationConfig.TOKEN}", json=body,
                              headers={'Content-Type': 'application/json'})
 
-        print("user_finish requests ======== ")
-
-    def on_stop(self):
-        # print(self.body)
-        average_response_time = self.environment.runner.stats.total.avg_response_time
-        # create_start_time_response_time_graph(graph_name=f"RequestStartTime_vs_ResponseTime-{run_number}",
-        #                                       start_time_data=start_time_data, response_time_data=response_time_data)
-
-
-        # print(self.request_bodies_cycle)
+    # def on_stop(self):
+    #     # print(self.body)
+    #     average_response_time = self.environment.runner.stats.total.avg_response_time
+    #     # create_start_time_response_time_graph(graph_name=f"RequestStartTime_vs_ResponseTime-{run_number}",
+    #     #                                       start_time_data=start_time_data, response_time_data=response_time_data)
+    #
+    #     # print(self.request_bodies_cycle)
 
 
 @events.test_start.add_listener
@@ -121,7 +112,6 @@ def reset_data_counters(**kwargs):
     global total_requests, run_number, counters
     total_requests = 0
     run_number += 1
-    # start_time_data = []
     counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
 
 
