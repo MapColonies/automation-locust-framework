@@ -96,7 +96,6 @@ def response_time_listener(response_time, **kwargs):
     #         break
     # total_requests += 1
     for index, value in enumerate(ranges[:-1]):
-        print(value)
         if value > response_time:
             counters[f"counter{index + 1}"] += 1
             break
@@ -130,10 +129,8 @@ def on_locust_stop(environment, **kwargs):
                         graph_path=reports_path, test_results=test_results)
 
     percent_value_by_range = {}
-    print("counters---------------", counters)
     for index, (key, value) in enumerate(counters.items()):
         percent_range = (value / total_requests) * 100
-        print("percent_ranges[index]---------------", percent_ranges[index])
         percent_value_by_range[f"{percent_ranges[index]}"] = percent_range
 
     percent_value_by_range["total_requests"] = total_requests
