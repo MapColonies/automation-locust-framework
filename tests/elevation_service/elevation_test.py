@@ -4,14 +4,14 @@ from locust import HttpUser, events, task
 
 from common.config.config import ElevationConfig
 from common.validation.validation_utils import (
-    write_rps_percent_results, get_request_parameters, initiate_counters_by_ranges,
+    write_rps_percent_results, get_request_parameters, initiate_counters_by_ranges, retype_env,
 )
 
 results_path = os.getcwd()
 positions_list_path = ElevationConfig.positions_path
 
 if type(ElevationConfig.percent_ranges) == str:
-    percent_ranges = list(ElevationConfig.percent_ranges)
+    percent_ranges = retype_env(ElevationConfig.percent_ranges)
 else:
     percent_ranges = ElevationConfig.percent_ranges
 
@@ -25,7 +25,7 @@ class CustomUser(HttpUser):
 
     @task(1)
     def index(self):
-        if not ElevationConfig.token_flag:
+        if not retype_env(ElevationConfig.token_flag):
             if self.request_body["request_type"] == "json":
                 self.client.post(
                     "/", json=self.request_body["body"], headers=self.request_body["header"], verify=False
