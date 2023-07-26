@@ -2,7 +2,7 @@ from locust import HttpUser, events, task, constant
 from common.config.config import ElevationConfig
 from common.validation.validation_utils import (
     write_rps_percent_results, get_request_parameters, read_tests_data_folder, initiate_counters_by_ranges,
-    create_custom_graph, get_bulks_points_amount,
+    create_custom_graph, get_bulks_points_amount, retype_env,
 )
 
 results_path = ElevationConfig.results_path
@@ -10,7 +10,7 @@ results_path = ElevationConfig.results_path
 positions_list_path = ElevationConfig.positions_path
 
 if isinstance(ElevationConfig.percent_ranges, str):
-    percent_ranges = eval(ElevationConfig.percent_ranges)
+    percent_ranges = retype_env(ElevationConfig.percent_ranges)
 else:
     percent_ranges = ElevationConfig.percent_ranges
 
@@ -18,10 +18,11 @@ else:
 request_body = get_request_parameters(positions_list_path=positions_list_path)
 
 request_data_bodies = read_tests_data_folder(folder_path=ElevationConfig.bulks_root_folder)
-
+print(request_data_bodies)
 reports_path = ElevationConfig.results_path
 
 points_amount = get_bulks_points_amount(bulk_content=next(iter(request_data_bodies.values())))
+print(points_amount)
 bulks_amount = len(request_data_bodies)
 
 ranges = [tup[1] for tup in percent_ranges]
@@ -40,7 +41,7 @@ class CustomUser(HttpUser):
 
     @task(1)
     def index(self):
-        if not ElevationConfig.token_flag:
+        if not retype_env(ElevationConfig.token_flag):
             for bulk_name, body in self.tasks_per_user.items():
                 if "json" in bulk_name:
                     self.client.post(
@@ -139,3 +140,5 @@ def on_locust_stop(environment, **kwargs):
     )
 
 # Run the Locust test
+class MyUser(CustomUser):
+    wait_time = constant(int(ElevationConfig.wait_time))

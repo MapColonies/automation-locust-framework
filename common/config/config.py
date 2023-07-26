@@ -88,18 +88,18 @@ class ElevationConfig(Config):
         "positions_path_value",
         "/home/shayavr/Desktop/git/automation-locust-framework/test_data/myJson.json",
     )
-    # headers = os.environ.get("headers_value", {'Content-Type': 'application/json', "Cache-Control": "no-cache"})
-    # headers = os.environ.get("headers_value", {"Content-Type": "application/json"})
     headers = os.environ.get("headers_value", {'Content-Type': 'application/octet-stream', "Cache-Control": "no-cache"})
     results_path = os.environ.get("results_path", f"{os.getcwd()}")
-    # percent_ranges_counters = os.environ.get("percent_ranges_counters",
-    #                                          "{(0, 100): 0 , (101, 500):0, (501, None): 0  }")
     percent_ranges = os.environ.get("percent_ranges", [(0, 100), (101, 500), (501, 501)])
     bulks_root_folder = os.environ.get("bulks_root_folder", "/home/shayavr/Documents/bulks_input")
     wait_time = os.environ.get("wait_time", 1)
     graph_name = os.environ.get("graph_name", "avg_rps_vs_user_amount")
-    payload_flag = os.environ.get("payload_flag", True)
-    token_flag = os.environ.get("token_flag", True)
+    payload_flag = os.environ.get("payload_flag", "True")
+    token_flag = os.environ.get("token_flag", "False")
+    # payload_flag = os.environ.get("payload_flag", True)
+    # token_flag = os.environ.get("token_flag", True)
+    points_amount_range = os.environ.get("points_amount_range", 250)
+    poly = os.environ.get("polygon", None)
 
 
 class Config3D(Config):
