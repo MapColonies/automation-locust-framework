@@ -296,32 +296,42 @@ def get_bulks_points_amount(bulk_content: dict):
     return points_amount
 
 
-# def calculate_response_time_percent(response_times, range_values):
-#     """
-#     This function will calculate response time percent by given ranges of response time
-#     :param response_times: list of response time values
-#     :param range_values: list of ranges values tuples of the min response time and max response time
-#     :return:
-#     dict of percent value by range
-#
-#     """
-#     total = len(response_times)
-#     percent_dict = {}
-#
-#     if total == 0:
-#         return percent_dict
-#     print(range_values)
-#     for range_min, range_max in range_values:
-#         print(range_min)
-#         print(range_max)
-#         if range_max is not None:
-#             count = sum(1 for time in response_times if range_min <= time <= range_max)
-#             percent = (count / total) * 100
-#             percent_dict[f"({range_min}, {range_max})"] = percent
-#         else:
-#             count = sum(1 for time in response_times if range_min <= time)
-#             percent = (count / total) * 100
-#             percent_dict[f"({range_min}, {range_max})"] = percent
-#
-#     return percent_dict
+def retype_env(env_value):
+    """
+    This function will convert the value of the environment variable to expected python type
+    :param env_val: environment variable value - string type
+    :return:
+    the expected python type
+    """
+    if env_value.lower() == 'none':
+        return None
 
+    if env_value.lower() == 'true':
+        return True
+    if env_value.lower() == 'false':
+        return False
+
+    try:
+        return int(env_value)
+    except ValueError:
+        pass
+
+    try:
+        return float(env_value)
+    except ValueError:
+        pass
+
+    if env_value.startswith('[') and env_value.endswith(']'):
+        try:
+            return list(map(retype_env, env_value[1:-1].split(',')))
+        except ValueError:
+            pass
+
+    if env_value.startswith('{') and env_value.endswith('}'):
+        try:
+            items = [item.strip() for item in env_value[1:-1].split(',')]
+            return {key.strip(): retype_env(val.strip()) for key, val in [item.split(':') for item in items]}
+        except (ValueError, IndexError):
+            pass
+
+    return env_value
