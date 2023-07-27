@@ -36,7 +36,7 @@ class CustomUser(HttpUser):
     @task(1)
     def index(self):
         body = generate_points_request(
-            points_amount=self.points_amount, poly=self.poly, payload_flag=True
+            points_amount=self.points_amount, polygon=self.poly, exclude_fields=True
         )
         if retype_env(ElevationConfig.token_flag):
             self.client.post(
@@ -54,6 +54,7 @@ class CustomUser(HttpUser):
             )
 
 
+# create counters for each range value from the configuration
 counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
 total_requests = 0
 test_results = []
@@ -63,7 +64,7 @@ avg_response_time = 0
 
 
 @events.request.add_listener
-def response_time_listener(response_time, **kwargs):
+def response_time_listener(response_time):
     global counters, total_requests
     for index, value in enumerate(ranges[:-1]):
         if value > response_time:
@@ -75,7 +76,7 @@ def response_time_listener(response_time, **kwargs):
 
 
 @events.test_start.add_listener
-def reset_counters(**kwargs):
+def reset_counters():
     global counters, total_requests, response_time_data
     counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
     total_requests = 0
@@ -83,7 +84,13 @@ def reset_counters(**kwargs):
 
 
 @events.test_stop.add_listener
-def on_locust_stop(environment, **kwargs):
+def on_locust_stop():
+    """
+    The percent calculation for each range by range counters
+    after calculate the percent value with the result into json file
+    :return:
+    """
+
     global total_requests, counters
     percent_value_by_range = {}
     for index, (key, value) in enumerate(counters.items()):
