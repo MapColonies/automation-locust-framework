@@ -3,3 +3,9 @@
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 <img alt="GitHub release (latest by date including pre-releases)" src="https://img.shields.io/github/v/release/MapColonies/automation-locust-framework">
 <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/MapColonies/automation-locust-framework">
+
+# Run pre-commit
+* pre-commit run --all-files
+* pre-commit autoupdate
+* pre-commit install --install-hooks
+* pre-commit install

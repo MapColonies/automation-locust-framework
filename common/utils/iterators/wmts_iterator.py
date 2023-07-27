@@ -5,7 +5,7 @@ from common.config.config import config_obj
 
 
 class WMTSIterator:
-    "WMTSIterator - with range"
+    """WMTSIterator - with range"""
 
     def __init__(self, range_: range):
         self.points = iter(range_)

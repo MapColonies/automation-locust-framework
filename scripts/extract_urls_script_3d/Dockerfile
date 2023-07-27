@@ -9,6 +9,12 @@ COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
+# Add metadata - we should manage versions
+LABEL maintainer="shay@gmail.com"
+LABEL description="Docker image for extracting URLs from data."
+LABEL version="1.0"
+
+
 WORKDIR urls
 
 # Run the application:
