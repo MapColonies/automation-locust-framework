@@ -1,5 +1,9 @@
+import logging
 import os
 import sys
+
+# Use Enum for timer selection
+from enum import Enum
 from pathlib import Path
 
 from locust import (
@@ -13,6 +17,7 @@ from locust import (
 )
 from locust_plugins.csvreader import CSVReader
 
+# Assuming you have a separate config.py file containing WmtsConfig and config_obj
 from common.config.config import WmtsConfig, config_obj
 
 # TODO: Check it why missing how it moved
@@ -30,6 +35,14 @@ from common.utils.constants.strings import (
     INVALID_TIMER_STR,
 )
 
+
+class TimerSelection(Enum):
+    CONSTANT = 1
+    CONSTANT_THROUGHPUT = 2
+    BETWEEN = 3
+    CONSTANT_PACING = 4
+
+
 myDir = os.getcwd()
 sys.path.append(myDir)
 
@@ -43,27 +56,30 @@ ssn_reader = CSVReader(wmts_csv_path)
 
 
 def set_wait_time(timer_selection, wait_time):
-    if timer_selection == 1:
+    if timer_selection == TimerSelection.CONSTANT:
         return constant(wait_time), CONSTANT_TIMER_STR
-    elif timer_selection == 2:
+    elif timer_selection == TimerSelection.CONSTANT_THROUGHPUT:
         return constant_throughput(wait_time), CONSTANT_THROUGHPUT_TIMER_STR
-    elif timer_selection == 3:
+    elif timer_selection == TimerSelection.BETWEEN:
         return (
             between(config_obj["wmts"].MIN_WAIT, config_obj["wmts"].MAX_WAIT),
             BETWEEN_TIMER_STR,
         )
-    elif timer_selection == 4:
+    elif timer_selection == TimerSelection.CONSTANT_PACING:
         return constant_pacing(wait_time), CONSTANT_PACING_TIMER_STR
     else:
         return None, INVALID_TIMER_STR
 
 
 class User(FastHttpUser):
-    timer_selection = config_obj["wmts"].WAIT_TIME_FUNC[0]
-    wait_time = config_obj["wmts"].WAIT_TIME[0]
-
-    wait_time, timer_message = set_wait_time(timer_selection, wait_time)
-    print(timer_message)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.timer_selection = config_obj["wmts"].WAIT_TIME_FUNC[0]
+        self.wait_time = config_obj["wmts"].WAIT_TIME[0]
+        self.wait_time, self.timer_message = set_wait_time(
+            self.timer_selection, self.wait_time
+        )
+        logging.info(self.timer_message)
 
     @task(1)
     def index(self):
@@ -91,7 +107,6 @@ class User(FastHttpUser):
             counter = count_rsp_time_by_rsp_time_ranges(
                 rsp_time_data=rsp_list, rsp_range=rsp_t_range
             )
-
             percentile = get_percentile_value(
                 rsp_counter=counter, rsp_time_list=rsp_list
             )

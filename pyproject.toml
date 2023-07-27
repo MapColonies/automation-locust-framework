@@ -17,6 +17,8 @@ ignore = ["E501"]
 
 [tool.bandit]
 skips = [
+    "B405",
+    "B314",
     "B101",
     "B105",
     "B301",

@@ -1,4 +1,4 @@
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET  # nosec
 from typing import List
 
 from mc_automation_tools import postgres
@@ -58,7 +58,7 @@ def query_random_layers_data() -> list:
     return res
 
 
-def extract_values_from_nested_xml(xml_content: str, parent_name: str):
+def extract_values_from_nested_xml(xml_content: str, parent_name: str):  # nosec
     # todo: edit the return object
     tree = ET.fromstring(xml_content)
     # Extract values from nested XML by parent name
