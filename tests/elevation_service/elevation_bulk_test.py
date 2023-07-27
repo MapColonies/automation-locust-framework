@@ -1,8 +1,14 @@
-from locust import HttpUser, events, task, constant
+from locust import HttpUser, constant, events, task
+
 from common.config.config import ElevationConfig
 from common.validation.validation_utils import (
-    write_rps_percent_results, get_request_parameters, read_tests_data_folder, initiate_counters_by_ranges,
-    create_custom_graph, get_bulks_points_amount, retype_env,
+    create_custom_graph,
+    get_bulks_points_amount,
+    get_request_parameters,
+    initiate_counters_by_ranges,
+    read_tests_data_folder,
+    retype_env,
+    write_rps_percent_results,
 )
 
 results_path = ElevationConfig.results_path
@@ -17,11 +23,15 @@ else:
 
 request_body = get_request_parameters(positions_list_path=positions_list_path)
 
-request_data_bodies = read_tests_data_folder(folder_path=ElevationConfig.bulks_root_folder)
+request_data_bodies = read_tests_data_folder(
+    folder_path=ElevationConfig.bulks_root_folder
+)
 print(request_data_bodies)
 reports_path = ElevationConfig.results_path
 
-points_amount = get_bulks_points_amount(bulk_content=next(iter(request_data_bodies.values())))
+points_amount = get_bulks_points_amount(
+    bulk_content=next(iter(request_data_bodies.values()))
+)
 print(points_amount)
 bulks_amount = len(request_data_bodies)
 
@@ -45,7 +55,11 @@ class CustomUser(HttpUser):
             for bulk_name, body in self.tasks_per_user.items():
                 if "json" in bulk_name:
                     self.client.post(
-                        "/", json=body, headers={"Content-Type": "application/json"}, verify=False)
+                        "/",
+                        json=body,
+                        headers={"Content-Type": "application/json"},
+                        verify=False,
+                    )
                     # self.log_response_time(response.elapsed.total_seconds() * 1000)
 
                 elif "bin" in bulk_name:
@@ -61,7 +75,9 @@ class CustomUser(HttpUser):
             for bulk_name, body in self.tasks_per_user.items():
                 if "json" in bulk_name:
                     self.client.post(
-                        f"?token={ElevationConfig.TOKEN}", json=body, headers={"Content-Type": "application/json"}
+                        f"?token={ElevationConfig.TOKEN}",
+                        json=body,
+                        headers={"Content-Type": "application/json"},
                     )
                     # self.log_response_time(response.elapsed.total_seconds() * 1000)
 
@@ -122,12 +138,24 @@ def reset_counters(**kwargs):
 def on_locust_stop(environment, **kwargs):
     global total_requests, counters
     avg_response_time = environment.runner.stats.total.avg_response_time
-    test_results.append({"bulks_amount": bulks_amount, "avg_response_time": avg_response_time})
-    points_amount_avg_rsp.append({"points_amount": points_amount, "avg_response_time": avg_response_time})
-    create_custom_graph(graph_name="PointsVsAvgResponseTime", graph_title="Points amount VS Avg response time",
-                        graph_path=reports_path, test_results=points_amount_avg_rsp)
-    create_custom_graph(graph_name="BulkAmountVsAvgResponseTime", graph_title="Bulk amount VS Avg response time",
-                        graph_path=reports_path, test_results=test_results)
+    test_results.append(
+        {"bulks_amount": bulks_amount, "avg_response_time": avg_response_time}
+    )
+    points_amount_avg_rsp.append(
+        {"points_amount": points_amount, "avg_response_time": avg_response_time}
+    )
+    create_custom_graph(
+        graph_name="PointsVsAvgResponseTime",
+        graph_title="Points amount VS Avg response time",
+        graph_path=reports_path,
+        test_results=points_amount_avg_rsp,
+    )
+    create_custom_graph(
+        graph_name="BulkAmountVsAvgResponseTime",
+        graph_title="Bulk amount VS Avg response time",
+        graph_path=reports_path,
+        test_results=test_results,
+    )
 
     percent_value_by_range = {}
     for index, (key, value) in enumerate(counters.items()):
@@ -136,8 +164,10 @@ def on_locust_stop(environment, **kwargs):
 
     percent_value_by_range["total_requests"] = total_requests
     write_rps_percent_results(
-        custom_path=ElevationConfig.results_path, percent_value_by_range=percent_value_by_range
+        custom_path=ElevationConfig.results_path,
+        percent_value_by_range=percent_value_by_range,
     )
+
 
 # Run the Locust test
 class MyUser(CustomUser):
