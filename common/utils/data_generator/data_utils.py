@@ -1,6 +1,8 @@
 import json
 import random
+from typing import Tuple
 
+from black import List
 from shapely.geometry import Point, Polygon
 
 poly = [
@@ -11,7 +13,9 @@ poly = [
 ]
 
 
-def polygon_random_points(polygon: list, num_points: int) -> list:
+def polygon_random_points(
+    polygon: List[Tuple[float, float]], num_points: int
+) -> List[Tuple[float, float]]:
     """
     This function will generate points by a given polygon
     :param polygon: Polygon coordinates of the desired points zone
@@ -33,23 +37,26 @@ def polygon_random_points(polygon: list, num_points: int) -> list:
 
 
 def generate_points_request(
-    points_amount: int, poly: list, payload_flag: bool, product_type="MIXED"
+    points_amount: int,
+    polygon: List[Tuple[float, float]],
+    exclude_fields: bool,
+    product_type: str = "MIXED",
 ):
     """
     This function will generate request body for user
     :param points_amount: point amount to be generated
-    :param poly: Polygon object of the desired points zone
-    :param payload_flag: indicate if the excludeFields will be empty or not
+    :param polygon: Polygon object of the desired points zone
+    :param exclude_fields: indicate if the excludeFields will be empty or not
     :param product_type: [ DSM, DTM, MIXED ]
     :return:
     request body
     """
-    points_data = polygon_random_points(polygon=poly, num_points=points_amount)
+    points_data = polygon_random_points(polygon=polygon, num_points=points_amount)
     points_list = []
     for points_cor in points_data:
         points = {"longitude": points_cor[0], "latitude": points_cor[1]}
         points_list.append(points)
-    if payload_flag:
+    if exclude_fields:
         request_body = json.dumps(
             {"positions": points_list, "productType": product_type, "excludeFields": []}
         )
