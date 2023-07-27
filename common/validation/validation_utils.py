@@ -3,6 +3,7 @@ import json
 import os
 import re
 from typing import Any, List, Union
+
 import matplotlib.dates as mdates
 import numpy as np
 from matplotlib import pyplot as plt
@@ -37,7 +38,7 @@ def validate_response_status(response: Any, expected_status_code: int) -> None:
 
 
 def validate_json_key_value(
-        json_data: dict, key: str, expected_value: Union[str, int, float, bool]
+    json_data: dict, key: str, expected_value: Union[str, int, float, bool]
 ) -> None:
     if key not in json_data:
         raise KeyNotFoundError(f"Key '{key}' not found in JSON data")
@@ -143,18 +144,27 @@ def get_request_parameters(positions_list_path: str) -> [dict]:
     if request_type == "json":
         with open(positions_list_path) as file:
             body = json.load(file)
-            request_body = {"request_type": request_type, "body": body,
-                            "header": {"Content-Type": "application/json"}}
+            request_body = {
+                "request_type": request_type,
+                "body": body,
+                "header": {"Content-Type": "application/json"},
+            }
             return request_body
     elif request_type == "bin":
         with open(positions_list_path, "rb") as file:
             body = file.read()
-            request_body = {"request_type": request_type, "body": body,
-                            "header": {'Content-Type': 'application/octet-stream'}}
+            request_body = {
+                "request_type": request_type,
+                "body": body,
+                "header": {"Content-Type": "application/octet-stream"},
+            }
             return request_body
     else:
-        return {"request_type": None, "body": "invalid position file path",
-                "header": None}
+        return {
+            "request_type": None,
+            "body": "invalid position file path",
+            "header": None,
+        }
 
 
 def read_tests_data_folder(folder_path: str):
@@ -170,7 +180,7 @@ def read_tests_data_folder(folder_path: str):
             file_type = extract_file_type(file_path=f"{root}/{file_name}")
             file_path = os.path.join(root, file_name)
             if file_type == "json":
-                with open(file_path, "r") as file:
+                with open(file_path) as file:
                     file_content = json.load(file)
                 folder_files_content[f"{file_name}"] = file_content
             elif file_type == "bin":
@@ -178,7 +188,7 @@ def read_tests_data_folder(folder_path: str):
                     file_content = file.read()
                 folder_files_content[f"{file_name}"] = f"{file_content}"
             else:
-                with open(file_path, "r") as file:
+                with open(file_path) as file:
                     file_content = file.read()
                 folder_files_content[f"{file_name}"] = file_content
     return folder_files_content
@@ -193,16 +203,23 @@ def extract_points_from_json(json_file, payload_flag=True, product_type="MIXED")
     list of one point body
     """
     point_list = []
-    with open(json_file, "r") as file:
+    with open(json_file) as file:
         data = json.load(file)
     if payload_flag:
         for point in data["positions"]:
-            point_value = {"positions": [point], "productType": product_type, "excludeFields": []}
+            point_value = {
+                "positions": [point],
+                "productType": product_type,
+                "excludeFields": [],
+            }
             point_list.append(json.dumps(point_value))
     else:
         for point in data["positions"]:
-            point_value = {"positions": [point], "productType": product_type,
-                           "excludeFields": ["productType", "updateDate", "resolutionMeter"]}
+            point_value = {
+                "positions": [point],
+                "productType": product_type,
+                "excludeFields": ["productType", "updateDate", "resolutionMeter"],
+            }
             point_list.append(json.dumps(point_value))
     return point_list
 
@@ -242,7 +259,7 @@ def create_custom_graph(graph_name, graph_path, test_results, graph_title=None):
     else:
         plt.title(graph_title)
     plt.grid(True)
-    plt.savefig(f'{graph_path}/{graph_name}.png')
+    plt.savefig(f"{graph_path}/{graph_name}.png")
     plt.close()
 
 
@@ -254,11 +271,15 @@ def create_graph_results_data_format(keys_names: list, x_y_axis_values: list) ->
     :return:
     list of the results data by x axis and y axis keys
     """
-    formatted_results = [{k: v for k, v in zip(keys_names, values)} for values in zip(*x_y_axis_values)]
+    formatted_results = [
+        {k: v for k, v in zip(keys_names, values)} for values in zip(*x_y_axis_values)
+    ]
     return formatted_results
 
 
-def create_start_time_response_time_graph(start_time_data, response_time_data, graph_name):
+def create_start_time_response_time_graph(
+    start_time_data, response_time_data, graph_name
+):
     fig, ax = plt.subplots()
     x = np.array(start_time_data)  # X-coordinates of the data points
     y = np.array(response_time_data)  # Y-coordinates of the data points
@@ -267,19 +288,19 @@ def create_start_time_response_time_graph(start_time_data, response_time_data, g
     num_points = len(x)
     colors = np.random.rand(num_points)
 
-    plt.scatter(x, y, c=colors, cmap='viridis')
-    ax.set_xlabel('Request Start Time')
-    ax.set_ylabel('Response Time (ms)')
-    ax.set_title('Request Start Time vs. Response Time')
+    plt.scatter(x, y, c=colors, cmap="viridis")
+    ax.set_xlabel("Request Start Time")
+    ax.set_ylabel("Response Time (ms)")
+    ax.set_title("Request Start Time vs. Response Time")
 
     # Set the x-axis formatter
-    formatter = mdates.DateFormatter('%H:%M:%S')
+    formatter = mdates.DateFormatter("%H:%M:%S")
     formatter._useOffset = False  # Disable offset
     ax.xaxis.set_major_formatter(formatter)
     fig.autofmt_xdate()  # Auto-format the x-axis date labels
-    scatter = plt.scatter(x, y, c=colors, cmap='viridis')
+    scatter = plt.scatter(x, y, c=colors, cmap="viridis")
     plt.colorbar(scatter)
-    plt.savefig(f'{graph_name}.png')
+    plt.savefig(f"{graph_name}.png")
     plt.close()
 
 
@@ -302,12 +323,12 @@ def retype_env(env_value: str):
     :param env_value: environment variable value - string type
     :return: the expected python type
     """
-    if env_value.lower() == 'none':
+    if env_value.lower() == "none":
         return None
 
-    if env_value.lower() == 'true':
+    if env_value.lower() == "true":
         return True
-    if env_value.lower() == 'false':
+    if env_value.lower() == "false":
         return False
 
     try:
@@ -320,16 +341,19 @@ def retype_env(env_value: str):
     except ValueError:
         pass
 
-    if env_value.startswith('[') and env_value.endswith(']'):
+    if env_value.startswith("[") and env_value.endswith("]"):
         try:
-            return list(map(retype_env, env_value[1:-1].split(',')))
+            return list(map(retype_env, env_value[1:-1].split(",")))
         except ValueError:
             pass
 
-    if env_value.startswith('{') and env_value.endswith('}'):
+    if env_value.startswith("{") and env_value.endswith("}"):
         try:
-            items = [item.strip() for item in env_value[1:-1].split(',')]
-            return {key.strip(): retype_env(val.strip()) for key, val in [item.split(':') for item in items]}
+            items = [item.strip() for item in env_value[1:-1].split(",")]
+            return {
+                key.strip(): retype_env(val.strip())
+                for key, val in [item.split(":") for item in items]
+            }
         except (ValueError, IndexError):
             pass
 

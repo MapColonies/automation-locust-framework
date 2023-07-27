@@ -1,13 +1,15 @@
-import datetime
 import json
-from locust import HttpUser, events, task, constant
 from itertools import cycle
-from locust.runners import Runner
-from matplotlib import pyplot as plt
+
+from locust import HttpUser, constant, events, task
+
 from common.config.config import ElevationConfig
 from common.validation.validation_utils import (
-    write_rps_percent_results, extract_points_from_json, create_custom_graph,
-    create_start_time_response_time_graph, initiate_counters_by_ranges, retype_env,
+    create_custom_graph,
+    extract_points_from_json,
+    initiate_counters_by_ranges,
+    retype_env,
+    write_rps_percent_results,
 )
 
 positions_list_path = ElevationConfig.positions_path
@@ -16,7 +18,9 @@ if isinstance(ElevationConfig.percent_ranges, str):
     percent_ranges = retype_env(ElevationConfig.percent_ranges)
 else:
     percent_ranges = ElevationConfig.percent_ranges
-positions_bodies = extract_points_from_json(json_file=positions_list_path, payload_flag=ElevationConfig.payload_flag)
+positions_bodies = extract_points_from_json(
+    json_file=positions_list_path, payload_flag=ElevationConfig.payload_flag
+)
 
 # positions_bodies = extract_points_from_json(json_file=positions_list_path, payload_flag=ElevationConfig.payload_flag)
 
@@ -29,6 +33,7 @@ ranges = [tup[1] for tup in percent_ranges]
 total_requests = 0
 run_number = 1
 test_results = []
+
 
 class CustomUser(HttpUser):
     wait_time = constant(int(ElevationConfig.wait_time))
@@ -48,10 +53,18 @@ class CustomUser(HttpUser):
     def index(self):
         body = json.loads(next(self.request_bodies_cycle))
         if not retype_env(ElevationConfig.token_flag):
-            self.client.post("/", json=body, headers={'Content-Type': 'application/json'}, verify=False)
+            self.client.post(
+                "/",
+                json=body,
+                headers={"Content-Type": "application/json"},
+                verify=False,
+            )
         else:
-            self.client.post(f"?token={ElevationConfig.TOKEN}", json=body,
-                             headers={'Content-Type': 'application/json'})
+            self.client.post(
+                f"?token={ElevationConfig.TOKEN}",
+                json=body,
+                headers={"Content-Type": "application/json"},
+            )
 
     # def on_stop(self):
     #     # print(self.body)
@@ -121,13 +134,20 @@ def reset_data_counters(**kwargs):
 #     counters = counters
 #     total_requests = 0
 
+
 @events.test_stop.add_listener
 def on_locust_stop(environment, **kwargs):
     global total_requests, test_results, counters
     average_response_time = environment.runner.stats.total.avg_response_time
-    test_results.append({"users": environment.users_count, "avg_response_time": average_response_time})
-    create_custom_graph(graph_name="Users_vs_AvgResponseTime", graph_path=reports_path,
-                        test_results=test_results, graph_title=None)
+    test_results.append(
+        {"users": environment.users_count, "avg_response_time": average_response_time}
+    )
+    create_custom_graph(
+        graph_name="Users_vs_AvgResponseTime",
+        graph_path=reports_path,
+        test_results=test_results,
+        graph_title=None,
+    )
     percent_value_by_range = {}
     for index, (key, value) in enumerate(counters.items()):
         percent_range = (value / total_requests) * 100
@@ -135,7 +155,8 @@ def on_locust_stop(environment, **kwargs):
 
     percent_value_by_range["total_requests"] = total_requests
     write_rps_percent_results(
-        custom_path=ElevationConfig.results_path, percent_value_by_range=percent_value_by_range
+        custom_path=ElevationConfig.results_path,
+        percent_value_by_range=percent_value_by_range,
     )
 
 

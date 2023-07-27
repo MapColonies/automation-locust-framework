@@ -1,10 +1,13 @@
-import json
 import os
+
 from locust import HttpUser, events, task
 
 from common.config.config import ElevationConfig
 from common.validation.validation_utils import (
-    write_rps_percent_results, get_request_parameters, initiate_counters_by_ranges, retype_env,
+    get_request_parameters,
+    initiate_counters_by_ranges,
+    retype_env,
+    write_rps_percent_results,
 )
 
 results_path = os.getcwd()
@@ -28,25 +31,31 @@ class CustomUser(HttpUser):
         if not retype_env(ElevationConfig.token_flag):
             if self.request_body["request_type"] == "json":
                 self.client.post(
-                    "/", json=self.request_body["body"], headers=self.request_body["header"], verify=False
+                    "/",
+                    json=self.request_body["body"],
+                    headers=self.request_body["header"],
+                    verify=False,
                 )
             elif self.request_body["request_type"] == "bin":
                 self.client.post(
                     "/",
                     data=self.request_body["body"],
-                    headers=self.request_body["header"], verify=False
+                    headers=self.request_body["header"],
+                    verify=False,
                 )
         else:
             if self.request_body["request_type"] == "json":
                 self.client.post(
-                    f"?token={ElevationConfig.TOKEN}", json=self.request_body["body"],
-                    headers=self.request_body["header"], verify=False
+                    f"?token={ElevationConfig.TOKEN}",
+                    json=self.request_body["body"],
+                    headers=self.request_body["header"],
+                    verify=False,
                 )
             elif self.request_body["request_type"] == "bin":
                 self.client.post(
                     f"?token={ElevationConfig.TOKEN}",
                     data=self.request_body["body"],
-                    headers=self.request_body["header"]
+                    headers=self.request_body["header"],
                 )
 
         # Process the response as needed
@@ -60,7 +69,8 @@ class CustomUser(HttpUser):
 
         percent_value_by_range["total_requests"] = total_requests
         write_rps_percent_results(
-            custom_path=ElevationConfig.results_path, percent_value_by_range=percent_value_by_range
+            custom_path=ElevationConfig.results_path,
+            percent_value_by_range=percent_value_by_range,
         )
 
 
@@ -92,4 +102,6 @@ def reset_counters(**kwargs):
 class MyUser(CustomUser):
     min_wait = 100
     max_wait = 1000
+
+
 # todo:ask alex which wait time to set to insure that we create the next task only if we get reponse from the first task

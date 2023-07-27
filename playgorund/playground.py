@@ -1,10 +1,11 @@
-import json
 import os
+
 from locust import HttpUser, events, task
 
 from common.config.config import ElevationConfig
 from common.validation.validation_utils import (
-    write_rps_percent_results, get_request_parameters,
+    get_request_parameters,
+    write_rps_percent_results,
 )
 
 results_path = os.getcwd()
@@ -19,7 +20,7 @@ ranges = {
         {"lower": 0, "upper": 100},
         {"lower": 101, "upper": 200},
         {"lower": 201, "upper": 300},
-        {"lower": 301, "upper": 400}
+        {"lower": 301, "upper": 400},
     ]
 }
 
@@ -38,7 +39,7 @@ class CustomUser(HttpUser):
     @task
     def my_task(self):
         # Make the HTTP request
-        response = self.client.get(url="https://www.ynet.co.il/home")
+        self.client.get(url="https://www.ynet.co.il/home")
         # Process the response as needed
 
     def on_stop(self):
@@ -83,6 +84,8 @@ def reset_counters(**kwargs):
 class MyUser(CustomUser):
     min_wait = 100
     max_wait = 1000
+
+
 # #todo:ask alex which wait time to set to insure that we create the next task only if we get reponse from the first task
 #     @task
 #     def my_task(self):

@@ -1,12 +1,15 @@
 import datetime
-import json
-from locust import HttpUser, events, task, constant
 from itertools import cycle
-from matplotlib import pyplot as plt
+
+from locust import HttpUser, constant, events, task
+
 from common.config.config import ElevationConfig
 from common.validation.validation_utils import (
-    write_rps_percent_results, extract_points_from_json, initiate_counters_by_ranges, create_custom_graph,
-    create_graph_results_data_format, create_start_time_response_time_graph, calculate_response_time_percent,
+    calculate_response_time_percent,
+    create_custom_graph,
+    create_start_time_response_time_graph,
+    extract_points_from_json,
+    write_rps_percent_results,
 )
 
 positions_list_path = ElevationConfig.positions_path
@@ -16,7 +19,9 @@ if type(ElevationConfig.percent_ranges) == str:
 else:
     percent_ranges = ElevationConfig.percent_ranges
 
-positions_bodies = extract_points_from_json(json_file=positions_list_path, payload_flag=ElevationConfig.payload_flag)
+positions_bodies = extract_points_from_json(
+    json_file=positions_list_path, payload_flag=ElevationConfig.payload_flag
+)
 
 reports_path = ElevationConfig.results_path
 
@@ -50,8 +55,11 @@ class CustomUser(HttpUser):
         # self.req_start_t_rsp_t = create_graph_results_data_format(["start_time", "response_time"],
         #                                                           [])
         # print(self.req_start_t_rsp_t)
-        create_start_time_response_time_graph(graph_name=f"RequestStartTime_vs_ResponseTime-{run_number}",
-                                              start_time_data=start_time_data, response_time_data=response_time_data)
+        create_start_time_response_time_graph(
+            graph_name=f"RequestStartTime_vs_ResponseTime-{run_number}",
+            start_time_data=start_time_data,
+            response_time_data=response_time_data,
+        )
 
 
 # counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
@@ -66,7 +74,7 @@ test_results = []
 @events.request.add_listener
 def on_request(environment, request_type, name, response_time, **kwargs):
     global total_requests, users_count
-    start_time = datetime.datetime.fromtimestamp(kwargs['start_time'])
+    start_time = datetime.datetime.fromtimestamp(kwargs["start_time"])
     response_time_data.append(response_time)
     start_time_data.append(start_time)
     total_requests += 1
@@ -88,12 +96,19 @@ def on_locust_stop(environment, **kwargs):
     print("users_count is:", users_count)
     print("response_time_data is:", response_time_data)
     average_response_time = environment.runner.stats.total.avg_response_time
-    test_results.append({"users": users_count, "avg_response_time": average_response_time})
+    test_results.append(
+        {"users": users_count, "avg_response_time": average_response_time}
+    )
     print(test_results)
-    create_custom_graph(graph_name="Users_vs_AvgResponseTime", graph_path=reports_path,
-                        test_results=test_results, graph_title=None)
-    percent_value_by_ranges = calculate_response_time_percent(response_times=response_time_data,
-                                                              range_values=percent_ranges)
+    create_custom_graph(
+        graph_name="Users_vs_AvgResponseTime",
+        graph_path=reports_path,
+        test_results=test_results,
+        graph_title=None,
+    )
+    percent_value_by_ranges = calculate_response_time_percent(
+        response_times=response_time_data, range_values=percent_ranges
+    )
     percent_value_by_ranges["total_requests"] = total_requests
     write_rps_percent_results(
         custom_path=reports_path, percent_value_by_range=percent_value_by_ranges

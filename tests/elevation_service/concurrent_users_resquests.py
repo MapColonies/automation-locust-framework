@@ -1,10 +1,14 @@
 import random
-from locust import HttpUser, events, task, constant
-from shapely import Polygon
+
+from locust import HttpUser, constant, events, task
+
 from common.config.config import ElevationConfig
 from common.utils.data_generator.data_utils import generate_points_request
 from common.validation.validation_utils import (
-    write_rps_percent_results, initiate_counters_by_ranges, retype_env)
+    initiate_counters_by_ranges,
+    retype_env,
+    write_rps_percent_results,
+)
 
 if isinstance(ElevationConfig.percent_ranges, str):
     percent_ranges = retype_env(ElevationConfig.percent_ranges)
@@ -31,15 +35,23 @@ class CustomUser(HttpUser):
 
     @task(1)
     def index(self):
-        body = generate_points_request(points_amount=self.points_amount, poly=self.poly, payload_flag=True)
+        body = generate_points_request(
+            points_amount=self.points_amount, poly=self.poly, payload_flag=True
+        )
         if retype_env(ElevationConfig.token_flag):
             self.client.post(
-                f"?token={ElevationConfig.TOKEN}", json=body, headers={"Content-Type": "application/json"})
+                f"?token={ElevationConfig.TOKEN}",
+                json=body,
+                headers={"Content-Type": "application/json"},
+            )
 
         else:
-
             self.client.post(
-                "/", json=body, headers={"Content-Type": "application/json"}, verify=False)
+                "/",
+                json=body,
+                headers={"Content-Type": "application/json"},
+                verify=False,
+            )
 
 
 counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
@@ -80,7 +92,8 @@ def on_locust_stop(environment, **kwargs):
 
     percent_value_by_range["total_requests"] = total_requests
     write_rps_percent_results(
-        custom_path=ElevationConfig.results_path, percent_value_by_range=percent_value_by_range
+        custom_path=ElevationConfig.results_path,
+        percent_value_by_range=percent_value_by_range,
     )
 
 
