@@ -194,18 +194,19 @@ def read_tests_data_folder(folder_path: str):
     return folder_files_content
 
 
-def extract_points_from_json(json_file, payload_flag=True, product_type="MIXED"):
+def extract_points_from_json(json_file, excludeFields=True, product_type="MIXED"):
     """
+
     This function will be used as a ssn reader for json
     :param json_file: positions points file
-    :param payload_flag : indicate if to send filed to be excluded
+    :param excludeFields : indicate if to send filed to be excluded
     :return:
     list of one point body
     """
     point_list = []
     with open(json_file) as file:
         data = json.load(file)
-    if payload_flag:
+    if excludeFields:
         for point in data["positions"]:
             point_value = {
                 "positions": [point],
