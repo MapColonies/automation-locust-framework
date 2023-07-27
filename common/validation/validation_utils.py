@@ -296,12 +296,11 @@ def get_bulks_points_amount(bulk_content: dict):
     return points_amount
 
 
-def retype_env(env_value):
+def retype_env(env_value: str):
     """
-    This function will convert the value of the environment variable to expected python type
-    :param env_val: environment variable value - string type
-    :return:
-    the expected python type
+    This function will convert the value of the environment variable to the expected python type
+    :param env_value: environment variable value - string type
+    :return: the expected python type
     """
     if env_value.lower() == 'none':
         return None
