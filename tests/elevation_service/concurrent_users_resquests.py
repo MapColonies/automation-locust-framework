@@ -6,10 +6,6 @@ from common.utils.data_generator.data_utils import generate_points_request
 from common.validation.validation_utils import (
     write_rps_percent_results, initiate_counters_by_ranges, retype_env)
 
-# todo: remove before delivering
-poly = Polygon([(37.75850848099701, -122.50833008408812), (37.75911919711413, -122.49648544907835),
-                (37.751620611284935, -122.4937388670471), (37.74863453749236, -122.50742886185911)])
-
 if isinstance(ElevationConfig.percent_ranges, str):
     percent_ranges = retype_env(ElevationConfig.percent_ranges)
 else:
@@ -19,6 +15,8 @@ reports_path = ElevationConfig.results_path
 
 ranges = [tup[1] for tup in percent_ranges]
 
+polygons = retype_env(ElevationConfig.poly)
+
 
 class CustomUser(HttpUser):
     response_times = []
@@ -26,24 +24,22 @@ class CustomUser(HttpUser):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.request_body = request_body
-        # self.tasks_per_user = request_data_bodies
-        self.graph_name = ElevationConfig.graph_name
         self.avg_response_time = None
         self.points_amount_range = ElevationConfig.points_amount_range
         self.points_amount = random.randint(0, self.points_amount_range)
-        self.poly = ElevationConfig.poly
+        self.poly = random.choice(polygons)
 
     @task(1)
     def index(self):
-        body = generate_points_request(points_amount=self.points_amount, poly=poly, payload_flag=True)
-        if not retype_env(ElevationConfig.token_flag):
+        body = generate_points_request(points_amount=self.points_amount, poly=self.poly, payload_flag=True)
+        if retype_env(ElevationConfig.token_flag):
+            self.client.post(
+                f"?token={ElevationConfig.TOKEN}", json=body, headers={"Content-Type": "application/json"})
+
+        else:
+
             self.client.post(
                 "/", json=body, headers={"Content-Type": "application/json"}, verify=False)
-        else:
-            self.client.post(
-                f"?token={ElevationConfig.TOKEN}", json=body, headers={"Content-Type": "application/json"}
-            )
 
 
 counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
