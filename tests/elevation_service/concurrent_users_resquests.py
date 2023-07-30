@@ -19,7 +19,10 @@ reports_path = ElevationConfig.results_path
 
 ranges = [tup[1] for tup in percent_ranges]
 
-polygons = retype_env(ElevationConfig.poly)
+if isinstance(ElevationConfig.poly, str):
+    polygons = retype_env(ElevationConfig.poly)
+else:
+    polygons = ElevationConfig.poly
 
 
 class CustomUser(HttpUser):
@@ -41,16 +44,16 @@ class CustomUser(HttpUser):
         if retype_env(ElevationConfig.token_flag):
             self.client.post(
                 f"?token={ElevationConfig.TOKEN}",
-                json=body,
+                data=body,
                 headers={"Content-Type": "application/json"},
-            )
 
+            )
         else:
             self.client.post(
                 "/",
-                json=body,
+                data=body,
                 headers={"Content-Type": "application/json"},
-                verify=False,
+                verify=False
             )
 
 
@@ -64,7 +67,7 @@ avg_response_time = 0
 
 
 @events.request.add_listener
-def response_time_listener(response_time):
+def response_time_listener(response_time, **kwargs):
     global counters, total_requests
     for index, value in enumerate(ranges[:-1]):
         if value > response_time:
@@ -76,7 +79,7 @@ def response_time_listener(response_time):
 
 
 @events.test_start.add_listener
-def reset_counters():
+def reset_counters(**kwargs):
     global counters, total_requests, response_time_data
     counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
     total_requests = 0
@@ -84,7 +87,7 @@ def reset_counters():
 
 
 @events.test_stop.add_listener
-def on_locust_stop():
+def on_locust_stop(environment, **kwargs):
     """
     The percent calculation for each range by range counters
     after calculate the percent value with the result into json file
@@ -97,7 +100,7 @@ def on_locust_stop():
         percent_range = (value / total_requests) * 100
         percent_value_by_range[f"{percent_ranges[index]}"] = percent_range
 
-    percent_value_by_range["total_requests"] = total_requests
+    percent_value_by_range["total_requests"] = int(total_requests)
     write_rps_percent_results(
         custom_path=ElevationConfig.results_path,
         percent_value_by_range=percent_value_by_range,
