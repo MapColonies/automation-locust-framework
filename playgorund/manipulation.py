@@ -42,7 +42,6 @@ def do_something():
         url_builder = url_builder.replace("TileCol", str(y))
         url_builder = url_builder.replace("TileRow", str(z))
         url_list_to_run.append(url_builder)
-        # print(url_list_to_run)
 
     # print(df['x'].tolist())
 
