@@ -1,10 +1,7 @@
-import random
-
 from locust import HttpUser, between, constant, constant_pacing, task
 from locust_plugins.csvreader import CSVReader
 
-from common.config.config import Config, ProActiveConfig, config_obj, WmtsConfig
-from common.data_modules.random_tiles_generator import create_random_layers_urls
+from common.config.config import Config, ProActiveConfig, WmtsConfig, config_obj
 from common.utils.constants.strings import (
     BETWEEN_TIMER_STR,
     CONSTANT_PACING_TIMER_STR,

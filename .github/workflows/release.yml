@@ -32,6 +32,7 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
+      - name: Release action
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.CHANGELOG_RELEASE }}
