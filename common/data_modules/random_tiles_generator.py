@@ -4,11 +4,11 @@ from typing import List
 from mc_automation_tools import postgres
 
 from common.config.config import ProActiveConfig, config_obj
+from common.config.config_backup import Database
 from common.data_modules.get_all_layer import (
     create_mapproxy_layer_objects,
     create_zyx_tiles_structure,
 )
-from config_backup import Database
 
 
 def create_random_layer_tiles_urls(
