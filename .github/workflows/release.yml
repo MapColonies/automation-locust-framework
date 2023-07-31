@@ -1,10 +1,9 @@
 name: Releases
 on:
   push:
-    branches:
-      - main
-    paths-ignore:
-      - "data/**"
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
 
 concurrency:
   group: "main-branch"
