@@ -62,7 +62,7 @@ class User(HttpUser):
             "total_requests": f"{total_requests}",
         }
         write_rps_percent_results(
-            custome_path=results_path, percente_value_by_range=percent_value_by_range
+            custom_path=results_path, percente_value_by_range=percent_value_by_range
         )
 
 

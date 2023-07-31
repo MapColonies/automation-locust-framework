@@ -72,7 +72,7 @@ class CustomUser(HttpUser):
         }
 
         write_rps_percent_results(
-            custome_path=results_path, percente_value_by_range=percent_value_by_range
+            custom_path=results_path, percente_value_by_range=percent_value_by_range
         )
         print(f"Percentage of requests in range {range_1}: {percent_range_1}%")
         print(f"Percentage of requests in range {range_2}: {percent_range_2}%")

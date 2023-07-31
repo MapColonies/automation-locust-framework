@@ -1,100 +1,80 @@
-import json
+import os
 
 from locust import HttpUser, events, task
 
 from common.config.config import ElevationConfig
 from common.validation.validation_utils import (
-    extract_file_type,
+    get_request_parameters,
+    initiate_counters_by_ranges,
     write_rps_percent_results,
 )
 
+results_path = os.getcwd()
 positions_list_path = ElevationConfig.positions_path
-results_path = ElevationConfig.results_path
+
+if type(ElevationConfig.percent_ranges) == str:
+    percent_ranges = list(ElevationConfig.percent_ranges)
+else:
+    percent_ranges = ElevationConfig.percent_ranges
+
+request_body = get_request_parameters(positions_list_path=positions_list_path)
 
 
 class CustomUser(HttpUser):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.request_body = None
-
-    def on_start(self):
-        request_type = extract_file_type(file_path=positions_list_path)
-        if request_type == "json":
-            with open(positions_list_path) as file:
-                body = json.load(file)
-                self.request_body = {"request_type": request_type, "body": body}
-        elif request_type == "bin":
-            with open(positions_list_path, "rb") as file:
-                body = file.read()
-                self.request_body = {"request_type": request_type, "body": body}
-        else:
-            return "invalid file path"
+        self.request_body = request_body
 
     @task(1)
     def index(self):
         if self.request_body["request_type"] == "json":
             self.client.post(
-                "/", json=self.request_body["body"], headers=ElevationConfig.headers
+                "/", json=self.request_body["body"], headers=self.request_body["header"]
             )
         elif self.request_body["request_type"] == "bin":
             self.client.post(
                 "/",
                 data=self.request_body["body"],
-                headers=ElevationConfig.headers,
+                headers=self.request_body["header"],
             )
+
         # Process the response as needed
 
     def on_stop(self):
         # Calculate and present the percentage results
-        percent_range_1 = (counter_range_1 / total_requests) * 100
-        percent_range_2 = (counter_range_2 / total_requests) * 100
-        percent_range_3 = (counter_range_3 / total_requests) * 100
+        percent_value_by_range = {}
+        for index, (key, value) in enumerate(counters.items()):
+            percent_range = (value / total_requests) * 100
+            percent_value_by_range[f"{percent_ranges[index]}"] = percent_range
 
-        percent_value_by_range = {
-            f"{range_1}": f"{percent_range_1}%",
-            f"{range_2}": f"{percent_range_2}%",
-            f"{range_3}": f"{percent_range_3}%",
-            "total_requests": f"{total_requests}",
-        }
+        percent_value_by_range["total_requests"] = total_requests
         write_rps_percent_results(
-            custome_path=results_path, percente_value_by_range=percent_value_by_range
+            custom_path=ElevationConfig.results_path,
+            percente_value_by_range=percent_value_by_range,
         )
 
 
-# Define the response time counters
-counter_range_1 = 0
-counter_range_2 = 0
-counter_range_3 = 0
+counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
 total_requests = 0
 
-# Define the response time ranges
-range_1 = (0, 100)
-range_2 = (101, 500)
-range_3 = (501, None)
 
-
-# Define the response time event hook
 @events.request.add_listener
 def response_time_listener(response_time, **kwargs):
-    global counter_range_1, counter_range_2, counter_range_3, total_requests
+    global counters, total_requests
 
-    if range_1[0] <= response_time <= range_1[1]:
-        counter_range_1 += 1
-    elif range_2[0] <= response_time <= range_2[1]:
-        counter_range_2 += 1
-    elif response_time >= range_3[0]:
-        counter_range_3 += 1
+    for index, range in enumerate(percent_ranges):
+        if range[1] is None and response_time >= range[0]:
+            counters[f"counter{index + 1}"] += 1
+        elif range[0] <= response_time <= range[1]:
+            counters[f"counter{index + 1}"] += 1
 
     total_requests += 1
 
 
 @events.test_start.add_listener
 def reset_counters(**kwargs):
-    global counter_range_1, counter_range_2, counter_range_3, total_requests
-
-    counter_range_1 = 0
-    counter_range_2 = 0
-    counter_range_3 = 0
+    global counters, total_requests
+    counters = counters
     total_requests = 0
 
 
@@ -102,3 +82,6 @@ def reset_counters(**kwargs):
 class MyUser(CustomUser):
     min_wait = 100
     max_wait = 1000
+
+
+# todo:ask alex which wait time to set to insure that we create the next task only if we get reponse from the first task

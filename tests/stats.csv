@@ -1,0 +1,6 @@
+<Response [400]>;GET;/api/raster/v1/wmts/OrthophotoHistory/default/3/9/2.png;512.4605379996865;463
+<Response [400]>;GET;/api/raster/v1/wmts/OrthophotoHistory/default/3/9/2.png;145.05343699966033;463
+<Response [400]>;GET;/api/raster/v1/wmts/OrthophotoHistory/default/3/9/2.png;145.2491509999163;463
+<Response [400]>;GET;/api/raster/v1/wmts/OrthophotoHistory/default/3/8/2.png;143.6999100005778;463
+<Response [400]>;GET;/api/raster/v1/wmts/OrthophotoHistory/default/3/8/2.png;143.68202300011035;463
+<Response [400]>;GET;/api/raster/v1/wmts/OrthophotoHistory/default/3/9/2.png;142.66730500003177;463

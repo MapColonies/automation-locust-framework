@@ -1,0 +1,48 @@
+from locust import FastHttpUser, between, tag, task
+
+from common.config.config import config_obj
+
+#
+# check bbox from EastBank
+bbox = config_obj["wms"].BBOX
+delta_x = bbox[3] - bbox[1]
+delta_y = bbox[2] - bbox[0]
+
+
+def wmstile_t(mylist):
+    return f'api/raster/v1/service?LAYERS={config_obj["wms"].LAYER_TYPE}&FORMAT={config_obj["wms"].WMS_FORMAT}&SRS={config_obj["wms"].SRS}&service=wms&version={config_obj["wms"].WMS_VERSION}&REQUEST=GetMap&STYLES={config_obj["wms"].STYLE}&BBOX={str.format("{:6f}", mylist[0])},{str.format("{:6f}", mylist[1])},{str.format("{:6f}", mylist[2])},{str.format("{:6f}", mylist[3])}&WIDTH={config_obj["wms"].WIDTH}&HEIGHT={config_obj["wms"].HEIGHT}&token={config_obj["wms"].TOK}'  # nopep8
+
+
+def wmstile_no_token(mylist):
+    return f'api/raster/v1/service?LAYERS={config_obj["wms"].LAYER_TYPE}&FORMAT={config_obj["wms"].WMS_FORMAT}&SRS={config_obj["wms"].SRS}&service=wms&version={config_obj["wms"].WMS_VERSION}&REQUEST=GetMap&STYLES={config_obj["wms"].STYLE}&BBOX={str.format("{:6f}", mylist[0])},{str.format("{:6f}", mylist[1])},{str.format("{:6f}", mylist[2])},{str.format("{:6f}", mylist[3])}&WIDTH={config_obj["wms"].WIDTH}&HEIGHT={config_obj["wms"].HEIGHT}'  # nopep8
+
+
+class User(FastHttpUser):
+    host = config_obj["wms"].HOST
+    between(1, 1)
+
+    @task(1)
+    @tag("regular")
+    def zoom_level_up(self):
+        bbox[0] += 0.00006
+        bbox[1] += 0.00006
+        bbox[2] += 0.00006
+        bbox[3] += 0.00006
+        if config_obj["wms"].IS_TOKEN:
+            self.client.get(wmstile_t(bbox))
+        else:
+            self.client.get(wmstile_no_token(bbox))
+
+    @task(1)
+    @tag("zoom")
+    def zoom_delta(self):
+        if config_obj["wms"].IS_UPSCALE:
+            zoom = bbox
+            zoom[2] -= delta_y
+            zoom[3] -= delta_x
+            if config_obj["wms"].IS_TOKEN:
+                self.client.get(wmstile_t(zoom))
+            else:
+                self.client.get(wmstile_no_token(zoom))
+
+    # host = 'https://mapproxy-raster-qa-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/' __name__ #'

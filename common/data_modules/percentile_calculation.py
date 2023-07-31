@@ -1,6 +1,9 @@
 import csv
 import json
-import os
+import logging
+import time
+
+from config.config import Config
 
 
 def extract_response_time_from_record(csv_path: str):
@@ -11,46 +14,99 @@ def extract_response_time_from_record(csv_path: str):
     response_time_list: response time of requests
     """
     response_time_list = []
-    with open(csv_path) as f:
-        reader = csv.reader(f, delimiter=";")
-        for row in reader:
-            response_time_list.append(float(row[3]))
+    if csv_path:
+        with open(csv_path) as f:
+            reader = csv.reader(f, delimiter=";")
+            for row in reader:
+                response_time_list.append(float(row[2]))
+    else:
+        logging.info("Csv path not Found")
     return response_time_list
 
 
-def count_rsp_time_by_rsp_time_ranges(rsp_time_data: list, rsp_range: tuple):
-    """
-    This function check the number of the request of the given rsp time range
-    :param rsp_time_data: list of rsp time from requests records
-    :param rsp_range: the selected range of rsp time to count
-    :return:
-    rsp_counter - total number of requests with rsp time on the selected range
-    """
-    rsp_counter = 0
-    for rsp_time in rsp_time_data:
-        print(rsp_time)
-        if rsp_range[1] is None:
-            if rsp_range[0] <= rsp_time:
-                rsp_counter += 1
-        elif rsp_range[0] <= rsp_time <= rsp_range[1]:
-            rsp_counter += 1
-    return rsp_counter
-
-
-def get_percentile_value(rsp_counter: float, rsp_time_list: list):
+def get_percentile_value(rsp_avarage: list, rsp_total: int):
     """
     This function calculate the percentile value of the selected response time range of the total requests
-    :param rsp_counter: The number of requests that was in the selected rsp range
-    :param rsp_time_list:
+    :param rsp_avarage: List of count results by definition of range
+    :param rsp_total the total :
     :return:
     percentile_value: percent value : float
     """
-    percentile_value = rsp_counter / len(rsp_time_list) * 100
-    return percentile_value
+
+    dict_results = {}
+    for index, ran in enumerate(Config.RSP_TIME_RANGES):
+        dict_results[str(ran)] = [rsp_avarage[index] / rsp_total * 100]
+    return dict_results
 
 
-def write_rsp_time_percentile_ranges(percentile_value: dict):
+def write_rsp_time_percentile_ranges(percentile_value: dict, file_name: str):
+    t = time.localtime()
+    current_time = time.strftime("%H:%M", t)
     json_obj = json.dumps(percentile_value)
-    print(percentile_value)
-    with open(f"{os.getcwd()}/rsp_time_percentile_ranges.json", "w") as f:
+    with open(f"{Config.root_dir}/{file_name}-{current_time}-RPS.json", "w") as f:
         f.write(json_obj)
+
+
+def calculate_times(csv_record_path, test_name):
+    rsp_list = extract_response_time_from_record(
+        csv_path=f"{Config.root_dir}/{csv_record_path}"
+    )
+    if len(rsp_list) == 0:
+        logging.info(" List empty ")
+        return None
+    list_average = calculate_average(rsp_list)
+    print(len(rsp_list))
+    print(len(list_average))
+    percentile_rages_dict = get_percentile_value(
+        rsp_avarage=list_average, rsp_total=len(rsp_list)
+    )
+    write_rsp_time_percentile_ranges(percentile_rages_dict, test_name)
+
+
+def calculate_average(list_of_times: list):
+    calculation = [0, 0, 0]
+    for rsp in list_of_times:
+        if rsp <= Config.RSP_TIME_RANGES[0][1]:
+            calculation[0] += 1
+        elif rsp <= Config.RSP_TIME_RANGES[1][1]:
+            calculation[1] += 1
+        else:
+            calculation[2] += 1
+    return calculation
+
+
+def generate_name(name: str):
+    t = time.localtime()
+    current_time = time.strftime("%H:%M", t)
+    file_name = f"{name}-{current_time}-stats.csv'"
+    return file_name
+
+
+"""
+Read me . How to implement the function
+import the file to Your test class
+In configurion file add dir_root variable and give him path to the folder in your Environment
+
+For the  util to work at your Script test add the 2 lines in the start of the script after the imports out from the class
+
+file_name = generate_name(__name__)
+stat_file = open(f"{Config.root_dir.root_dir}/{file_name}", 'w')
+
+in the End of the Test class (Inside ) enter the next function
+
+    def on_stop(self):
+        calculate_times(file_name, __name__)
+
+
+#out of the class in the bottom add 2 listeners
+
+@events.request.add_listener
+def hook_request_success(request_type, name, response_time, response_length, **kwargs):
+    stat_file.write(f"{request_type};{name} ; {response_time};{response_length}  \n")
+
+
+@events.quitting.add_listener
+def hook_quitting(environment, **kw):
+    stat_file.close()
+
+"""
