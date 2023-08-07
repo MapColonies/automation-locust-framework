@@ -1,3 +1,4 @@
+import bisect
 import datetime
 import json
 import os
@@ -38,7 +39,7 @@ def validate_response_status(response: Any, expected_status_code: int) -> None:
 
 
 def validate_json_key_value(
-    json_data: dict, key: str, expected_value: Union[str, int, float, bool]
+        json_data: dict, key: str, expected_value: Union[str, int, float, bool]
 ) -> None:
     if key not in json_data:
         raise KeyNotFoundError(f"Key '{key}' not found in JSON data")
@@ -225,17 +226,68 @@ def extract_points_from_json(json_file, excludeFields=True, product_type="MIXED"
     return point_list
 
 
-def initiate_counters_by_ranges(config_ranges: List[tuple]) -> dict:
+# def initiate_counters_by_ranges(config_ranges: List[tuple]) -> dict:
+#     """
+#     this function will extract the ranges and counter values for each value of range on the configuration
+#     :param config_range_counter_data: selected configuration ranges data
+#     :return:
+#     counters (dict): counter for each given range
+#     """
+#     counters = {}
+#     for i in range(len(config_ranges)):
+#         counters[f"counter{i + 1}"] = 0
+#     return counters
+
+def initiate_counters_by_ranges(config_ranges: List) -> dict:
     """
     this function will extract the ranges and counter values for each value of range on the configuration
-    :param config_range_counter_data: selected configuration ranges data
+    :param config_ranges: selected configuration ranges
     :return:
-    counters (dict): counter for each given range
+    counter for each range (dict): counter for each given range
     """
+    sorted_ranges = sorted(config_ranges)
+
+    # Using list comprehension to create a tuple of lower and upper numbers
+    lower_upper_tuples = [(sorted_ranges[i], sorted_ranges[i + 1]) for i in range(len(sorted_ranges) - 1)]
+    print("lower_upper_tuples", lower_upper_tuples)
     counters = {}
-    for i in range(len(config_ranges)):
-        counters[f"counter{i + 1}"] = 0
+    for i in lower_upper_tuples:
+        counters[f"{i}"] = 0
     return counters
+
+
+def find_range_for_response_time(response_time, ranges_list, counters_dict):
+    """
+    This function will find response time value range for each given response time 
+    and will increase the range's counter
+    :param response_time: response time of locust request
+    :param ranges_list: list of ranges from configuration
+    :param counters_dict: dictionary of each range value
+    :return:
+    updated counter_dict
+    """
+    index = bisect.bisect_left(ranges_list, response_time)
+    print(index)
+
+    # If the index is 0, the number is smaller than the first element in the list
+    if index == 0:
+        range_value = str((None, ranges_list[0]))
+        print(range_value)
+        counters_dict[range_value] += 1
+
+    # If the index is equal to the list length, the number is greater than the last element in the list
+    if index == len(ranges_list):
+        range_value = str((ranges_list[-1], None))
+        counters_dict[range_value] += 1
+
+    # Otherwise, the number is located between two elements in the list
+    lower_bound = ranges_list[index - 1]
+    upper_bound = ranges_list[index]
+
+    range_value = str((lower_bound, upper_bound))
+    counters_dict[range_value] += 1
+
+    return counters_dict
 
 
 def create_custom_graph(graph_name, graph_path, test_results, graph_title=None):
@@ -279,7 +331,7 @@ def create_graph_results_data_format(keys_names: list, x_y_axis_values: list) ->
 
 
 def create_start_time_response_time_graph(
-    start_time_data, response_time_data, graph_name
+        start_time_data, response_time_data, graph_name
 ):
     fig, ax = plt.subplots()
     x = np.array(start_time_data)  # X-coordinates of the data points

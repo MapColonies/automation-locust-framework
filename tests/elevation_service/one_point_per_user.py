@@ -4,6 +4,7 @@ from itertools import cycle
 from locust import HttpUser, constant, events, task
 
 from common.config.config import ElevationConfig
+from common.utils.data_generator.data_utils import polygon_random_points, generate_points_request
 from common.validation.validation_utils import (
     create_custom_graph,
     extract_points_from_json,
@@ -19,7 +20,7 @@ if isinstance(ElevationConfig.percent_ranges, str):
 else:
     percent_ranges = ElevationConfig.percent_ranges
 positions_bodies = extract_points_from_json(
-    json_file=positions_list_path, payload_flag=ElevationConfig.payload_flag
+    json_file=positions_list_path, excludeFields=retype_env(ElevationConfig.payload_flag)
 )
 
 # positions_bodies = extract_points_from_json(json_file=positions_list_path, payload_flag=ElevationConfig.payload_flag)
@@ -51,7 +52,11 @@ class CustomUser(HttpUser):
 
     @task(1)
     def index(self):
-        body = json.loads(next(self.request_bodies_cycle))
+        # points = polygon_random_points(polygon=ElevationConfig.poly, num_points=1)
+        body = generate_points_request(points_amount=1, polygon=ElevationConfig.poly, exclude_fields=True,
+                                       product_type="MIXED")
+        # body = json.loads(next(self.request_bodies_cycle))
+        print(body)
         if not retype_env(ElevationConfig.token_flag):
             self.client.post(
                 "/",
