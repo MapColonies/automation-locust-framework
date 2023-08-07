@@ -27,8 +27,6 @@ positions_bodies = extract_points_from_json(
 
 reports_path = ElevationConfig.results_path
 
-ranges = [tup[1] for tup in percent_ranges]
-
 # print(positions_bodies)
 
 total_requests = 0
