@@ -5,6 +5,12 @@
       <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/locust-venv " />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/locust-venv" />
+      <excludeFolder url="file://$MODULE_DIR$/locust-auto" />
+      <excludeFolder url="file://$MODULE_DIR$/venv-locust" />
+      <excludeFolder url="file://$MODULE_DIR$/venv_locust" />
+      <excludeFolder url="file://$MODULE_DIR$/venv_locust1" />
+      <excludeFolder url="file://$MODULE_DIR$/venv_locust2" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.8 (automation-locust-framework)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -93,8 +93,11 @@ class ElevationConfig(Config):
         {"Content-Type": "application/octet-stream", "Cache-Control": "no-cache"},
     )
     results_path = os.environ.get("results_path", f"{os.getcwd()}")
+    # percent_ranges = os.environ.get(
+    #     "percent_ranges", [(0, 100), (101, 500), (501, float('inf'))]
+    # )
     percent_ranges = os.environ.get(
-        "percent_ranges", [(0, 100), (101, 500), (501, 501)]
+        "percent_ranges", [100, 500]
     )
     bulks_root_folder = os.environ.get(
         "bulks_root_folder", "/home/shayavr/Documents/bulks_input"
