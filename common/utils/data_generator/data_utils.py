@@ -1,8 +1,6 @@
 import json
 import random
-from typing import Tuple
-
-from black import List
+from typing import Tuple, List
 from shapely.geometry import Point, Polygon
 
 poly = [

@@ -6,7 +6,7 @@ from locust import (
     constant_throughput,
     task,
 )
-from locust_plugins.csvreader import CSVReader
+from common.utils.csvreader import CSVReader
 
 from common.config.config import WmtsConfig, config_obj
 from common.utils.constants.strings import (

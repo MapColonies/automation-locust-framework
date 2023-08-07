@@ -1,16 +1,9 @@
 glom~=23.3.0
 locust~=2.15.1
-locust-plugins
-mc-automation-tools
-pre-commit
-flake8
-black
-toml
 httpx==0.24.0
 common~=0.1.2
 pandas~=2.0.1
 matplotlib~=3.7.2
-gevent~=22.10.2
 setuptools~=50.3.2
 numpy==1.24.3
 shapely~=2.0.1
