@@ -55,6 +55,7 @@ class CustomUser(HttpUser):
         body = generate_points_request(
             points_amount=1, polygon=self.poly, exclude_fields=exclude_fields
         )
+        print(body)
         if retype_env(ElevationConfig.token_flag):
             self.client.post(
                 f"?token={ElevationConfig.TOKEN}",
