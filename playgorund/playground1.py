@@ -1,98 +1,48 @@
-from locust import HttpUser, constant, events, task
-
-from common.config.config import ElevationConfig
-from common.validation.validation_utils import (
-    find_range_for_response_time,
-    initiate_counters_by_ranges,
-    retype_env,
-    write_rps_percent_results,
-)
-
-if isinstance(ElevationConfig.percent_ranges, str):
-    percent_ranges = retype_env(ElevationConfig.percent_ranges)
-    percent_ranges.append(0)
-    percent_ranges.append(float("inf"))
-    percent_ranges = sorted(percent_ranges)
-else:
-    percent_ranges = ElevationConfig.percent_ranges
-    percent_ranges.append(0)
-    percent_ranges.append(float("inf"))
-    percent_ranges = sorted(percent_ranges)
-
-reports_path = ElevationConfig.results_path
+stats = {"content-length": 0}
 
 
-# if isinstance(ElevationConfig.poly, str):
-#     polygons = retype_env(ElevationConfig.poly)
-# else:
-#     polygons = ElevationConfig.poly
-
-
-class CustomUser(HttpUser):
-    response_times = []
-    wait_time = constant(int(ElevationConfig.wait_time))
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # self.avg_response_time = None
-        # self.points_amount_range = ElevationConfig.points_amount_range
-        # self.points_amount = random.randint(0, self.points_amount_range)
-
-    @task(1)
-    def index(self):
-        response = self.client.get(url="https://www.ynet.co.il/home")
-        print(response.text)
-        print(type(response.text))
-
-
-# create counters for each range value from the configuration
-counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
-total_requests = 0
-test_results = []
-response_time_data = []
-points_amount_avg_rsp = []
-avg_response_time = 0
+@events.init.add_listener
+def locust_init(environment, **kwargs):
+    """
+    We need somewhere to store the stats.
+    On the master node stats will contain the aggregated sum of all content-lengths,
+    while on the worker nodes this will be the sum of the content-lengths since the
+    last stats report was sent to the master
+    """
+    if environment.web_ui:
+        # this code is only run on the master node (the web_ui instance doesn't exist on workers)
+        @environment.web_ui.app.route("/content-length")
+        def total_content_length():
+            """
+            Add a route to the Locust web app, where we can see the total content-length
+            """
+            return "Total content-length received: %i" % stats["content-length"]a
 
 
 @events.request.add_listener
-def response_time_listener(response_time, **kwargs):
-    global counters, total_requests
-    counters = find_range_for_response_time(
-        response_time=response_time, ranges_list=percent_ranges, counters_dict=counters
-    )
-    total_requests += 1
-
-
-@events.test_start.add_listener
-def reset_counters(**kwargs):
-    global counters, total_requests, response_time_data
-    counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
-    total_requests = 0
-    response_time_data = []
-
-
-@events.test_stop.add_listener
-def on_locust_stop(environment, **kwargs):
+def on_request(request_type, name, response_time, response_length, exception, context, **kwargs):
     """
-    The percent calculation for each range by range counters
-    after calculate the percent value with the result into json file
-    :return:
+    Event handler that get triggered on every request.
     """
-
-    global total_requests, counters
-    percent_value_by_range = {}
-    print(counters)
-    for index, (key, value) in enumerate(counters.items()):
-        percent_range = (value / total_requests) * 100
-        percent_value_by_range[f"{key}"] = percent_range
-
-    percent_value_by_range["total_requests"] = int(total_requests)
-    write_rps_percent_results(
-        custom_path=ElevationConfig.results_path,
-        percent_value_by_range=percent_value_by_range,
-    )
+    stats["content-length"] += response_length
 
 
-# Run the Locust test
-class MyUser(CustomUser):
-    wait_time = constant(int(ElevationConfig.wait_time))
+@events.report_to_master.add_listener
+def on_report_to_master(client_id, data):
+    """
+    This event is triggered on the worker instances every time a stats report is
+    to be sent to the locust master. It will allow us to add our extra content-length
+    data to the dict that is being sent, and then we clear the local stats in the worker.
+    """
+    data["content-length"] = stats["content-length"]
+    stats["content-length"] = 0
+
+
+@events.worker_report.add_listener
+def on_worker_report(client_id, data):
+    """
+    This event is triggered on the master instance when a new stats report arrives
+    from a worker. Here we just add the content-length to the master's aggregated
+    stats dict.
+    """
+    stats["content-length"] += data["content-length"]

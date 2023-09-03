@@ -7,7 +7,11 @@ from typing import Any, List, Union
 
 import matplotlib.dates as mdates
 import numpy as np
+from locust import constant, constant_throughput, between, constant_pacing
 from matplotlib import pyplot as plt
+
+from common.utils.constants.strings import CONSTANT_TIMER_STR, CONSTANT_THROUGHPUT_TIMER_STR, BETWEEN_TIMER_STR, \
+    CONSTANT_PACING_TIMER_STR, INVALID_TIMER_STR
 
 
 class ValidationError(Exception):
@@ -463,6 +467,37 @@ def parse_response_content(
     return unusual_results
 
 
+def sum_nested_dicts(nested_dict: dict):
+    """
+    This function will calculate the response time ranges counters of each worker
+    for total response time percent by range
+    :param nested_dict: dict with worker id as a keys and worker's counter as value
+    :return:
+    result: total requests count by each range for all workers
+    """
+    result = {}
+    for key, data_dict in nested_dict.items():
+        for nested_key, value in data_dict.items():
+            if nested_key in result:
+                result[nested_key] += value
+            else:
+                result[nested_key] = value
+
+    return result
+
+
+def set_wait_time(timer_selection, wait_time):
+    if timer_selection == 1:
+        return constant(wait_time), CONSTANT_TIMER_STR
+    elif timer_selection == 2:
+        return constant_throughput(wait_time), CONSTANT_THROUGHPUT_TIMER_STR
+    elif timer_selection == 3:
+        return between(wait_time["min_wait"], wait_time["max_wait"]), BETWEEN_TIMER_STR
+    elif timer_selection == 4:
+        return constant_pacing(wait_time), CONSTANT_PACING_TIMER_STR
+    else:
+        return None, INVALID_TIMER_STR
+
 # data_dict = {'data': [{'latitude': 30.574818211159574, 'longitude': 34.85581004685274, 'height': None},
 #                       {'latitude': 30.591386424841303, 'longitude': 34.83555954301749, 'height': None},
 #                       {'latitude': 30.58102359160165, 'longitude': 34.8157749107851, 'height': None},
@@ -479,20 +514,3 @@ def parse_response_content(
 #                              property_name="height"))
 
 # print(find_keys_and_values_by_nested_value(input_dict=dict1, value="height", parent_key="data"))
-
-def create_workers_reports_dir(results_root_path: str):
-    """
-    This function will create unique folder for tests workers counters result files for future percent calculation
-    :param results_root_path: the root result path that the workers results folder will be created on
-    :return:
-    """
-    try:
-        folder_unique_name = generate_unique_filename(file_base_name="worker_results")
-        path_without_json, _ = os.path.splitext(folder_unique_name)
-        print(path_without_json)
-    except:
-        print("blalal")
-        # os.makedirs(f"{results_root_path}/")
-#todo: consider redesigning generate_unique_filename function with no json extention in the file name
-
-# create_workers_reports_dir(results_root_path="blabakla")

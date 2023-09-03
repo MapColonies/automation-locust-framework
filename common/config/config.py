@@ -38,7 +38,7 @@ class Database:
 
 class Config:
     TOKEN = os.environ.get("SECRET_VALUE_API", None)
-    HOST = os.environ.get("HOST", "enter a host")
+    HOST = os.environ.get("HOST", "Enter a host")
     WAIT_TIME_FUNC = int(os.environ.get("wait_function", 4))
     WAIT_TIME = int(os.environ.get("wait_time", 4))
     MAX_WAIT = int(os.environ.get("max_wait", 1))

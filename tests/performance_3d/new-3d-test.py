@@ -66,7 +66,7 @@ test_results = []
 response_time_data = []
 points_amount_avg_rsp = []
 avg_response_time = 0
-
+workers_results = {}
 
 @events.test_start.add_listener
 def on_locust_init(environment, **_kwargs):
@@ -84,7 +84,8 @@ def response_time_listener(response_time, **kwargs):
 
 @events.test_stop.add_listener
 def log_counters(environment):
-    global counters
+    global counters ,workers_results
+
     worker_id = os.environ.get("HOSTNAME")
     print(worker_id)
     filename = f"{results_path}/workers_reports/results_{worker_id}.json"
@@ -93,6 +94,9 @@ def log_counters(environment):
     with open(filename, "w") as outfile:
         outfile.write(json_object)
     outfile.close()
+    workers_results[worker_id] = counters
+    print("--------from test stop", workers_results)
+
 
 
 @events.test_start.add_listener
@@ -111,6 +115,8 @@ def on_locust_stop(environment, **kwargs):
     after calculate the percent value with the result into json file
     :return:
     """
+    global workers_results
+    print("from on stop function---->", workers_results)
     workers_data = read_tests_data_folder(folder_path=f"{results_path}/workers_reports")
     print(workers_data)
     sum_dict = sum_nested_dicts(workers_data)
