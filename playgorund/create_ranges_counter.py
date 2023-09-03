@@ -12,7 +12,9 @@ def initiate_counters_by_ranges(config_ranges: List) -> dict:
     sorted_ranges = sorted(config_ranges)
 
     # Using list comprehension to create a tuple of lower and upper numbers
-    lower_upper_tuples = [(sorted_ranges[i], sorted_ranges[i + 1]) for i in range(len(sorted_ranges) - 1)]
+    lower_upper_tuples = [
+        (sorted_ranges[i], sorted_ranges[i + 1]) for i in range(len(sorted_ranges) - 1)
+    ]
     print("lower_upper_tuples", lower_upper_tuples)
     counters = {}
     for i in lower_upper_tuples:
@@ -55,7 +57,7 @@ counter1 = initiate_counters_by_ranges(sorted_list)
 # print(sorted_list)
 
 number_1 = 600
-x= find_range_for_number(number_1, sorted_list, counter1)
+x = find_range_for_number(number_1, sorted_list, counter1)
 print(x)
 
 

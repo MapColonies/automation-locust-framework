@@ -6,7 +6,6 @@ from locust import (
     constant_throughput,
     task,
 )
-from common.utils.csvreader import CSVReader
 
 from common.config.config import WmtsConfig, config_obj
 from common.utils.constants.strings import (
@@ -16,6 +15,7 @@ from common.utils.constants.strings import (
     CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
 )
+from common.utils.csvreader import CSVReader
 
 
 def set_wait_time(timer_selection, wait_time):

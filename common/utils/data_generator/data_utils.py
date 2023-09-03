@@ -1,6 +1,7 @@
 import json
 import random
-from typing import Tuple, List
+from typing import List, Tuple
+
 from shapely.geometry import Point, Polygon
 
 poly = [
@@ -68,3 +69,14 @@ def generate_points_request(
             }
         )
         return request_body
+
+
+# poly1 = [
+#     (34.9718214942001, 32.80423530554715),
+#     (34.9718214942001, 32.756206767248315),
+#     (35.06487372085749, 32.756206767248315),
+#     (35.06487372085749, 32.80423530554715),
+#     (34.9718214942001, 32.80423530554715),
+# ]
+#
+# print(generate_points_request(points_amount=50, polygon=poly1, exclude_fields=True))
