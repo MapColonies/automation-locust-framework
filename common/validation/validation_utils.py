@@ -238,6 +238,7 @@ def extract_points_from_json(json_file, excludeFields=True, product_type="MIXED"
 #         counters[f"counter{i + 1}"] = 0
 #     return counters
 
+
 def initiate_counters_by_ranges(config_ranges: List) -> dict:
     """
     this function will extract the ranges and counter values for each value of range on the configuration
@@ -248,8 +249,9 @@ def initiate_counters_by_ranges(config_ranges: List) -> dict:
     sorted_ranges = sorted(config_ranges)
 
     # Using list comprehension to create a tuple of lower and upper numbers
-    lower_upper_tuples = [(sorted_ranges[i], sorted_ranges[i + 1]) for i in range(len(sorted_ranges) - 1)]
-    print("lower_upper_tuples", lower_upper_tuples)
+    lower_upper_tuples = [
+        (sorted_ranges[i], sorted_ranges[i + 1]) for i in range(len(sorted_ranges) - 1)
+    ]
     counters = {}
     for i in lower_upper_tuples:
         counters[f"{i}"] = 0
@@ -258,7 +260,7 @@ def initiate_counters_by_ranges(config_ranges: List) -> dict:
 
 def find_range_for_response_time(response_time, ranges_list, counters_dict):
     """
-    This function will find response time value range for each given response time 
+    This function will find response time value range for each given response time
     and will increase the range's counter
     :param response_time: response time of locust request
     :param ranges_list: list of ranges from configuration
@@ -267,12 +269,10 @@ def find_range_for_response_time(response_time, ranges_list, counters_dict):
     updated counter_dict
     """
     index = bisect.bisect_left(ranges_list, response_time)
-    print(index)
 
     # If the index is 0, the number is smaller than the first element in the list
     if index == 0:
         range_value = str((None, ranges_list[0]))
-        print(range_value)
         counters_dict[range_value] += 1
 
     # If the index is equal to the list length, the number is greater than the last element in the list
@@ -411,3 +411,88 @@ def retype_env(env_value: str):
             pass
 
     return env_value
+
+
+def find_keys_and_values_by_nested_value(value, input_dict, parent_key=None):
+    key_value_pairs = []
+
+    for key, val in input_dict.items():
+        if isinstance(val, dict):
+            nested_key_value_pairs = find_keys_and_values_by_nested_value(
+                value, val, key
+            )
+            key_value_pairs.extend(nested_key_value_pairs)
+        elif val == value:
+            if parent_key:
+                key_value_pairs.append((f"{parent_key}.{key}", val))
+            else:
+                key_value_pairs.append((key, val))
+
+    return key_value_pairs
+
+
+def parse_response_content(
+        response_content: dict,
+        response_time: float,
+        normality_threshold: dict,
+        property_name: str,
+):
+    """
+    This function will parse elevation response by content values
+    :param response_content: locust user response content
+    :param  response_time: response time of users requests
+    :param normality_threshold: response time dict with fast response time and slow response time
+    :param property_name: the property name to be extracted from response content
+    :return:
+    if invalid return the request value
+    """
+    unusual_results = {}
+    if (
+            response_time <= normality_threshold["low_response_time"]
+            or response_time >= normality_threshold["high_response_time"]
+    ):
+        unusual_results["anomaly_response_time"] = response_time
+        unusual_results["response_body"] = [response_content]
+    null_points = [
+        item for item in response_content["data"] if item.get(property_name) is None
+    ]
+    if null_points:
+        unusual_results["anomaly_response_time"] = response_time
+        unusual_results["response_body"] = null_points
+
+    return unusual_results
+
+
+# data_dict = {'data': [{'latitude': 30.574818211159574, 'longitude': 34.85581004685274, 'height': None},
+#                       {'latitude': 30.591386424841303, 'longitude': 34.83555954301749, 'height': None},
+#                       {'latitude': 30.58102359160165, 'longitude': 34.8157749107851, 'height': None},
+#                       {'latitude': 30.596314899052746, 'longitude': 34.78615264164668, 'height': None},
+#                       {'latitude': 30.616764136496197, 'longitude': 34.83003561370604, 'height': None},
+#                       {'latitude': 30.59561609267299, 'longitude': 34.8559754529611, 'height': None},
+#                       {'latitude': 30.607447381740915, 'longitude': 34.82702063002544, 'height': None},
+#                       {'latitude': 30.59190205078009, 'longitude': 34.87190490618536, 'height': None},
+#                       {'latitude': 30.57100530986461, 'longitude': 34.83192829249191, 'height': None},
+#                       {'latitude': 30.572343627007875, 'longitude': 34.79741670082464, 'height': None}]}
+#
+# print(parse_response_content(response_content=data_dict, response_time=10.23,
+#                              normality_threshold={"low_response_time": 15, "high_response_time": 700},
+#                              property_name="height"))
+
+# print(find_keys_and_values_by_nested_value(input_dict=dict1, value="height", parent_key="data"))
+
+def create_workers_reports_dir(results_root_path: str):
+    """
+    This function will create unique folder for tests workers counters result files for future percent calculation
+    :param results_root_path: the root result path that the workers results folder will be created on
+    :return:
+    """
+    try:
+        folder_unique_name = generate_unique_filename(file_base_name="worker_results")
+        path_without_json, _ = os.path.splitext(folder_unique_name)
+        print(path_without_json)
+    except:
+        print("blalal")
+        # os.makedirs(f"{results_root_path}/")
+#todo: consider redesigning generate_unique_filename function with no json extention in the file name
+
+# create_workers_reports_dir(results_root_path="blabakla")

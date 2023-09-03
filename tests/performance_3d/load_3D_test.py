@@ -7,9 +7,8 @@ from locust import (
     events,
     task,
 )
-from common.utils.csvreader import CSVReader
 
-from common.config.config import config_obj
+from common.config.config import Config, config_obj
 from common.utils.constants.strings import (
     BETWEEN_TIMER_STR,
     CONSTANT_PACING_TIMER_STR,
@@ -17,7 +16,13 @@ from common.utils.constants.strings import (
     CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
 )
-from common.validation.validation_utils import write_rps_percent_results
+from common.utils.csvreader import CSVReader
+from common.validation.validation_utils import (
+    find_range_for_response_time,
+    initiate_counters_by_ranges,
+    write_rps_percent_results,
+)
+from playgorund.create_ranges_counter import initiate_counters_by_ranges
 
 ssn_reader = CSVReader(config_obj["_3d"].CSV_DATA_PATH)
 results_path = config_obj["_3d"].RESULTS_PATH
@@ -49,20 +54,31 @@ class User(HttpUser):
 
     host = config_obj["default"].HOST
 
-    def on_stop(self):
-        # Calculate and present the percentage results
-        percent_range_1 = (counter_range_1 / total_requests) * 100
-        percent_range_2 = (counter_range_2 / total_requests) * 100
-        percent_range_3 = (counter_range_3 / total_requests) * 100
 
-        percent_value_by_range = {
-            f"{range_1}": f"{percent_range_1}%",
-            f"{range_2}": f"{percent_range_2}%",
-            f"{range_3}": f"{percent_range_3}%",
-            "total_requests": f"{total_requests}",
-        }
+@events.test_stop.add_listener
+def on_locust_stop(environment, **kwargs):
+    """
+    The percent calculation for each range by range counters
+    after calculate the percent value with the result into json file
+    :return:
+    """
+
+    global total_requests, counters
+    percent_value_by_range = {}
+    print(counters)
+    if total_requests != 0:
+        for index, (key, value) in enumerate(counters.items()):
+            percent_range = (value / total_requests) * 100
+            percent_value_by_range[f"{key}"] = percent_range
+
+        percent_value_by_range["total_requests"] = int(total_requests)
         write_rps_percent_results(
-            custom_path=results_path, percente_value_by_range=percent_value_by_range
+            custom_path=Config.RESULTS_PATH,
+            percent_value_by_range=percent_value_by_range,
+        )
+    else:
+        print(
+            "The test execution failed - requests did not proceed. Check the logs to find the problem"
         )
 
 
@@ -93,11 +109,23 @@ def response_time_listener(response_time, **kwargs):
     total_requests += 1
 
 
+@events.request.add_listener
+def response_time_listener(response_time, **kwargs):
+    global counters, total_requests
+    counters = find_range_for_response_time(
+        response_time=response_time, ranges_list=percent_ranges, counters_dict=counters
+    )
+    total_requests += 1
+
+
 @events.test_start.add_listener
 def reset_counters(**kwargs):
-    global counter_range_1, counter_range_2, counter_range_3, total_requests
-
-    counter_range_1 = 0
-    counter_range_2 = 0
-    counter_range_3 = 0
+    global counters, total_requests, run_number, start_time_data, response_time_data
+    counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
     total_requests = 0
+    run_number += 1
+    start_time_data = []
+    response_time_data = []
+
+
+# todo: add all percent dependencies for the percent calculation and add configurations

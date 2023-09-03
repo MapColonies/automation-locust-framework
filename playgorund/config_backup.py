@@ -34,7 +34,7 @@ class WmtsConfig(Config):
     LAYER_NAME = os.environ.get("layer", "bluemarble-Orthophoto")
     GRID_NAME = os.environ.get("gridName", "newGrids")
     IMAGE_FORMAT = os.environ.get("imageType", ".png")
-    WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "test_data/wmts_shaziri.csv")
+    WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "../test_data/wmts_shaziri.csv")
     REQUESTS_RECORDS_CSV = os.environ.get(
         "requests_records_csv", f"{os.getcwd()}/tests/stats.csv"
     )

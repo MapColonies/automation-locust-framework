@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "locust.fullname" . }}-master
+  name: {{ template "locust.fullname" . }}-{{ .Release.Name }}-master
   labels:
     component: master
 {{ include "locust.labels" . | indent 4 }}

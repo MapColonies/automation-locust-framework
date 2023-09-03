@@ -1,27 +1,29 @@
 global:
   name: locust-global
-  test_file: pro_active_wmts_stage_2.py
-  test_file_path: "/mnt/locust/tests/proactive"
+  test_file: new-3d-test.py
+  test_file_path: "/mnt/locust/tests/performance_3d"
   host: https://mapproxy-raster-qa-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1
 
   env: {
       layer_list: "shay44" ,
       measure_time: false,
-      percent_ranges_counters: '{(0, 100): 0, (101, 500): 0, (501, None): 0}',
+      percent_ranges_counters: '[100, 500]',
+      result_path: "/layerSources/locust/",
       pro_active_wmts_bbox: [35.024411528661574, 32.79419004139809, 35.37597717328861, 32.947998391903226],
       mc_region_value: "ישראל, ירדן",
       mc_polygon_value: '{"bbox":[34.8468438649828,32.0466327470143,34.8804418550117,32.0689996810298],"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[34.8468438649828,32.0689996810298],[34.8637856279928,32.0590059440186],[34.8773961450173,32.0680478960404],[34.8804418550117,32.0528193460686],[34.8786334639958,32.0466327470143],[34.8605495609931,32.0488218510146],[34.8468438649828,32.0689996810298]]]},"properties":{"Dsc":"תשתית אורתופוטו בישראל עדכני לאפריל 2019","Rms":null,"Ep90":"3","Scale":null,"Source":"MAS_6_ORT_247993-1.0","Resolution":"0.2","SensorType":"OTHER","SourceName":"O_arzi_mz_w84geo_Tiff_20cm","UpdateDate":"06/04/2019"}}]}',
       version: "1.0.0",
       wait_time: 1,
       projection: "roie",
-      wmts_csv_path: "/layerSources/shay_avr/wmts_shaziri.csv",
+      wmts_csv_path: "/mnt/locust/test_data/wmts_shaziri.csv",
       requests_records_csv: "test_data/data/stats.csv",
       gridName: "newGrids",
       imageType: ".jpeg",
       layer: "Orthophoto",
       users: 15,
+      CSV_3D_DATA_PATH: "/mnt/locust/test_data/urls_data.csv",
       port: 8080,
-      CONF_FILE: "/layerSources/shay_avr/new_locust_configuration.json",
+      CONF_FILE: "/layerSources/locust/locust_configuration.json",
       layer_type: "wmts",
       test_to_run: "Lateron",
       sub_url_for_pycsw: "https://pycsw-raster-qa-nginx-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1"}
@@ -33,7 +35,7 @@ global:
   headless: false
 
 image:
-  repository: acrarolibotnonprod.azurecr.io/locust-proactive:1.2.2
+  repository: acrarolibotnonprod.azurecr.io/workers_rps_calculation:1.2.1
   tag: 1.2.0
   pullPolicy: Always
 
@@ -43,7 +45,7 @@ service:
   annotations: {}
 
 master:
-  image: acrarolibotnonprod.azurecr.io/locust-proactive:1.2.2
+  image: acrarolibotnonprod.azurecr.io/workers_rps_calculation:1.2.1
   logLevel: INFO
   envs_include_default: true
   env: {}
@@ -63,10 +65,10 @@ master:
   restartPolicy: Always
 
 worker:
-  image: acrarolibotnonprod.azurecr.io/locust-proactive:1.2.2
+  image: acrarolibotnonprod.azurecr.io/workers_rps_calculation:1.2.1
   logLevel: INFO
   envs_include_default: true
-  replicas: 1
+  replicas: 2
   env: { SUB_URL_FOR_IDS: "https://www.google.com" }
   args: []
   pvc:
@@ -113,7 +115,7 @@ route:
 
 storage:
   enabled: true
-  pvcName: local-sources-pvc
+  pvcName: ingestion-source-pvc
   volumeName: ingestion-storage
   mountPathName: /layerSources
   subPath: ingestion-source

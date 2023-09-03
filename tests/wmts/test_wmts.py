@@ -11,8 +11,6 @@ from locust import (
     events,
     task,
 )
-from common.utils.csvreader import CSVReader
-
 
 from common.config.config import WmtsConfig, config_obj
 from common.utils import (
@@ -28,6 +26,7 @@ from common.utils.constants.strings import (
     CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
 )
+from common.utils.csvreader import CSVReader
 
 myDir = os.getcwd()
 sys.path.append(myDir)
