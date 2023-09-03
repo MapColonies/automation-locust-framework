@@ -1,7 +1,9 @@
+imageTag: &imageTag "1.3.7"
+
 global:
   name: locust-global
-  test_file: new-3d-test.py
-  test_file_path: "/mnt/locust/tests/performance_3d"
+  test_file: check_stats.py
+  test_file_path: "/mnt/locust/playgorund"
   host: https://mapproxy-raster-qa-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1
 
   env: {
@@ -35,7 +37,7 @@ global:
   headless: false
 
 image:
-  repository: acrarolibotnonprod.azurecr.io/workers_rps_calculation:1.2.1
+  repository: acrarolibotnonprod.azurecr.io/workers_rps_calculation:1.3.7
   tag: 1.2.0
   pullPolicy: Always
 
@@ -45,7 +47,7 @@ service:
   annotations: {}
 
 master:
-  image: acrarolibotnonprod.azurecr.io/workers_rps_calculation:1.2.1
+  image: acrarolibotnonprod.azurecr.io/workers_rps_calculation:1.3.7
   logLevel: INFO
   envs_include_default: true
   env: {}
@@ -65,7 +67,7 @@ master:
   restartPolicy: Always
 
 worker:
-  image: acrarolibotnonprod.azurecr.io/workers_rps_calculation:1.2.1
+  image: acrarolibotnonprod.azurecr.io/workers_rps_calculation:1.3.7
   logLevel: INFO
   envs_include_default: true
   replicas: 2
