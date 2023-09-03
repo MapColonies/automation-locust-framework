@@ -5,9 +5,10 @@ from locust import HttpUser, constant, events, task
 from common.config.config import ElevationConfig
 from common.utils.data_generator.data_utils import generate_points_request
 from common.validation.validation_utils import (
+    find_range_for_response_time,
     initiate_counters_by_ranges,
     retype_env,
-    write_rps_percent_results, find_range_for_response_time,
+    write_rps_percent_results,
 )
 
 if isinstance(ElevationConfig.percent_ranges, str):
@@ -52,22 +53,23 @@ class CustomUser(HttpUser):
     @task(1)
     def index(self):
         body = generate_points_request(
-            points_amount=self.points_amount, polygon=self.poly, exclude_fields=exclude_fields
+            points_amount=self.points_amount,
+            polygon=self.poly,
+            exclude_fields=exclude_fields,
         )
-        print("-----------",body, "-----------")
+        print("-----------", body, "-----------")
         if retype_env(ElevationConfig.token_flag):
             self.client.post(
                 f"?token={ElevationConfig.TOKEN}",
                 data=body,
                 headers={"Content-Type": "application/json"},
-
             )
         else:
             self.client.post(
                 "/",
                 data=body,
                 headers={"Content-Type": "application/json"},
-                verify=False
+                verify=False,
             )
 
 
@@ -83,8 +85,9 @@ avg_response_time = 0
 @events.request.add_listener
 def response_time_listener(response_time, **kwargs):
     global counters, total_requests
-    counters = find_range_for_response_time(response_time=response_time, ranges_list=percent_ranges,
-                                            counters_dict=counters)
+    counters = find_range_for_response_time(
+        response_time=response_time, ranges_list=percent_ranges, counters_dict=counters
+    )
     total_requests += 1
 
 
@@ -119,7 +122,11 @@ def on_locust_stop(environment, **kwargs):
         )
 
     else:
-        print("The test execution failed - requests did not proceed. Check the logs to find the problem")
+        print(
+            "The test execution failed - requests did not proceed. Check the logs to find the problem"
+        )
+
+
 # Run the Locust test
 # class MyUser(CustomUser):
 #     wait_time = constant(int(ElevationConfig.wait_time))

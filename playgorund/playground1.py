@@ -1,13 +1,11 @@
-import random
-
 from locust import HttpUser, constant, events, task
 
 from common.config.config import ElevationConfig
-from common.utils.data_generator.data_utils import generate_points_request
 from common.validation.validation_utils import (
+    find_range_for_response_time,
     initiate_counters_by_ranges,
     retype_env,
-    write_rps_percent_results, find_range_for_response_time
+    write_rps_percent_results,
 )
 
 if isinstance(ElevationConfig.percent_ranges, str):
@@ -42,7 +40,9 @@ class CustomUser(HttpUser):
 
     @task(1)
     def index(self):
-        self.client.get(url="https://www.ynet.co.il/home")
+        response = self.client.get(url="https://www.ynet.co.il/home")
+        print(response.text)
+        print(type(response.text))
 
 
 # create counters for each range value from the configuration
@@ -57,8 +57,9 @@ avg_response_time = 0
 @events.request.add_listener
 def response_time_listener(response_time, **kwargs):
     global counters, total_requests
-    counters = find_range_for_response_time(response_time=response_time, ranges_list=percent_ranges,
-                                            counters_dict=counters)
+    counters = find_range_for_response_time(
+        response_time=response_time, ranges_list=percent_ranges, counters_dict=counters
+    )
     total_requests += 1
 
 
