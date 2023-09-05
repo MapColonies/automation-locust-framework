@@ -417,6 +417,14 @@ def retype_env(env_value: str):
     return env_value
 
 
+x = retype_env(env_value="[20,30,50,80,100,500]")
+print(retype_env(env_value="[20,30,50,80,100,500]"))
+x.append(0)
+x.append(float("inf"))
+percent_ranges = sorted(x)
+print(percent_ranges)
+
+
 def find_keys_and_values_by_nested_value(value, input_dict, parent_key=None):
     key_value_pairs = []
 
