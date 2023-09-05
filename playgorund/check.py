@@ -1,5 +1,4 @@
-import json
-import os
+
 import threading
 
 from locust import HttpUser, constant, events, task
@@ -38,7 +37,8 @@ file_lock = threading.Lock()
 
 stats = {"total_requests": 0}
 counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
-counters_keys = list(counters)
+counters_keys = list(counters.keys())
+workers_results = {}
 
 
 class User(HttpUser):
@@ -54,13 +54,8 @@ class User(HttpUser):
 
 
 # create counters for each range value from the configuration
-counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
+# counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
 total_requests = 0
-test_results = []
-response_time_data = []
-points_amount_avg_rsp = []
-avg_response_time = 0
-workers_results = {}
 
 
 @events.init.add_listener
@@ -78,8 +73,18 @@ def locust_init(environment, **kwargs):
             """
             Add a route to the Locust web app, where we can see the total content-length
             """
-            counters["stats"] = stats
-            return str(counters)
+            requests_amount = stats["total_requests"]
+            percent_value_by_range = {}
+            print(counters)
+
+            if requests_amount != 0:
+                for index, (key, value) in enumerate(counters.items()):
+                    percent_range = (value / requests_amount) * 100
+                    percent_value_by_range[f"{key}"] = percent_range
+
+                percent_value_by_range["total_requests"] = int(requests_amount)
+                print(percent_value_by_range)
+            return {"percent_value": percent_value_by_range, "total_requests": stats["total_requests"]}
             # return "Total content-length received: %i" % stats["total_requests"]
 
 
@@ -110,6 +115,7 @@ def on_report_to_master(client_id, data):
         data[range_val] = counters[range_val]
         counters[range_val] = 0
     stats["total_requests"] = 0
+    # counters["total_requests"] = 0
 
 
 @events.worker_report.add_listener
@@ -126,12 +132,26 @@ def on_worker_report(client_id, data):
     print(data)
 
 
+# @events.test_stop.add_listener
+# def log_counters(environment):
+
+
+# global counters ,workers_results
+#
+# worker_id = os.environ.get("HOSTNAME")
+# print(worker_id)
+# filename = f"{results_path}/workers_reports/results_{worker_id}.json"
+# counters["total_requests"] = total_requests
+# json_object = json.dumps(counters)
+# with open(filename, "w") as outfile:
+#     outfile.write(json_object)
+# outfile.close()
+# workers_results[worker_id] = counters
+# print("--------from test stop", workers_results)
+
 
 @events.test_start.add_listener
 def reset_counters(**kwargs):
-    global counters, total_requests, run_number, start_time_data, response_time_data
+    global counters, total_requests
     counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
     total_requests = 0
-    start_time_data = []
-    response_time_data = []
-

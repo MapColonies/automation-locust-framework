@@ -68,6 +68,7 @@ points_amount_avg_rsp = []
 avg_response_time = 0
 workers_results = {}
 
+
 @events.test_start.add_listener
 def on_locust_init(environment, **_kwargs):
     environment.users_count = environment.runner.target_user_count
@@ -84,7 +85,7 @@ def response_time_listener(response_time, **kwargs):
 
 @events.test_stop.add_listener
 def log_counters(environment):
-    global counters ,workers_results
+    global counters, workers_results
 
     worker_id = os.environ.get("HOSTNAME")
     print(worker_id)
@@ -96,7 +97,6 @@ def log_counters(environment):
     outfile.close()
     workers_results[worker_id] = counters
     print("--------from test stop", workers_results)
-
 
 
 @events.test_start.add_listener
@@ -137,5 +137,4 @@ def on_locust_stop(environment, **kwargs):
 
     else:
         print(
-            "The test execution failed - requests did not proceed. Check the logs to find the problem"
-        )
+            "The test execution failed - requests did not proceed. Check the logs to find the problem")
