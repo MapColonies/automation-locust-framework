@@ -27,8 +27,21 @@ def sum_nested_dicts(nested_dict):
 
     return result
 
-
-x = {'results_47621.json': {'(0, 100)': 0, '(100, 500)': 3, '(500, inf)': 15, "total_requests": 15},
-     'results_48619.json': {'(0, 100)': 24, '(100, 500)': 1, '(500, inf)': 0, "total_requests": 10}}
-
-print(sum_nested_dicts(x))
+#
+# x = {'results_47621.json': {'(0, 100)': 0, '(100, 500)': 3, '(500, inf)': 15, "total_requests": 15},
+#      'results_48619.json': {'(0, 100)': 24, '(100, 500)': 1, '(500, inf)': 0, "total_requests": 10}}
+#
+# # print(sum_nested_dicts(x))
+#
+# stats = {"total_requests": 25}
+# counters = {'(0, 100)': 24, '(100, 500)': 1, '(500, inf)': 0}
+# requests_amount = stats["total_requests"]
+# percent_value_by_range = {}
+# if requests_amount != 0:
+#     for key, value in counters.items():
+#         print(key, value)
+#         percent_range = (value / requests_amount) * 100
+#         percent_value_by_range[f"{key}"] = percent_range
+#
+#     percent_value_by_range["total_requests"] = int(requests_amount)
+#     print(percent_value_by_range)

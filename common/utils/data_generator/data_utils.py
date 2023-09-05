@@ -71,6 +71,11 @@ def generate_points_request(
         return request_body
 
 
+def custom_sorting_key(item):
+    # Extract the lower bound of the range from the key
+    lower_bound = int(item[0].split(",")[0].strip("("))
+    return lower_bound
+
 # poly1 = [
 #     (34.9718214942001, 32.80423530554715),
 #     (34.9718214942001, 32.756206767248315),
