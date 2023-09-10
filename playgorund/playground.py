@@ -1,47 +1,62 @@
-# x = {'results_47621.json': {'(0, 100)': 0, '(100, 500)': 3, '(500, inf)': 15},
-#      'results_48619.json': {'(0, 100)': 24, '(100, 500)': 1, '(500, inf)': 0}}
-# values = x.values()
-# values = list(values)
-# # print(values)
-# # print(values[0])
-
-# import os
-# import sys
-# from pathlib import Path
+# import json
+# from json import JSONDecodeError
 #
-# myDir = os.getcwd()
-# sys.path.append(myDir)
-#
-# path = Path(myDir)
-# a = str(path.parent.absolute())
-# sys.path.append(a)
-def sum_nested_dicts(nested_dict):
-    result = {}
+# from locust import HttpUser, task
+# class Tasks(HttpUser):
+#     @task
+#     def task(self):
+#         with self.client.get("https://www.ynet.co.il") as response:
+#             try:
+#                 result = json.loads(response.content)
+#                 if len(result["result"]) == 0:
+#                     response.failure(result)
+#                     # log.error(result)
+#             except (TypeError, JSONDecodeError) as err:
+#                 response.failure(response.text)
+# log.error(f'{type(err).__name__} because of : {response.status_code} - {response.text}')
 
-    for key, data_dict in nested_dict.items():
-        for nested_key, value in data_dict.items():
-            if nested_key in result:
-                result[nested_key] += value
-            else:
-                result[nested_key] = value
-
-    return result
 
 #
-# x = {'results_47621.json': {'(0, 100)': 0, '(100, 500)': 3, '(500, inf)': 15, "total_requests": 15},
-#      'results_48619.json': {'(0, 100)': 24, '(100, 500)': 1, '(500, inf)': 0, "total_requests": 10}}
+# from locust import HttpUser, task
 #
-# # print(sum_nested_dicts(x))
+# class MyUser(HttpUser):
+#     @task
+#     def my_task(self):
+#         response = self.client.get("https://www.ynet.co.il")
 #
-# stats = {"total_requests": 25}
-# counters = {'(0, 100)': 24, '(100, 500)': 1, '(500, inf)': 0}
-# requests_amount = stats["total_requests"]
-# percent_value_by_range = {}
-# if requests_amount != 0:
-#     for key, value in counters.items():
-#         print(key, value)
-#         percent_range = (value / requests_amount) * 100
-#         percent_value_by_range[f"{key}"] = percent_range
+#         # Check the response content type
+#         content_type = response.headers.get("Content-Type", "")
 #
-#     percent_value_by_range["total_requests"] = int(requests_amount)
-#     print(percent_value_by_range)
+#         if "application/json" not in content_type:
+#             # Mark the request as a failure with a custom reason including the response text
+#             response.failure(f"Content-Type is not text/html. Response: {response.text}")
+#
+# from locust import HttpUser, task
+#
+#
+# class MyUser(HttpUser):
+#     @task
+#     def my_task(self):
+#         response = self.client.get("https://www.ynet.co.il")
+#
+#         # Check the response content type
+#         content_type = response.headers.get("Content-Type", "")
+#
+#         if "application/json" not in content_type:
+#             # Mark the request as a failure with a custom reason including the response text
+#             failure_reason = f"Content-Type is not text/html. Response: {response.text}"
+#             response.failure(failure_reason)
+
+
+from locust import HttpUser, task
+
+
+class MyUser(HttpUser):
+    @task
+    def my_task(self):
+        with self.client.get("https://www.ynet.co.il", catch_response=True) as response:
+            content_type = response.headers.get("Content-Type", "")
+            if content_type != "application/json":
+                response.failure("Not a json")
+            elif response.elapsed.total_seconds() > 0.5:
+                response.failure("Request took too long")

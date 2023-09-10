@@ -37,7 +37,6 @@ stats = {"total_requests": 0}
 counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
 print(counters)
 counters_keys = list(counters.keys())
-workers_results = {}
 
 
 def set_wait_time(timer_selection, wait_time):
@@ -63,7 +62,9 @@ class User(HttpUser):
     def index(self):
         url = next(ssn_reader)
 
-        self.client.get(url=url[1], verify=False)
+        response = self.client.get(url=url[1], verify=False)
+        if ('content-type', "application/octet-stream") not in response.headers.items():
+            print(f"invalid response content type for url: {url}")
 
         host = config_obj["default"].HOST
 
