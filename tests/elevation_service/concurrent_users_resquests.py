@@ -10,7 +10,6 @@ from common.validation.validation_utils import (
     find_range_for_response_time,
     initiate_counters_by_ranges,
     retype_env,
-    write_rps_percent_results,
 )
 
 if isinstance(ElevationConfig.percent_ranges, str):
