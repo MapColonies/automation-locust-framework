@@ -13,7 +13,7 @@ poly = [
 
 
 def polygon_random_points(
-    polygon: List[Tuple[float, float]], num_points: int
+        polygon: List[Tuple[float, float]], num_points: int
 ) -> List[Tuple[float, float]]:
     """
     This function will generate points by a given polygon
@@ -36,10 +36,10 @@ def polygon_random_points(
 
 
 def generate_points_request(
-    points_amount: int,
-    polygon: List[Tuple[float, float]],
-    exclude_fields: bool,
-    product_type: str = "MIXED",
+        points_amount: int,
+        polygon: List[Tuple[float, float]],
+        exclude_fields: bool,
+        product_type: str = "MIXED",
 ):
     """
     This function will generate request body for user
@@ -76,12 +76,47 @@ def custom_sorting_key(item):
     lower_bound = int(item[0].split(",")[0].strip("("))
     return lower_bound
 
-# poly1 = [
-#     (34.9718214942001, 32.80423530554715),
-#     (34.9718214942001, 32.756206767248315),
-#     (35.06487372085749, 32.756206767248315),
-#     (35.06487372085749, 32.80423530554715),
-#     (34.9718214942001, 32.80423530554715),
-# ]
-#
-# print(generate_points_request(points_amount=50, polygon=poly1, exclude_fields=True))
+
+poly1 = [
+    (34.9718214942001, 32.80423530554715),
+    (34.9718214942001, 32.756206767248315),
+    (35.06487372085749, 32.756206767248315),
+    (35.06487372085749, 32.80423530554715),
+    (34.9718214942001, 32.80423530554715),
+]
+
+# print(polygon_random_points(num_points=3, polygon=poly1))
+print(generate_points_request(points_amount=5, polygon=poly1, exclude_fields=True))
+
+x = [(34.99329017908319, 32.75730973158232), (34.99798221083507, 32.79931519606793),
+     (35.00240318612141, 32.7935654102479), (35.04743080042179, 32.795414543794415)]
+dict1 = {"positions": [{"longitude": 34.99329017908319, "latitude": 32.75730973158232},
+                       {"longitude": 34.99798221083507, "latitude": 32.79931519606793},
+                       {"longitude": 35.00240318612141, "latitude": 32.7935654102479},
+                       {"longitude": 35.01469671603069, "latitude": 32.78338486794766},
+                       {"longitude": 35.04743080042179, "latitude": 32.795414543794415}], "productType": "MIXED",
+         "excludeFields": []}
+
+
+def find_keys_by_values(input_dict, value_tuples, keys):
+    result = {}
+    for key1, key2 in keys:
+        if key1 in input_dict and key2 in input_dict:
+            value_tuple = (input_dict[key1], input_dict[key2])
+            print(value_tuple)
+            if value_tuple in value_tuples:
+                result[key1] = input_dict[key1]
+                result[key2] = input_dict[key2]
+    return result
+
+
+print(find_keys_by_values(input_dict=dict1, value_tuples=x, keys=[("longitude", "latitude")]))
+
+x =[(34.99329017908319, 32.75730973158232), (34.99798221083507, 32.79931519606793),
+     (35.00240318612141, 32.7935654102479), (35.04743080042179, 32.795414543794415)]
+dict1 = {"check": [{"key1": 34.99329017908319, "key2": 32.75730973158232},
+                   {"key1": 34.99798221083507, "key2": 32.79931519606793},
+                   {"key1": 35.00240318612141, "key2": 32.7935654102479},
+                   {"key1": 35.01469671603069, "key2": 32.78338486794766},
+                   {"key1": 35.04743080042179, "key2": 32.795414543794415}], "field1": "MIXED",
+         "field2": []}

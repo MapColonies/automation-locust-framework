@@ -417,12 +417,12 @@ def retype_env(env_value: str):
     return env_value
 
 
-x = retype_env(env_value="[20,30,50,80,100,500]")
-print(retype_env(env_value="[20,30,50,80,100,500]"))
-x.append(0)
-x.append(float("inf"))
-percent_ranges = sorted(x)
-print(percent_ranges)
+# x = retype_env(env_value="[20,30,50,80,100,500]")
+# print(retype_env(env_value="[20,30,50,80,100,500]"))
+# x.append(0)
+# x.append(float("inf"))
+# percent_ranges = sorted(x)
+# print(percent_ranges)
 
 
 def find_keys_and_values_by_nested_value(value, input_dict, parent_key=None):
@@ -505,6 +505,21 @@ def set_wait_time(timer_selection, wait_time):
         return constant_pacing(wait_time), CONSTANT_PACING_TIMER_STR
     else:
         return None, INVALID_TIMER_STR
+
+
+def find_mismatched_key_value(input_dict, key_value_pairs):
+    for key, value in key_value_pairs:
+        if key not in input_dict or input_dict[key] != value:
+            return key, value
+    return None, None  # Return None if all key-value pairs match
+
+
+# Example usage:
+my_dict = {'name': 'John', 'age': 30, 'city': 'New York'}
+key_value_pairs = [('name', 'John'), ('age', 30), ('city', 'Los Angeles')]
+
+mismatched_key, mismatched_value = find_mismatched_key_value(my_dict, key_value_pairs)
+
 
 # data_dict = {'data': [{'latitude': 30.574818211159574, 'longitude': 34.85581004685274, 'height': None},
 #                       {'latitude': 30.591386424841303, 'longitude': 34.83555954301749, 'height': None},
