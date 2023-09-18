@@ -85,17 +85,18 @@ poly1 = [
     (34.9718214942001, 32.80423530554715),
 ]
 
-# print(polygon_random_points(num_points=3, polygon=poly1))
-print(generate_points_request(points_amount=5, polygon=poly1, exclude_fields=True))
 
-x = [(34.99329017908319, 32.75730973158232), (34.99798221083507, 32.79931519606793),
-     (35.00240318612141, 32.7935654102479), (35.04743080042179, 32.795414543794415)]
-dict1 = {"positions": [{"longitude": 34.99329017908319, "latitude": 32.75730973158232},
-                       {"longitude": 34.99798221083507, "latitude": 32.79931519606793},
-                       {"longitude": 35.00240318612141, "latitude": 32.7935654102479},
-                       {"longitude": 35.01469671603069, "latitude": 32.78338486794766},
-                       {"longitude": 35.04743080042179, "latitude": 32.795414543794415}], "productType": "MIXED",
-         "excludeFields": []}
+# print(polygon_random_points(num_points=3, polygon=poly1))
+# print(generate_points_request(points_amount=5, polygon=poly1, exclude_fields=True))
+#
+# x = [(34.99329017908319, 32.75730973158232), (34.99798221083507, 32.79931519606793),
+#      (35.00240318612141, 32.7935654102479), (35.04743080042179, 32.795414543794415)]
+# dict1 = {"positions": [{"longitude": 34.99329017908319, "latitude": 32.75730973158232},
+#                        {"longitude": 34.99798221083507, "latitude": 32.79931519606793},
+#                        {"longitude": 35.00240318612141, "latitude": 32.7935654102479},
+#                        {"longitude": 35.01469671603069, "latitude": 32.78338486794766},
+#                        {"longitude": 35.04743080042179, "latitude": 32.795414543794415}], "productType": "MIXED",
+#          "excludeFields": []}
 
 
 def find_keys_by_values(input_dict, value_tuples, keys):
@@ -110,13 +111,44 @@ def find_keys_by_values(input_dict, value_tuples, keys):
     return result
 
 
-print(find_keys_by_values(input_dict=dict1, value_tuples=x, keys=[("longitude", "latitude")]))
+# print(find_keys_by_values(input_dict=dict1, value_tuples=x, keys=[("longitude", "latitude")]))
+#
+# x =[(34.99329017908319, 32.75730973158232), (34.99798221083507, 32.79931519606793),
+#      (35.00240318612141, 32.7935654102479), (35.04743080042179, 32.795414543794415)]
+# dict1 = {"check": [{"key1": 34.99329017908319, "key2": 32.75730973158232},
+#                    {"key1": 34.99798221083507, "key2": 32.79931519606793},
+#                    {"key1": 35.00240318612141, "key2": 32.7935654102479},
+#                    {"key1": 35.01469671603069, "key2": 32.78338486794766},
+#                    {"key1": 35.04743080042179, "key2": 32.795414543794415}], "field1": "MIXED",
+#          "field2": []}
+def find_unmatched_points(response_output: dict, requests_points: dict):
+    """
+    :param response_output: service heights response dict
+    :param requests_points: request body that contain the requested points lat long value
+    :return:
+    list of unmatched points if exist
+    """
+    unmatched_tuples = []
+    try:
+        response_output = dict(response_output)
+        positions_data = response_output["data"]
+    except Exception as e:
+        return e
+    requests_points = dict(requests_points)
+    requests_points_list = requests_points["positions"]
+    for item in positions_data:
+        response_longitude = item["longitude"]
+        response_latitude = item["latitude"]
 
-x =[(34.99329017908319, 32.75730973158232), (34.99798221083507, 32.79931519606793),
-     (35.00240318612141, 32.7935654102479), (35.04743080042179, 32.795414543794415)]
-dict1 = {"check": [{"key1": 34.99329017908319, "key2": 32.75730973158232},
-                   {"key1": 34.99798221083507, "key2": 32.79931519606793},
-                   {"key1": 35.00240318612141, "key2": 32.7935654102479},
-                   {"key1": 35.01469671603069, "key2": 32.78338486794766},
-                   {"key1": 35.04743080042179, "key2": 32.795414543794415}], "field1": "MIXED",
-         "field2": []}
+        found_match = False
+        for requests_points_data in requests_points_list:
+            if requests_points_data["longitude"] == response_longitude and \
+                    requests_points_data["latitude"] == response_latitude:
+                print(f"Matched values for {[response_longitude, response_latitude]}")
+                found_match = True  # Mark the match
+                # Don't break, continue checking other tuples
+
+        if not found_match:
+            unmatched_tuples.append([response_longitude, response_latitude])
+    print("unmatched_tuples", unmatched_tuples)
+    return unmatched_tuples
