@@ -1,3 +1,4 @@
+import json
 import random
 
 from locust import HttpUser, constant, events, task, constant_pacing, between, constant_throughput
@@ -5,7 +6,7 @@ from locust import HttpUser, constant, events, task, constant_pacing, between, c
 from common.config.config import ElevationConfig, config_obj
 from common.utils.constants.strings import INVALID_TIMER_STR, CONSTANT_PACING_TIMER_STR, BETWEEN_TIMER_STR, \
     CONSTANT_THROUGHPUT_TIMER_STR, CONSTANT_TIMER_STR
-from common.utils.data_generator.data_utils import generate_points_request, custom_sorting_key
+from common.utils.data_generator.data_utils import generate_points_request, custom_sorting_key, find_unmatched_points
 from common.validation.validation_utils import (
     find_range_for_response_time,
     initiate_counters_by_ranges,
@@ -70,9 +71,8 @@ class CustomUser(HttpUser):
 
     @task(1)
     def index(self):
-        points_amount = random.randint(1, int(points_amount_range))
         body = generate_points_request(
-            points_amount=points_amount,
+            points_amount=ElevationConfig.points_amount_range,
             polygon=self.poly,
             exclude_fields=exclude_fields,
         )
@@ -80,22 +80,23 @@ class CustomUser(HttpUser):
             with self.client.post(
                     f"?token={ElevationConfig.TOKEN}",
                     data=body,
-                    headers={"Content-Type": "application/json"}, catch_response=True) as response:
-                if response.status_code == 400:
-                    response.failure(body)
+                    headers={"Content-Type": "application/json"}, verify=False, catch_response=True
+            ) as response:
 
-                content_type = response.headers.get("Content-Type", "")
-                if "application/json" not in content_type:
-                    response.failure(
-                        f"Invalid response content type-expected: application/json, response-content-type: {content_type},"
-                        f" response.text: {response.text}")
+                unmatched_points = find_unmatched_points(response_output=response.json(),
+                                                         requests_points=json.loads(body))
+                if unmatched_points:
+                    response.failure(str(unmatched_points))
         else:
-            response = self.client.post(
-                "/",
-                data=body,
-                headers={"Content-Type": "application/json"},
-                verify=False,
-            )
+            with self.client.post(
+                    "/",
+                    data=body,
+                    headers={"Content-Type": "application/json"},
+                    verify=False,catch_response=True
+            ) as response:
+                unmatched_points = find_unmatched_points(response_output=response.json(), requests_points=json.loads(body))
+                if unmatched_points:
+                    response.failure(unmatched_points)
 
 
 # create counters for each range value from the configuration
@@ -118,7 +119,7 @@ def locust_init(environment, **kwargs):
             """
             requests_amount = stats["total_requests"]
             percent_value_by_range = {}
-            print(counters)
+
 
             if requests_amount != 0:
                 for index, (key, value) in enumerate(counters.items()):

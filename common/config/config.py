@@ -104,10 +104,10 @@ class ElevationConfig(Config):
     wait_time = os.environ.get("wait_time", 1)
     graph_name = os.environ.get("graph_name", "avg_rps_vs_user_amount")
     payload_flag = os.environ.get("payload_flag", "True")
-    token_flag = os.environ.get("token_flag", "True")
+    token_flag = os.environ.get("token_flag", True)
     # payload_flag = os.environ.get("payload_flag", True)
     # token_flag = os.environ.get("token_flag", True)
-    points_amount_range = os.environ.get("points_amount_range", 10)
+    points_amount_range = os.environ.get("points_amount_range", 250)
     poly = os.environ.get(
         "polygon",
         [
