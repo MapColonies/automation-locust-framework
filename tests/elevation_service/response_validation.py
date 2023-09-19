@@ -10,7 +10,7 @@ from common.utils.data_generator.data_utils import generate_points_request, cust
 from common.validation.validation_utils import (
     find_range_for_response_time,
     initiate_counters_by_ranges,
-    retype_env,
+    retype_env, parse_response_content,
 )
 
 if isinstance(ElevationConfig.percent_ranges, str):
@@ -82,21 +82,32 @@ class CustomUser(HttpUser):
                     data=body,
                     headers={"Content-Type": "application/json"}, verify=False, catch_response=True
             ) as response:
+                if response.status_code == 200:
+                    response_time = response.elapsed.total_seconds() * 1000
+                    unmatched_points = find_unmatched_points(response_output=response.json(),
+                                                             requests_points=json.loads(body))
 
-                unmatched_points = find_unmatched_points(response_output=response.json(),
-                                                         requests_points=json.loads(body))
-                if unmatched_points:
-                    response.failure(str(unmatched_points))
+                    content_parser_result = parse_response_content(response_content=response.json(),
+                                                                   response_time=response_time,
+                                                                   normality_threshold=ElevationConfig.normality_threshold,
+                                                                   property_name="height")
+                    if unmatched_points:
+                        response.failure(str(unmatched_points))
+
+                    if content_parser_result:
+                        response.failure(str(content_parser_result))
+
         else:
             with self.client.post(
                     "/",
                     data=body,
                     headers={"Content-Type": "application/json"},
-                    verify=False,catch_response=True
+                    verify=False, catch_response=True
             ) as response:
-                unmatched_points = find_unmatched_points(response_output=response.json(), requests_points=json.loads(body))
+                unmatched_points = find_unmatched_points(response_output=response.json(),
+                                                         requests_points=json.loads(body))
                 if unmatched_points:
-                    response.failure(unmatched_points)
+                    response.failure(f"Points without a match on the response content- {unmatched_points}")
 
 
 # create counters for each range value from the configuration
@@ -119,7 +130,6 @@ def locust_init(environment, **kwargs):
             """
             requests_amount = stats["total_requests"]
             percent_value_by_range = {}
-
 
             if requests_amount != 0:
                 for index, (key, value) in enumerate(counters.items()):
