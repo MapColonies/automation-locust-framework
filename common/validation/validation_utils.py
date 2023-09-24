@@ -507,18 +507,53 @@ def set_wait_time(timer_selection, wait_time):
         return None, INVALID_TIMER_STR
 
 
-def find_mismatched_key_value(input_dict, key_value_pairs):
-    for key, value in key_value_pairs:
-        if key not in input_dict or input_dict[key] != value:
-            return key, value
-    return None, None  # Return None if all key-value pairs match
+def find_unmatch_lat_long_values(response_points: dict, requests_positions: dict):
+    """
+    This function will find unmatched lat long values of requests points response
+    :param response_points: the response lat long values from response value
+    :param requests_positions:
+    :return:
+    """
+    key1 = "longitude"
+    key2 = "latitude"
+    try:
+        list_1 = response_points["data"]
+    except Exception as e:
+        return f"Could not find data values on the given response body, reason: {e}"
+    try:
+        list_2 = requests_positions["positions"]
+    except Exception as e:
+        return f"Could not find positions values on the given request body, reason: {e}"
+        # Iterate through the lists and check if the specific values are equal
+    # Initialize a list to store the unmatched values
+    unmatched_values = {}
+
+    # Iterate through the lists and check for unmatched values
+    for dict1, dict2 in zip(list_1, list_2):
+        value1_key1 = dict1.get(key1)
+        value1_key2 = dict1.get(key2)
+        value2_key1 = dict2.get(key1)
+        value2_key2 = dict2.get(key2)
+
+        if value1_key1 != value2_key1 or value1_key2 != value2_key2:
+            unmatched_values["unmatch_values"] = {"Request points": dict2,
+                                                  "Response_points": (dict1["longitude"], dict1["latitude"])}
+
+    return unmatched_values
 
 
-# Example usage:
-my_dict = {'name': 'John', 'age': 30, 'city': 'New York'}
-key_value_pairs = [('name', 'John'), ('age', 30), ('city', 'Los Angeles')]
-
-mismatched_key, mismatched_value = find_mismatched_key_value(my_dict, key_value_pairs)
+# def find_mismatched_key_value(input_dict, key_value_pairs):
+#     for key, value in key_value_pairs:
+#         if key not in input_dict or input_dict[key] != value:
+#             return key, value
+#     return None, None  # Return None if all key-value pairs match
+#
+#
+# # Example usage:
+# my_dict = {'name': 'John', 'age': 30, 'city': 'New York'}
+# key_value_pairs = [('name', 'John'), ('age', 30), ('city', 'Los Angeles')]
+#
+# mismatched_key, mismatched_value = find_mismatched_key_value(my_dict, key_value_pairs)
 
 
 # data_dict = {'data': [{'latitude': 30.574818211159574, 'longitude': 34.85581004685274, 'height': None},
