@@ -10,7 +10,7 @@ from common.utils.data_generator.data_utils import generate_points_request, cust
 from common.validation.validation_utils import (
     find_range_for_response_time,
     initiate_counters_by_ranges,
-    retype_env, parse_response_content,
+    retype_env, parse_response_content, find_unmatch_lat_long_values,
 )
 
 if isinstance(ElevationConfig.percent_ranges, str):
@@ -84,9 +84,7 @@ class CustomUser(HttpUser):
             ) as response:
                 if response.status_code == 200:
                     response_time = response.elapsed.total_seconds() * 1000
-                    unmatched_points = find_unmatched_points(response_output=response.json(),
-                                                             requests_points=json.loads(body))
-
+                    unmatched_points = find_unmatch_lat_long_values(response_points=response.json(),requests_positions=body)
                     content_parser_result = parse_response_content(response_content=response.json(),
                                                                    response_time=response_time,
                                                                    normality_threshold=ElevationConfig.normality_threshold,
