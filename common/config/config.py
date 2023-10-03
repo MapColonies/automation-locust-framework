@@ -107,7 +107,7 @@ class ElevationConfig(Config):
     token_flag = os.environ.get("token_flag", True)
     # payload_flag = os.environ.get("payload_flag", True)
     # token_flag = os.environ.get("token_flag", True)
-    points_amount_range = os.environ.get("points_amount_range", 250)
+    points_amount_range = os.environ.get("points_amount_range", 10)
     poly = os.environ.get(
         "polygon",
         [
@@ -151,7 +151,7 @@ class ElevationConfig(Config):
 class Config3D(Config):
     CSV_DATA_PATH = os.environ.get(
         "CSV_3D_DATA_PATH",
-        "/home/shayavr/Desktop/git/automation-locust-framework/test_data/urls_data.csv",
+        "/home/shayavr/Desktop/git/automation-locust-framework/scripts/extract_urls_script_3d/filtered_urls.csv",
     )
     # PERCENT_RESULT_PATH = os.environ.get(
     #     # percent_result_path,
