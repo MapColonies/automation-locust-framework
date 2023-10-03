@@ -36,7 +36,9 @@ else:
     percent_ranges.append(float("inf"))
     percent_ranges = sorted(percent_ranges)
 
-ssn_reader = CSVReader(config_obj["_3d"].CSV_DATA_PATH)
+# ssn_reader = CSVReader(config_obj["_3d"].CSV_DATA_PATH)
+ssn_reader = CSVReader(
+    "/home/shayavr/Desktop/git/automation-locust-framework/scripts/extract_urls_script_3d/filtered_urls.csv")
 results_path = config_obj["_3d"].RESULTS_PATH
 
 if isinstance(config_obj["wmts"].WAIT_TIME, str):

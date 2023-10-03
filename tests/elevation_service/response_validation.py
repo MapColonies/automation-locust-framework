@@ -72,8 +72,7 @@ class CustomUser(HttpUser):
     @task(1)
     def index(self):
         body = generate_points_request(
-            # points_amount=int(ElevationConfig.points_amount_range),
-            points_amount=1,
+            points_amount=int(ElevationConfig.points_amount_range),
             polygon=self.poly,
             exclude_fields=exclude_fields,
         )
@@ -85,10 +84,8 @@ class CustomUser(HttpUser):
             ) as response:
                 if response.status_code == 200:
                     # response_time = response.elapsed.total_seconds() * 1000
-
                     unmatched_points = find_unmatch_lat_long(response_points=response.json(),
                                                              request_points=json.loads(body))
-
                     null_points = [
                         item for item in response.json()["data"] if item.get("height") is None
                     ]
