@@ -1,14 +1,14 @@
-imageRepository: &imageRepository "acrarolibotnonprod.azurecr.io/workers_rps_calculation:concurrent"
+imageRepository: &imageRepository "acrarolibotnonprod.azurecr.io/response_validation:2.0.0"
 
 global:
   name: locust-global
-  test_file: concurrent_users_resquests.py
+  test_file: response_validation.py
   test_file_path: "/mnt/locust/tests/elevation_service"
-  host: https://mapproxy-raster-qa-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1
+  host: https://dem-int-heights-production-nginx-route-integration.apps.j1lk3njp.eastus.aroapp.io/api/heights/v1/points
 
   env: {
       layer_list: "shay44" ,
-      points_amount_range: 250,
+      points_amount_range: 100,
       token_flag: true,
       measure_time: false,
       percent_ranges: "[20,30,50,80,100,500]",
@@ -17,6 +17,7 @@ global:
       mc_region_value: "ישראל, ירדן",
       mc_polygon_value: '{"bbox":[34.8468438649828,32.0466327470143,34.8804418550117,32.0689996810298],"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[34.8468438649828,32.0689996810298],[34.8637856279928,32.0590059440186],[34.8773961450173,32.0680478960404],[34.8804418550117,32.0528193460686],[34.8786334639958,32.0466327470143],[34.8605495609931,32.0488218510146],[34.8468438649828,32.0689996810298]]]},"properties":{"Dsc":"תשתית אורתופוטו בישראל עדכני לאפריל 2019","Rms":null,"Ep90":"3","Scale":null,"Source":"MAS_6_ORT_247993-1.0","Resolution":"0.2","SensorType":"OTHER","SourceName":"O_arzi_mz_w84geo_Tiff_20cm","UpdateDate":"06/04/2019"}}]}',
       version: "1.0.0",
+      normality_threshold: '{"low_response_time": 10, "high_response_time": 800}',
       wait_time: 1,
       polygon: "[
             [

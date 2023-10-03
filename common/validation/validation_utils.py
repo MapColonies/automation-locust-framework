@@ -4,14 +4,9 @@ import json
 import os
 import re
 from typing import Any, List, Union
-
 import matplotlib.dates as mdates
 import numpy as np
-from locust import constant, constant_throughput, between, constant_pacing
 from matplotlib import pyplot as plt
-
-from common.utils.constants.strings import CONSTANT_TIMER_STR, CONSTANT_THROUGHPUT_TIMER_STR, BETWEEN_TIMER_STR, \
-    CONSTANT_PACING_TIMER_STR, INVALID_TIMER_STR
 
 
 class ValidationError(Exception):
@@ -494,81 +489,37 @@ def sum_nested_dicts(nested_dict: dict):
     return result
 
 
-def set_wait_time(timer_selection, wait_time):
-    if timer_selection == 1:
-        return constant(wait_time), CONSTANT_TIMER_STR
-    elif timer_selection == 2:
-        return constant_throughput(wait_time), CONSTANT_THROUGHPUT_TIMER_STR
-    elif timer_selection == 3:
-        return between(wait_time["min_wait"], wait_time["max_wait"]), BETWEEN_TIMER_STR
-    elif timer_selection == 4:
-        return constant_pacing(wait_time), CONSTANT_PACING_TIMER_STR
-    else:
-        return None, INVALID_TIMER_STR
-
-
-def find_unmatch_lat_long_values(response_points: dict, requests_positions: dict):
+def find_unmatch_lat_long(request_points: dict, response_points: dict):
     """
-    This function will find unmatched lat long values of requests points response
-    :param response_points: the response lat long values from response value
-    :param requests_positions:
+    This function will return the unmatch points lat long value that return from response content
+    after validation
+    :param request_points: request body points lat long values
+    :param response_points: response points lat long values
     :return:
+    list of unmatch lat long values
     """
-    key1 = "longitude"
-    key2 = "latitude"
+    keys_to_compare = ['longitude', 'latitude']
+    response_points = response_points["data"]
+    request_points= request_points["positions"]
+    validate_json_array_length(json_array=response_points, expected_length=len(request_points))
+    request_points_set = set(json.dumps({k: x[k] for k in keys_to_compare}, sort_keys=True) for x in request_points)
+    response_points_set = set(json.dumps({k: x[k] for k in keys_to_compare}, sort_keys=True) for x in response_points)
+    return [json.loads(x) for x in response_points_set.difference(request_points_set)]
+
+
+def find_null_points(response_content: dict):
+    """
+    This function will return the points that returned height null value
+    :param response_content:
+    :return:
+    list of lat long values of null heights
+    """
     try:
-        list_1 = response_points["data"]
+        heights_list = response_content.get("data")
     except Exception as e:
-        return f"Could not find data values on the given response body, reason: {e}"
-    try:
-        list_2 = requests_positions["positions"]
-    except Exception as e:
-        return f"Could not find positions values on the given request body, reason: {e}"
-        # Iterate through the lists and check if the specific values are equal
-    # Initialize a list to store the unmatched values
-    unmatched_values = {}
-
-    # Iterate through the lists and check for unmatched values
-    for dict1, dict2 in zip(list_1, list_2):
-        value1_key1 = dict1.get(key1)
-        value1_key2 = dict1.get(key2)
-        value2_key1 = dict2.get(key1)
-        value2_key2 = dict2.get(key2)
-
-        if value1_key1 != value2_key1 or value1_key2 != value2_key2:
-            unmatched_values["unmatch_values"] = {"Request points": dict2,
-                                                  "Response_points": (dict1["longitude"], dict1["latitude"])}
-
-    return unmatched_values
-
-
-# def find_mismatched_key_value(input_dict, key_value_pairs):
-#     for key, value in key_value_pairs:
-#         if key not in input_dict or input_dict[key] != value:
-#             return key, value
-#     return None, None  # Return None if all key-value pairs match
-#
-#
-# # Example usage:
-# my_dict = {'name': 'John', 'age': 30, 'city': 'New York'}
-# key_value_pairs = [('name', 'John'), ('age', 30), ('city', 'Los Angeles')]
-#
-# mismatched_key, mismatched_value = find_mismatched_key_value(my_dict, key_value_pairs)
-
-
-# data_dict = {'data': [{'latitude': 30.574818211159574, 'longitude': 34.85581004685274, 'height': None},
-#                       {'latitude': 30.591386424841303, 'longitude': 34.83555954301749, 'height': None},
-#                       {'latitude': 30.58102359160165, 'longitude': 34.8157749107851, 'height': None},
-#                       {'latitude': 30.596314899052746, 'longitude': 34.78615264164668, 'height': None},
-#                       {'latitude': 30.616764136496197, 'longitude': 34.83003561370604, 'height': None},
-#                       {'latitude': 30.59561609267299, 'longitude': 34.8559754529611, 'height': None},
-#                       {'latitude': 30.607447381740915, 'longitude': 34.82702063002544, 'height': None},
-#                       {'latitude': 30.59190205078009, 'longitude': 34.87190490618536, 'height': None},
-#                       {'latitude': 30.57100530986461, 'longitude': 34.83192829249191, 'height': None},
-#                       {'latitude': 30.572343627007875, 'longitude': 34.79741670082464, 'height': None}]}
-#
-# print(parse_response_content(response_content=data_dict, response_time=10.23,
-#                              normality_threshold={"low_response_time": 15, "high_response_time": 700},
-#                              property_name="height"))
-
-# print(find_keys_and_values_by_nested_value(input_dict=dict1, value="height", parent_key="data"))
+        return e
+    if len(heights_list) != 0:
+        null_points = [
+            item for item in heights_list if item.get("height") is None
+        ]
+        return null_points
