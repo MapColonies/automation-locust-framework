@@ -10,7 +10,7 @@ from common.utils.data_generator.data_utils import generate_points_request, cust
 from common.validation.validation_utils import (
     find_range_for_response_time,
     initiate_counters_by_ranges,
-    retype_env, parse_response_content, find_unmatch_lat_long,
+    retype_env, parse_response_content, find_unmatch_lat_long, find_unmatched_lat_long_points,
 )
 
 if isinstance(ElevationConfig.percent_ranges, str):
@@ -84,14 +84,15 @@ class CustomUser(HttpUser):
             ) as response:
                 if response.status_code == 200:
                     # response_time = response.elapsed.total_seconds() * 1000
-                    unmatched_points = find_unmatch_lat_long(response_points=response.json(),
-                                                             request_points=json.loads(body))
+                    unmatched_points = find_unmatched_lat_long_points(response_dict=response.json(),
+                                                                      request_dict=json.loads(body))
                     null_points = [
                         item for item in response.json()["data"] if item.get("height") is None
                     ]
                     if unmatched_points:
-                        unmatched_points["request body"] = body
-                        response.failure(unmatched_points)
+                        # unmatched_points["request body"] = body
+                        unmatched = {'unmatched_points': unmatched_points, "request body": body}
+                        response.failure(unmatched)
 
                     if null_points:
                         response.failure(null_points)

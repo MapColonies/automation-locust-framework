@@ -489,22 +489,44 @@ def sum_nested_dicts(nested_dict: dict):
     return result
 
 
-def find_unmatch_lat_long(request_points: dict, response_points: dict):
+# def find_unmatch_lat_long(request_points: dict, response_points: dict):
+#     """
+#     This function will return the unmatch points lat long value that returned from response content
+#     after validation
+#     :param request_points: request body points lat long values
+#     :param response_points: response points lat long values
+#     :return:
+#     list of unmatch lat long values
+#     """
+#     keys_to_compare = ['longitude', 'latitude']
+#     response_points = response_points["data"]
+#     request_points = request_points["positions"]
+#     validate_json_array_length(json_array=response_points, expected_length=len(request_points))
+#     request_points_set = set(json.dumps({k: x[k] for k in keys_to_compare}, sort_keys=True) for x in request_points)
+#     response_points_set = set(json.dumps({k: x[k] for k in keys_to_compare}, sort_keys=True) for x in response_points)
+#     return [json.loads(x) for x in response_points_set.difference(request_points_set)]
+
+def find_unmatched_lat_long_points(request_dict: dict, response_dict: dict) -> List[Dict[str, float]]:
     """
-    This function will return the unmatch points lat long value that return from response content
-    after validation
-    :param request_points: request body points lat long values
-    :param response_points: response points lat long values
-    :return:
-    list of unmatch lat long values
+    Return unmatched lat-long values from the response after validation.
+
+    Args:
+        request_dict (dict): Request body containing lat-long points.
+        response_dict (dict): Response containing lat-long points.
+
+    Returns:
+        List[Dict[str, float]]: List of unmatched lat-long points.
     """
-    keys_to_compare = ['longitude', 'latitude']
-    response_points = response_points["data"]
-    request_points= request_points["positions"]
-    validate_json_array_length(json_array=response_points, expected_length=len(request_points))
-    request_points_set = set(json.dumps({k: x[k] for k in keys_to_compare}, sort_keys=True) for x in request_points)
-    response_points_set = set(json.dumps({k: x[k] for k in keys_to_compare}, sort_keys=True) for x in response_points)
-    return [json.loads(x) for x in response_points_set.difference(request_points_set)]
+    request_positions = request_dict["positions"]
+    response_data = response_dict["data"]
+
+    validate_json_array_length(json_array=response_data, expected_length=len(request_positions))
+
+    request_points_set = {(x['longitude'], x['latitude']) for x in request_positions}
+    response_points_set = {(x['longitude'], x['latitude']) for x in response_data}
+
+    unmatched_points = response_points_set.difference(request_points_set)
+    return [{"longitude": lon, "latitude": lat} for lon, lat in unmatched_points]
 
 
 def find_null_points(response_content: dict):
