@@ -4,11 +4,11 @@ global:
   name: locust-global
   test_file: response_validation.py
   test_file_path: "/mnt/locust/tests/elevation_service"
-  host: https://dem-int-heights-production-nginx-route-integration.apps.j1lk3njp.eastus.aroapp.io/api/heights/v1/points
+  host: https://dem-2023-q3-1-heights-production-nginx-route-2023-q3-1.apps.j1lk3njp.eastus.aroapp.io/api/heights/v1/points
 
   env: {
       layer_list: "shay44" ,
-      points_amount_range: 100,
+      points_amount_range: 250,
       token_flag: true,
       measure_time: false,
       percent_ranges: "[20,30,50,80,100,500]",
