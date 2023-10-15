@@ -28,6 +28,11 @@
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
+{{/* Create Release name as used by the installation label */}}
+{{- define "Release.Name" -}}
+{{- printf "%s-%s" .Release.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
 {{/* -- Component Names -- */}}
 
 {{/* Generate master service name */}}

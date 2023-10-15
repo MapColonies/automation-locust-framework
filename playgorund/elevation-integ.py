@@ -1,20 +1,16 @@
-import os
-
 from locust import HttpUser, events, task
 
 from common.config.config import ElevationConfig
 from common.validation.validation_utils import (
     get_request_parameters,
     initiate_counters_by_ranges,
-    retype_env,
     write_rps_percent_results,
 )
 
-results_path = os.getcwd()
 positions_list_path = ElevationConfig.positions_path
 
 if type(ElevationConfig.percent_ranges) == str:
-    percent_ranges = retype_env(ElevationConfig.percent_ranges)
+    percent_ranges = list(ElevationConfig.percent_ranges)
 else:
     percent_ranges = ElevationConfig.percent_ranges
 
@@ -28,35 +24,20 @@ class CustomUser(HttpUser):
 
     @task(1)
     def index(self):
-        if not retype_env(ElevationConfig.token_flag):
-            if self.request_body["request_type"] == "json":
-                self.client.post(
-                    "/",
-                    json=self.request_body["body"],
-                    headers=self.request_body["header"],
-                    verify=False,
-                )
-            elif self.request_body["request_type"] == "bin":
-                self.client.post(
-                    "/",
-                    data=self.request_body["body"],
-                    headers=self.request_body["header"],
-                    verify=False,
-                )
-        else:
-            if self.request_body["request_type"] == "json":
-                self.client.post(
-                    f"?token={ElevationConfig.TOKEN}",
-                    json=self.request_body["body"],
-                    headers=self.request_body["header"],
-                    verify=False,
-                )
-            elif self.request_body["request_type"] == "bin":
-                self.client.post(
-                    f"?token={ElevationConfig.TOKEN}",
-                    data=self.request_body["body"],
-                    headers=self.request_body["header"],
-                )
+        if self.request_body["request_type"] == "json":
+            self.client.post(
+                "/",
+                json=self.request_body["body"],
+                headers=self.request_body["header"],
+                verify=False,
+            )
+        elif self.request_body["request_type"] == "bin":
+            self.client.post(
+                "/",
+                data=self.request_body["body"],
+                headers=self.request_body["header"],
+                verify=False,
+            )
 
         # Process the response as needed
 
@@ -102,6 +83,3 @@ def reset_counters(**kwargs):
 class MyUser(CustomUser):
     min_wait = 100
     max_wait = 1000
-
-
-# todo:ask alex which wait time to set to insure that we create the next task only if we get reponse from the first task
