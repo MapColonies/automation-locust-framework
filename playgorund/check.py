@@ -1,27 +1,29 @@
+
 import threading
-from locust import HttpUser, constant, events, task, constant_throughput, between, constant_pacing
+
+from locust import HttpUser, constant, events, task
+
 from common.config.config import config_obj
-from common.utils.constants.strings import CONSTANT_TIMER_STR, CONSTANT_THROUGHPUT_TIMER_STR, BETWEEN_TIMER_STR, \
-    CONSTANT_PACING_TIMER_STR, INVALID_TIMER_STR
 from common.utils.csvreader import CSVReader
-from common.utils.data_generator.data_utils import custom_sorting_key
 from common.validation.validation_utils import (
     find_range_for_response_time,
     initiate_counters_by_ranges,
-    retype_env)
+    read_tests_data_folder,
+    retype_env,
+    write_rps_percent_results,
+)
+from playgorund.playground import sum_nested_dicts
 
 if isinstance(config_obj["_3d"].percent_ranges, str):
     percent_ranges = retype_env(config_obj["_3d"].percent_ranges)
     percent_ranges.append(0)
     percent_ranges.append(float("inf"))
     percent_ranges = sorted(percent_ranges)
-    print("from env", percent_ranges)
 else:
     percent_ranges = config_obj["_3d"].percent_ranges
     percent_ranges.append(0)
     percent_ranges.append(float("inf"))
     percent_ranges = sorted(percent_ranges)
-    print("from else if not env", percent_ranges)
 
 ssn_reader = CSVReader(config_obj["_3d"].CSV_DATA_PATH)
 results_path = config_obj["_3d"].RESULTS_PATH
@@ -35,36 +37,18 @@ file_lock = threading.Lock()
 
 stats = {"total_requests": 0}
 counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
-print(counters)
 counters_keys = list(counters.keys())
-
-
-def set_wait_time(timer_selection, wait_time):
-    if timer_selection == 1:
-        return constant(wait_time), CONSTANT_TIMER_STR
-    elif timer_selection == 2:
-        return constant_throughput(wait_time), CONSTANT_THROUGHPUT_TIMER_STR
-    elif timer_selection == 3:
-        return between(wait_time["min_wait"], wait_time["max_wait"]), BETWEEN_TIMER_STR
-    elif timer_selection == 4:
-        return constant_pacing(wait_time), CONSTANT_PACING_TIMER_STR
-    else:
-        return None, INVALID_TIMER_STR
+workers_results = {}
 
 
 class User(HttpUser):
-    timer_selection = config_obj["wmts"].WAIT_TIME_FUNC
-    wait_time_config = config_obj["wmts"].WAIT_TIME
-    wait_time, timer_message = set_wait_time(timer_selection, wait_time_config)
-    print(timer_message)
+    wait_time = constant(wait_time)
 
     @task(1)
     def index(self):
         url = next(ssn_reader)
 
-        response = self.client.get(url=url[1], verify=False)
-        if ('content-type', "application/octet-stream") not in response.headers.items():
-            print(f"invalid response content type for url: {url}")
+        self.client.get(url=url[1], verify=False)
 
         host = config_obj["default"].HOST
 
@@ -98,24 +82,20 @@ def locust_init(environment, **kwargs):
                     percent_range = (value / requests_amount) * 100
                     percent_value_by_range[f"{key}"] = percent_range
 
-                # percent_value_by_range["total_requests"] = int(requests_amount)
-                # print(percent_value_by_range)
-                percent_value_by_range = dict(sorted(percent_value_by_range.items(), key=custom_sorting_key))
-            return {"percent_value": percent_value_by_range,
-                    "total_requests": stats["total_requests"]}
+                percent_value_by_range["total_requests"] = int(requests_amount)
+                print(percent_value_by_range)
+            return {"percent_value": percent_value_by_range, "total_requests": stats["total_requests"]}
             # return "Total content-length received: %i" % stats["total_requests"]
 
 
 @events.test_start.add_listener
 def on_locust_init(environment, **_kwargs):
     environment.users_count = environment.runner.target_user_count
-    # stats = {"total_requests": 0}
 
 
 @events.request.add_listener
 def response_time_listener(response_time, **kwargs):
-    global counters
-    print("percent_ranges is", percent_ranges)
+    global counters, total_requests
     counters = find_range_for_response_time(
         response_time=response_time, ranges_list=percent_ranges, counters_dict=counters
     )
@@ -152,9 +132,26 @@ def on_worker_report(client_id, data):
     print(data)
 
 
+# @events.test_stop.add_listener
+# def log_counters(environment):
+
+
+# global counters ,workers_results
+#
+# worker_id = os.environ.get("HOSTNAME")
+# print(worker_id)
+# filename = f"{results_path}/workers_reports/results_{worker_id}.json"
+# counters["total_requests"] = total_requests
+# json_object = json.dumps(counters)
+# with open(filename, "w") as outfile:
+#     outfile.write(json_object)
+# outfile.close()
+# workers_results[worker_id] = counters
+# print("--------from test stop", workers_results)
+
+
 @events.test_start.add_listener
 def reset_counters(**kwargs):
-    global counters, total_requests, stats
+    global counters, total_requests
     counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
     total_requests = 0
-    stats = {"total_requests": 0}

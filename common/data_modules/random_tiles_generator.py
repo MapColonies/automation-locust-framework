@@ -8,7 +8,7 @@ from common.data_modules.get_all_layer import (
     create_mapproxy_layer_objects,
     create_zyx_tiles_structure,
 )
-from config_backup import Database
+from playgorund.config_backup import Database
 
 
 def create_random_layer_tiles_urls(

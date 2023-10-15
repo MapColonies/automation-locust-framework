@@ -1,5 +1,10 @@
 glom~=23.3.0
 locust~=2.15.1
+locust-plugins
+pre-commit
+flake8
+black
+toml
 httpx==0.24.0
 common~=0.1.2
 pandas~=2.0.1

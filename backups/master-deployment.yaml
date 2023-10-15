@@ -1,7 +1,8 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "locust.fullname" . }}-{{ .Release.Name }}-master
+  name: {{ template "locust.fullname" . }}-master
   labels:
     component: master
 {{ include "locust.labels" . | indent 4 }}
@@ -48,26 +49,21 @@ spec:
           - --csv-full-history
 {{- end }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-{{- if .Values.worker.pvc.enabled }}
         volumeMounts:
-          - name: {{ .Values.storage.volumeName }}
-            mountPath: {{ .Values.storage.mountPathName }}
+          - name: ingestion-storage
+            mountPath: /layerSources
             {{- if .Values.storage.subPath }}
             subPath: {{ .Values.storage.subPath }}
             {{- end }}
-#          - name: locust-vol
-#            mountPath: "/mnt/locust/new-3d-test.py"
-#            subPath: new-3d-test.py
-{{- end }}
 {{- if or .Values.master.envs_include_default .Values.global.env .Values.master.env .Values.global.env_external_secret }}
         env:
 {{- if .Values.master.envs_include_default }}
-          - name: host
-            value: "{{ .Values.global.host }}"
+          - name: LOCUST_HOST
+            value: "{{ .Values.global.locust_host }}"
           - name: LOCUST_LOGLEVEL
             value: "{{ .Values.master.logLevel }}"
           - name: LOCUST_LOCUSTFILE
-            value: "{{ .Values.global.test_file_path }}/{{ .Values.global.test_file }}"
+            value: "{{ .Values.global.locust_file_path }}/{{ .Values.global.locust_file }}"
           {{- if .Values.global.env_secret }}
           - name: SECRET_VALUE_API
             valueFrom:
@@ -114,15 +110,7 @@ spec:
 {{- end }}
 {{- end }}
       restartPolicy: {{ .Values.master.restartPolicy }}
-{{- if .Values.worker.pvc.enabled }}
       volumes:
-        - name: {{ .Values.storage.volumeName }}
+        - name: ingestion-storage
           persistentVolumeClaim:
             claimName: {{ .Values.storage.pvcName }}
-        - name: locust-vol
-          configMap:
-            name: {{ printf "%s-base-configmap" (include "locust.fullname" .) }}
-            items:
-            - key: "new-3d-test.py"
-              path: "new-3d-test.py"
-{{- end }}

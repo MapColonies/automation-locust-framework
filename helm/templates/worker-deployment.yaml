@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ template "locust.fullname" . }}-worker
+  name: {{ template "locust.fullname" . }}-{{ .Release.Name }}-worker
   labels:
     component: worker
 {{ include "locust.labels" . | indent 4 }}
@@ -51,7 +51,7 @@ spec:
           - name: host
             value: "{{ .Values.global.host }}"
           - name: LOCUST_MASTER_NODE_HOST
-            value: "{{ template "locust.fullname" . }}"
+            value: {{ template "locust.fullname" . }}-{{ .Release.Name }}
           - name: LOCUST_MASTER_NODE_PORT
             value: "5557"
           - name: LOCUST_LOGLEVEL

@@ -2,7 +2,7 @@
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: {{ template "locust.fullname" . }}-route
+  name: {{ template "locust.fullname" . }}-{{ .Release.Name }}-route
   annotations:
     haproxy.router.openshift.io/rewrite-target: /
     {{- if .Values.route.timeout.enabled }}
@@ -14,7 +14,7 @@ spec:
     targetPort: 8089
   to:
     kind: Service
-    name: {{ template "locust.fullname" . }}
+    name: {{ template "locust.fullname" . }}-{{ .Release.Name }}
   {{- if .Values.route.https }}
   tls:
     termination: edge

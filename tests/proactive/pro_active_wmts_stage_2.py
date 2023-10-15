@@ -1,6 +1,7 @@
 import os
 import sys
 
+# sys.path.append(myDir)
 from locust import (
     HttpUser,
     between,
@@ -23,7 +24,8 @@ from common.utils.constants.strings import (
 myDir = os.getcwd()
 sys.path.insert(0, "../..")
 print(myDir)
-# sys.path.append(myDir)
+
+
 
 
 def set_wait_time(timer_selection, wait_time):

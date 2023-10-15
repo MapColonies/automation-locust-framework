@@ -1,5 +1,4 @@
 from locust import HttpUser, between, constant, constant_pacing, task
-from locust_plugins.csvreader import CSVReader
 
 from common.config.config import Config, ProActiveConfig, WmtsConfig, config_obj
 from common.utils.constants.strings import (
@@ -8,6 +7,7 @@ from common.utils.constants.strings import (
     CONSTANT_TIMER_STR,
     INVALID_TIMER_STR,
 )
+from common.utils.csvreader import CSVReader
 from tests.pycsw.test_data.queries import ID_RECORD_XML, POLYGON_XML, REGION_RECORD_XML
 
 

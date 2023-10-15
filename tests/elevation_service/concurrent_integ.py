@@ -1,42 +1,46 @@
-import threading
-from locust import HttpUser, constant, events, task, constant_throughput, between, constant_pacing
-from common.config.config import config_obj
-from common.utils.constants.strings import CONSTANT_TIMER_STR, CONSTANT_THROUGHPUT_TIMER_STR, BETWEEN_TIMER_STR, \
-    CONSTANT_PACING_TIMER_STR, INVALID_TIMER_STR
-from common.utils.csvreader import CSVReader
-from common.utils.data_generator.data_utils import custom_sorting_key
+import random
+from locust import HttpUser, constant, events, task, constant_pacing, between, constant_throughput
+from common.config.config import ElevationConfig, config_obj
+from common.utils.constants.strings import INVALID_TIMER_STR, CONSTANT_PACING_TIMER_STR, BETWEEN_TIMER_STR, \
+    CONSTANT_THROUGHPUT_TIMER_STR, CONSTANT_TIMER_STR
+from common.utils.data_generator.data_utils import generate_points_request, custom_sorting_key
 from common.validation.validation_utils import (
     find_range_for_response_time,
     initiate_counters_by_ranges,
     retype_env)
 
-if isinstance(config_obj["_3d"].percent_ranges, str):
-    percent_ranges = retype_env(config_obj["_3d"].percent_ranges)
+if isinstance(ElevationConfig.percent_ranges, str):
+    percent_ranges = retype_env(ElevationConfig.percent_ranges)
     percent_ranges.append(0)
     percent_ranges.append(float("inf"))
     percent_ranges = sorted(percent_ranges)
-    print("from env", percent_ranges)
 else:
-    percent_ranges = config_obj["_3d"].percent_ranges
+    percent_ranges = ElevationConfig.percent_ranges
     percent_ranges.append(0)
     percent_ranges.append(float("inf"))
     percent_ranges = sorted(percent_ranges)
-    print("from else if not env", percent_ranges)
 
-ssn_reader = CSVReader(config_obj["_3d"].CSV_DATA_PATH)
-results_path = config_obj["_3d"].RESULTS_PATH
+reports_path = ElevationConfig.results_path
 
-if isinstance(config_obj["wmts"].WAIT_TIME, str):
-    wait_time = retype_env(config_obj["wmts"].WAIT_TIME)
+if isinstance(ElevationConfig.poly, str):
+    polygons = retype_env(ElevationConfig.poly)
 else:
-    wait_time = config_obj["wmts"].WAIT_TIME
+    polygons = ElevationConfig.poly
+if isinstance(ElevationConfig.wait_time, str):
+    wait_time = retype_env(ElevationConfig.wait_time)
+else:
+    wait_time = ElevationConfig.wait_time
 
-file_lock = threading.Lock()
+if isinstance(ElevationConfig.exclude_fields, str):
+    exclude_fields = retype_env(ElevationConfig.exclude_fields)
+else:
+    exclude_fields = ElevationConfig.exclude_fields
 
 stats = {"total_requests": 0}
 counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
 print(counters)
 counters_keys = list(counters.keys())
+workers_results = {}
 
 
 def set_wait_time(timer_selection, wait_time):
@@ -52,26 +56,49 @@ def set_wait_time(timer_selection, wait_time):
         return None, INVALID_TIMER_STR
 
 
-class User(HttpUser):
+class CustomUser(HttpUser):
+    response_times = []
     timer_selection = config_obj["wmts"].WAIT_TIME_FUNC
     wait_time_config = config_obj["wmts"].WAIT_TIME
     wait_time, timer_message = set_wait_time(timer_selection, wait_time_config)
-    print(timer_message)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.avg_response_time = None
+        self.points_amount_range = ElevationConfig.points_amount_range
+        self.points_amount = random.randint(0, self.points_amount_range)
+        self.poly = random.choice(polygons)
 
     @task(1)
     def index(self):
-        url = next(ssn_reader)
-
-        response = self.client.get(url=url[1], verify=False)
-        if ('content-type', "application/octet-stream") not in response.headers.items():
-            print(f"invalid response content type for url: {url}")
-
-        host = config_obj["default"].HOST
+        body = generate_points_request(
+            points_amount=self.points_amount,
+            polygon=self.poly,
+            exclude_fields=exclude_fields,
+        )
+        print("-----------", body, "-----------")
+        if retype_env(ElevationConfig.token_flag):
+            self.client.post(
+                f"?token={ElevationConfig.TOKEN}",
+                data=body,
+                headers={"Content-Type": "application/json"},
+            )
+        else:
+            self.client.post(
+                "/",
+                data=body,
+                headers={"Content-Type": "application/json"},
+                verify=False,
+            )
 
 
 # create counters for each range value from the configuration
-# counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
+counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
 total_requests = 0
+test_results = []
+response_time_data = []
+points_amount_avg_rsp = []
+avg_response_time = 0
 
 
 @events.init.add_listener
@@ -103,13 +130,6 @@ def locust_init(environment, **kwargs):
                 percent_value_by_range = dict(sorted(percent_value_by_range.items(), key=custom_sorting_key))
             return {"percent_value": percent_value_by_range,
                     "total_requests": stats["total_requests"]}
-            # return "Total content-length received: %i" % stats["total_requests"]
-
-
-@events.test_start.add_listener
-def on_locust_init(environment, **_kwargs):
-    environment.users_count = environment.runner.target_user_count
-    # stats = {"total_requests": 0}
 
 
 @events.request.add_listener

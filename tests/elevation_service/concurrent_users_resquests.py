@@ -1,41 +1,47 @@
-import threading
-from locust import HttpUser, constant, events, task, constant_throughput, between, constant_pacing
-from common.config.config import config_obj
-from common.utils.constants.strings import CONSTANT_TIMER_STR, CONSTANT_THROUGHPUT_TIMER_STR, BETWEEN_TIMER_STR, \
-    CONSTANT_PACING_TIMER_STR, INVALID_TIMER_STR
-from common.utils.csvreader import CSVReader
-from common.utils.data_generator.data_utils import custom_sorting_key
+import random
+
+from locust import HttpUser, constant, events, task, constant_pacing, between, constant_throughput
+
+from common.config.config import ElevationConfig, config_obj
+from common.utils.constants.strings import INVALID_TIMER_STR, CONSTANT_PACING_TIMER_STR, BETWEEN_TIMER_STR, \
+    CONSTANT_THROUGHPUT_TIMER_STR, CONSTANT_TIMER_STR
+from common.utils.data_generator.data_utils import generate_points_request, custom_sorting_key
 from common.validation.validation_utils import (
     find_range_for_response_time,
     initiate_counters_by_ranges,
-    retype_env)
+    retype_env,
+)
 
-if isinstance(config_obj["_3d"].percent_ranges, str):
-    percent_ranges = retype_env(config_obj["_3d"].percent_ranges)
+if isinstance(ElevationConfig.percent_ranges, str):
+    percent_ranges = retype_env(ElevationConfig.percent_ranges)
     percent_ranges.append(0)
     percent_ranges.append(float("inf"))
     percent_ranges = sorted(percent_ranges)
-    print("from env", percent_ranges)
 else:
-    percent_ranges = config_obj["_3d"].percent_ranges
+    percent_ranges = ElevationConfig.percent_ranges
     percent_ranges.append(0)
     percent_ranges.append(float("inf"))
     percent_ranges = sorted(percent_ranges)
-    print("from else if not env", percent_ranges)
 
-ssn_reader = CSVReader(config_obj["_3d"].CSV_DATA_PATH)
-results_path = config_obj["_3d"].RESULTS_PATH
-
-if isinstance(config_obj["wmts"].WAIT_TIME, str):
-    wait_time = retype_env(config_obj["wmts"].WAIT_TIME)
+if isinstance(ElevationConfig.wait_time, str):
+    wait_time = retype_env(ElevationConfig.wait_time)
 else:
-    wait_time = config_obj["wmts"].WAIT_TIME
+    wait_time = ElevationConfig.wait_time
 
-file_lock = threading.Lock()
+if isinstance(ElevationConfig.exclude_fields, str):
+    exclude_fields = retype_env(ElevationConfig.exclude_fields)
+else:
+    exclude_fields = ElevationConfig.exclude_fields
+
+if isinstance(ElevationConfig.poly, str):
+    polygons = eval(ElevationConfig.poly)
+else:
+    polygons = ElevationConfig.poly
+
+points_amount_range = ElevationConfig.points_amount_range
 
 stats = {"total_requests": 0}
 counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
-print(counters)
 counters_keys = list(counters.keys())
 
 
@@ -52,26 +58,47 @@ def set_wait_time(timer_selection, wait_time):
         return None, INVALID_TIMER_STR
 
 
-class User(HttpUser):
+class CustomUser(HttpUser):
+    response_times = []
     timer_selection = config_obj["wmts"].WAIT_TIME_FUNC
     wait_time_config = config_obj["wmts"].WAIT_TIME
     wait_time, timer_message = set_wait_time(timer_selection, wait_time_config)
-    print(timer_message)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.poly = random.choice(polygons)
 
     @task(1)
     def index(self):
-        url = next(ssn_reader)
+        points_amount = random.randint(1, int(points_amount_range))
+        body = generate_points_request(
+            points_amount=points_amount,
+            polygon=self.poly,
+            exclude_fields=exclude_fields,
+        )
+        if retype_env(ElevationConfig.token_flag):
+            with self.client.post(
+                    f"?token={ElevationConfig.TOKEN}",
+                    data=body,
+                    headers={"Content-Type": "application/json"}, catch_response=True) as response:
+                if response.status_code == 400:
+                    response.failure(body)
 
-        response = self.client.get(url=url[1], verify=False)
-        if ('content-type', "application/octet-stream") not in response.headers.items():
-            print(f"invalid response content type for url: {url}")
-
-        host = config_obj["default"].HOST
+                content_type = response.headers.get("Content-Type", "")
+                if "application/json" not in content_type:
+                    response.failure(
+                        f"Invalid response content type-expected: application/json, response-content-type: {content_type},"
+                        f" response.text: {response.text}")
+        else:
+            response = self.client.post(
+                "/",
+                data=body,
+                headers={"Content-Type": "application/json"},
+                verify=False,
+            )
 
 
 # create counters for each range value from the configuration
-# counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
-total_requests = 0
 
 
 @events.init.add_listener
@@ -103,23 +130,14 @@ def locust_init(environment, **kwargs):
                 percent_value_by_range = dict(sorted(percent_value_by_range.items(), key=custom_sorting_key))
             return {"percent_value": percent_value_by_range,
                     "total_requests": stats["total_requests"]}
-            # return "Total content-length received: %i" % stats["total_requests"]
-
-
-@events.test_start.add_listener
-def on_locust_init(environment, **_kwargs):
-    environment.users_count = environment.runner.target_user_count
-    # stats = {"total_requests": 0}
 
 
 @events.request.add_listener
 def response_time_listener(response_time, **kwargs):
     global counters
-    print("percent_ranges is", percent_ranges)
     counters = find_range_for_response_time(
         response_time=response_time, ranges_list=percent_ranges, counters_dict=counters
     )
-    # total_requests += 1
     stats["total_requests"] += 1
 
 
@@ -135,7 +153,6 @@ def on_report_to_master(client_id, data):
         data[range_val] = counters[range_val]
         counters[range_val] = 0
     stats["total_requests"] = 0
-    # counters["total_requests"] = 0
 
 
 @events.worker_report.add_listener
@@ -148,13 +165,10 @@ def on_worker_report(client_id, data):
     stats["total_requests"] += data["total_requests"]
     for range_val in counters_keys:
         counters[range_val] += data[range_val]
-    print(stats)
-    print(data)
 
 
 @events.test_start.add_listener
 def reset_counters(**kwargs):
-    global counters, total_requests, stats
+    global counters, stats
     counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
-    total_requests = 0
     stats = {"total_requests": 0}
