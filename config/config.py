@@ -1,5 +1,5 @@
 import os
-
+import numpy as np
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
@@ -23,29 +23,27 @@ class Database:
 
 
 class Config:
-    TOKEN = os.environ.get("SECRET_VALUE_API", ) or None
+    TOKEN = os.environ.get("SECRET_VALUE_API" ) or None
     IS_TOKEN = os.environ.get("TOKEN_NEEDED", True)
-
+    percent_ranges = os.environ.get('rsp_time_ranges', [100, 500, np.inf])
     HOST = os.environ.get("HOST", "enter a host")
     WAIT_TIME_FUNC = int(os.environ.get("wait_function", "4"))
     WAIT_TIME = int(os.environ.get("wait_time", "4"))
     MAX_WAIT = int(os.environ.get("max_wait", 1))
     MIN_WAIT = int(os.environ.get("min_wait", 1))
     LAYERS_LIST = (os.environ.get("layer_list", "test-update,shay")).split(",")
-    RSP_TIME_RANGES = os.environ.get('rsp_time_ranges', [(0, 100), (101, 500), (501, None)])
-    root_dir = os.environ.get('root_dir', '..') or None
 
+    root_dir = os.environ.get('root_dir', '..') or None
 
 
 class WmtsConfig(Config):
     LAYER_TYPE = os.environ.get("layer_type", "wmts")
-    LAYER_NAME = os.environ.get("layer", "Orthophoto")  # History
-    GRID_NAME = os.environ.get("gridName", "osm")
+    LAYER_NAME = os.environ.get("layer", "bluemarble_4km-Orthophoto")  # History
+    GRID_NAME = os.environ.get("gridName", "newGrids")
     IMAGE_FORMAT = os.environ.get("imageType", ".png")
-    WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "csv_data/data/new.csv")
-    REQUESTS_RECORDS_CS = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/wmts_records.csv")
+    WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "csv_data/data/wmts_shaziri.csv")
+    REQUESTS_RECORDS_CS = os.environ.get("requests_records_csv", f"{os.getcwd()}/tests/wmts_shaziri.csv")
     WMTS_CSV_PATH_UPSCALE = os.environ.get("requests_records_wmts_upscale_csv", f"{os.getcwd()}/tests/upscale.csv")
-    UP_SCALE_FLAG = os.environ.get("up_sacle_flag", False)
     ONE_BY_ONE_RECORDS = os.environ.get("onebyone_records", "csv_data/data/onebyone.csv")
     LAYER_TYPE_UPSCALE = os.environ.get("layer_type_wmts_upscale", "wmts")
     LAYER_NAME_UPSCALE = os.environ.get("layer_wmts_upscale", "Orthophoto")  # History

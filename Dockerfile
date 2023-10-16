@@ -1,8 +1,8 @@
-FROM locustio/locust:2.15.1
+FROM locustio/locust:2.17.0
 
 RUN pip install --upgrade pip
 
-RUN pip3 install --no-cache-dir locust_plugins==3.2.1
+RUN pip3 install --no-cache-dir locust_plugins==4.0.0
 
 WORKDIR /mnt/locust
 
