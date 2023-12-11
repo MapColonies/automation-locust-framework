@@ -3,10 +3,11 @@ import datetime
 import json
 import os
 import re
-from typing import Any, List, Union
+from typing import Any, List, Union, Dict
 import matplotlib.dates as mdates
 import numpy as np
 from matplotlib import pyplot as plt
+import jsonschema
 
 
 class ValidationError(Exception):
@@ -489,22 +490,23 @@ def sum_nested_dicts(nested_dict: dict):
     return result
 
 
-# def find_unmatch_lat_long(request_points: dict, response_points: dict):
-#     """
-#     This function will return the unmatch points lat long value that returned from response content
-#     after validation
-#     :param request_points: request body points lat long values
-#     :param response_points: response points lat long values
-#     :return:
-#     list of unmatch lat long values
-#     """
-#     keys_to_compare = ['longitude', 'latitude']
-#     response_points = response_points["data"]
-#     request_points = request_points["positions"]
-#     validate_json_array_length(json_array=response_points, expected_length=len(request_points))
-#     request_points_set = set(json.dumps({k: x[k] for k in keys_to_compare}, sort_keys=True) for x in request_points)
-#     response_points_set = set(json.dumps({k: x[k] for k in keys_to_compare}, sort_keys=True) for x in response_points)
-#     return [json.loads(x) for x in response_points_set.difference(request_points_set)]
+def find_unmatch_lat_long(request_points: dict, response_points: dict):
+    """
+    This function will return the unmatch points lat long value that returned from response content
+    after validation
+    :param request_points: request body points lat long values
+    :param response_points: response points lat long values
+    :return:
+    list of unmatch lat long values
+    """
+    keys_to_compare = ['longitude', 'latitude']
+    response_points = response_points["data"]
+    request_points = request_points["positions"]
+    validate_json_array_length(json_array=response_points, expected_length=len(request_points))
+    request_points_set = set(json.dumps({k: x[k] for k in keys_to_compare}, sort_keys=True) for x in request_points)
+    response_points_set = set(json.dumps({k: x[k] for k in keys_to_compare}, sort_keys=True) for x in response_points)
+    return [json.loads(x) for x in response_points_set.difference(request_points_set)]
+
 
 def find_unmatched_lat_long_points(request_dict: dict, response_dict: dict) -> List[Dict[str, float]]:
     """
@@ -545,3 +547,59 @@ def find_null_points(response_content: dict):
             item for item in heights_list if item.get("height") is None
         ]
         return null_points
+
+
+def validate_response_body_schema(response_body: str, schema: dict):
+    """
+    This function will validate the response body schema
+    :param response_body: response body string
+    :param schema: python schema
+    :return:
+    dict of is valida flag and reason
+    """
+    is_response_valid = {"is_valid": True, "reason": ""}
+    try:
+        response_data = json.loads(response_body)
+        jsonschema.validate(response_data, schema)
+        return is_response_valid
+    except json.JSONDecodeError:
+        is_response_valid["is_valid"] = False
+        is_response_valid["reason"] = "Error parsing response JSON."
+        return is_response_valid
+    except jsonschema.exceptions.ValidationError as e:
+        is_response_valid["is_valid"] = False
+        is_response_valid["reason"] = f"Response validation error: {e.message}"
+        return is_response_valid
+
+def find_unfounded_product_ids(response_data):
+    """
+    this function will find the product ids that wasn't found at the response products property
+    :param response_data: requests response data (str)
+    :return:
+    list of unfounded product ids if exist
+    """
+    try:
+        # Parse the JSON response
+        response_data = json.loads(response_data)
+
+        # Extract data and products
+        data = response_data.get("data", [])
+        products = response_data.get("products", {})
+
+        # Get a list of all product IDs from the data property
+        data_product_ids = [item.get("productId") for item in data]
+
+        # Get the set of keys from the products property
+        products_keys = set(products.keys())
+
+        # Find unfound product IDs
+        unfound_product_ids = [product_id for product_id in data_product_ids if product_id not in products_keys]
+
+        return unfound_product_ids
+
+    except json.JSONDecodeError:
+        print("Error parsing JSON response.")
+    except Exception as e:
+        print(f"Validation error: {str(e)}")
+
+    return []
