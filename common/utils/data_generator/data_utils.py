@@ -57,7 +57,7 @@ def generate_points_request(
         points_list.append(points)
     if exclude_fields:
         request_body = json.dumps(
-            {"positions": points_list, "productType": product_type, "excludeFields": []}
+            {"positions": points_list, "productType": product_type}
         )
         return request_body
     else:
@@ -65,7 +65,6 @@ def generate_points_request(
             {
                 "positions": points_list,
                 "productType": product_type,
-                "excludeFields": ["productType", "updateDate", "resolutionMeter"],
             }
         )
         return request_body
