@@ -1,157 +1,283 @@
+import json
+import jsonschema
 
-import threading
 
-from locust import HttpUser, constant, events, task
+def validate_response(response_body: str, schema: dict):
+    """
+    This function will validate the response body schema
+    :param response_body: response body string
+    :param schema: python schema
+    :return:
+    dict of is valida flag and reason
+    """
+    is_response_valid = {"is_valid": True, "reason": ""}
+    try:
+        response_data = json.loads(response_body)
+        jsonschema.validate(response_data, schema)
+        return is_response_valid
+    except json.JSONDecodeError:
+        is_response_valid["is_valid"] = False
+        is_response_valid["reason"] = "Error parsing response JSON."
+        return is_response_valid
+    except jsonschema.exceptions.ValidationError as e:
+        is_response_valid["is_valid"] = False
+        is_response_valid["reason"] = f"Response validation error: {e.message}"
+        return is_response_valid
 
-from common.config.config import config_obj
-from common.utils.csvreader import CSVReader
-from common.validation.validation_utils import (
-    find_range_for_response_time,
-    initiate_counters_by_ranges,
-    read_tests_data_folder,
-    retype_env,
-    write_rps_percent_results,
-)
-from playgorund.playground import sum_nested_dicts
 
-if isinstance(config_obj["_3d"].percent_ranges, str):
-    percent_ranges = retype_env(config_obj["_3d"].percent_ranges)
-    percent_ranges.append(0)
-    percent_ranges.append(float("inf"))
-    percent_ranges = sorted(percent_ranges)
+# Example usage
+response_body = """{
+    "data": [
+        {
+            "latitude": 32.77799447531367,
+            "longitude": 35.3515237021664,
+            "height": 341.1314283899249,
+            "productId": "22111111-1111-1111-1111-111111111111"
+        },
+        {
+            "latitude": 32.63471527948201,
+            "longitude": 35.43627669431557,
+            "height": 194.52289124972788,
+            "productId": "22111111-1111-1111-1111-111111111111"
+        },
+        {
+            "latitude": 32.71178885617321,
+            "longitude": 35.67004062476305,
+            "height": 285.475907245389,
+            "productId": "22111111-1111-1111-1111-111111111111"
+        },
+        {
+            "latitude": 32.938864930225805,
+            "longitude": 35.2513946971832,
+            "height": 479.0000915555284,
+            "productId": "22111111-1111-1111-1111-111111111111"
+        },
+        {
+            "latitude": 32.61686551394591,
+            "longitude": 35.592909262484916,
+            "height": -217.7191314869324,
+            "productId": "22111111-1111-1111-1111-111111111111"
+        },
+        {
+            "latitude": 32.6274275271839,
+            "longitude": 35.25963413542271,
+            "height": 56.74249097000812,
+            "productId": "22111111-1111-1111-1111-111111111111"
+        },
+        {
+            "latitude": 32.91873888948771,
+            "longitude": 35.377996112852536,
+            "height": 248.27864581561394,
+            "productId": "22111111-1111-1111-1111-111111111111"
+        },
+        {
+            "latitude": 32.61143389324824,
+            "longitude": 35.63459003056397,
+            "height": -19.097115486640114,
+            "productId": "22111111-1111-1111-1111-111111111111"
+        },
+        {
+            "latitude": 32.84209176987322,
+            "longitude": 35.4737307506895,
+            "height": 49.81626034447447,
+            "productId": "22111111-874611-1111-1111-111111111111"
+        },
+        {
+            "latitude": 32.652417803520216,
+            "longitude": 35.71351164961295,
+            "height": 0,
+            "productId": "11111111-1111-1111-1111-111111111111"
+        }
+    ],
+    "products": {
+        "22111111-1111-1111-1111-111111111111": {
+            "productType": "QUANTIZED_MESH_DTM_BEST",
+            "updateDate": "2023-05-08T17:44:01.000Z",
+            "resolutionMeter": 30,
+            "absoluteAccuracyLEP90": 9e-7
+        },
+        "11111111-1111-1111-1111-111111111111": {
+            "productType": "QUANTIZED_MESH_DTM_BEST",
+            "updateDate": "2023-04-21T23:44:41.000Z",
+            "resolutionMeter": 100,
+            "absoluteAccuracyLEP90": 9e-7
+        }
+    }
+}"""
+schema = {
+    "type": "object",
+    "required": ["data"],
+    "properties": {
+        "data": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["longitude", "latitude", "height", "productId"],
+                "properties": {
+                    "longitude": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "height": {
+                        "type": "number",
+                        "nullable": True,
+                        "format": "double"
+                    },
+                    "productId": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "products": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "productType": {
+                        "oneOf": [
+                            {"$ref": "#/definitions/productTypeEnum"}
+                        ]
+                    },
+                    "resolutionMeter": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "absoluteAccuracyLEP90": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "updateDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "productTypeEnum": {
+            "type": "string",
+            "enum": ["DSM", "DTM", "MIXED"]
+        },
+    },
+    "dependencies": {
+        "data": {
+            "properties": {
+                "products": {
+                    "properties": {
+                        "additionalProp1": {
+                            "properties": {
+                                "productId": { "type": "string" }
+                            }
+                        },
+                        "additionalProp2": {
+                            "properties": {
+                                "productId": { "type": "string" }
+                            }
+                        },
+                        "additionalProp3": {
+                            "properties": {
+                                "productId": { "type": "string" }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+if validate_response(response_body, schema):
+    print("Response is valid according to the schema.")
 else:
-    percent_ranges = config_obj["_3d"].percent_ranges
-    percent_ranges.append(0)
-    percent_ranges.append(float("inf"))
-    percent_ranges = sorted(percent_ranges)
+    print("Response is not valid according to the schema.")
 
-ssn_reader = CSVReader(config_obj["_3d"].CSV_DATA_PATH)
-results_path = config_obj["_3d"].RESULTS_PATH
+import json
 
-if isinstance(config_obj["wmts"].WAIT_TIME, str):
-    wait_time = retype_env(config_obj["wmts"].WAIT_TIME)
+
+def find_unfounded_product_ids(response_data):
+    """
+    this function will find the product ids that wasn't found at the response products property
+    :param response_data: requests response data (str)
+    :return:
+    list of unfounded product ids if exist
+    """
+    try:
+        # Parse the JSON response
+        response_data = json.loads(response_data)
+
+        # Extract data and products
+        data = response_data.get("data", [])
+        products = response_data.get("products", {})
+
+        # Get a list of all product IDs from the data property
+        data_product_ids = [item.get("productId") for item in data]
+
+        # Get the set of keys from the products property
+        products_keys = set(products.keys())
+
+        # Find unfound product IDs
+        unfound_product_ids = [product_id for product_id in data_product_ids if product_id not in products_keys]
+
+        return unfound_product_ids
+
+    except json.JSONDecodeError:
+        print("Error parsing JSON response.")
+    except Exception as e:
+        print(f"Validation error: {str(e)}")
+
+    return []
+
+
+# Example usage
+response_data = '''
+{
+    "data": [
+        {
+            "longitude": 0,
+            "latitude": 0,
+            "height": 0,
+            "productId": "product1"
+        },
+        {
+            "longitude": 0,
+            "latitude": 0,
+            "height": 0,
+            "productId": "product2"
+        },
+               {
+            "longitude": 1,
+            "latitude": 2,
+            "height": 3,
+            "productId": "product3"
+        }
+    ],
+    "products": {
+        "product1": {
+            "productType": "DSM",
+            "resolutionMeter": 0,
+            "absoluteAccuracyLEP90": 0,
+            "updateDate": "2023-10-29T15:09:06.674Z"
+        },
+        "product2": {
+            "productType": "DSM",
+            "resolutionMeter": 0,
+            "absoluteAccuracyLEP90": 0,
+            "updateDate": "2023-10-29T15:09:06.674Z"
+        }
+    }
+}
+'''
+
+unfound_ids = find_unfounded_product_ids(response_data)
+
+if unfound_ids:
+    print("Unfound product IDs:", unfound_ids)
 else:
-    wait_time = config_obj["wmts"].WAIT_TIME
-
-file_lock = threading.Lock()
-
-stats = {"total_requests": 0}
-counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
-counters_keys = list(counters.keys())
-workers_results = {}
-
-
-class User(HttpUser):
-    wait_time = constant(wait_time)
-
-    @task(1)
-    def index(self):
-        url = next(ssn_reader)
-
-        self.client.get(url=url[1], verify=False)
-
-        host = config_obj["default"].HOST
-
-
-# create counters for each range value from the configuration
-# counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
-total_requests = 0
-
-
-@events.init.add_listener
-def locust_init(environment, **kwargs):
-    """
-    We need somewhere to store the stats.
-    On the master node stats will contain the aggregated sum of all content-lengths,
-    while on the worker nodes this will be the sum of the content-lengths since the
-    last stats report was sent to the master
-    """
-    if environment.web_ui:
-        # this code is only run on the master node (the web_ui instance doesn't exist on workers)
-        @environment.web_ui.app.route("/total_requests")
-        def total_content_length():
-            """
-            Add a route to the Locust web app, where we can see the total content-length
-            """
-            requests_amount = stats["total_requests"]
-            percent_value_by_range = {}
-            print(counters)
-
-            if requests_amount != 0:
-                for index, (key, value) in enumerate(counters.items()):
-                    percent_range = (value / requests_amount) * 100
-                    percent_value_by_range[f"{key}"] = percent_range
-
-                percent_value_by_range["total_requests"] = int(requests_amount)
-                print(percent_value_by_range)
-            return {"percent_value": percent_value_by_range, "total_requests": stats["total_requests"]}
-            # return "Total content-length received: %i" % stats["total_requests"]
-
-
-@events.test_start.add_listener
-def on_locust_init(environment, **_kwargs):
-    environment.users_count = environment.runner.target_user_count
-
-
-@events.request.add_listener
-def response_time_listener(response_time, **kwargs):
-    global counters, total_requests
-    counters = find_range_for_response_time(
-        response_time=response_time, ranges_list=percent_ranges, counters_dict=counters
-    )
-    # total_requests += 1
-    stats["total_requests"] += 1
-
-
-@events.report_to_master.add_listener
-def on_report_to_master(client_id, data):
-    """
-    This event is triggered on the worker instances every time a stats report is
-    to be sent to the locust master. It will allow us to add our extra content-length
-    data to the dict that is being sent, and then we clear the local stats in the worker.
-    """
-    data["total_requests"] = stats["total_requests"]
-    for range_val in counters_keys:
-        data[range_val] = counters[range_val]
-        counters[range_val] = 0
-    stats["total_requests"] = 0
-    # counters["total_requests"] = 0
-
-
-@events.worker_report.add_listener
-def on_worker_report(client_id, data):
-    """
-    This event is triggered on the master instance when a new stats report arrives
-    from a worker. Here we just add the content-length to the master's aggregated
-    stats dict.
-    """
-    stats["total_requests"] += data["total_requests"]
-    for range_val in counters_keys:
-        counters[range_val] += data[range_val]
-    print(stats)
-    print(data)
-
-
-# @events.test_stop.add_listener
-# def log_counters(environment):
-
-
-# global counters ,workers_results
-#
-# worker_id = os.environ.get("HOSTNAME")
-# print(worker_id)
-# filename = f"{results_path}/workers_reports/results_{worker_id}.json"
-# counters["total_requests"] = total_requests
-# json_object = json.dumps(counters)
-# with open(filename, "w") as outfile:
-#     outfile.write(json_object)
-# outfile.close()
-# workers_results[worker_id] = counters
-# print("--------from test stop", workers_results)
-
-
-@events.test_start.add_listener
-def reset_counters(**kwargs):
-    global counters, total_requests
-    counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
-    total_requests = 0
+    print("All product IDs were found in the products.")

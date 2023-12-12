@@ -7,3 +7,4 @@ matplotlib~=3.7.2
 setuptools~=50.3.2
 numpy==1.24.3
 shapely~=2.0.1
+jsonschema~=4.19.1

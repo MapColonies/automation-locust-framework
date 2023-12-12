@@ -10,7 +10,8 @@ from common.utils.data_generator.data_utils import generate_points_request, cust
 from common.validation.validation_utils import (
     find_range_for_response_time,
     initiate_counters_by_ranges,
-    retype_env, parse_response_content, find_unmatch_lat_long, find_unmatched_lat_long_points,
+    retype_env, parse_response_content, find_unmatched_lat_long_points, validate_response_body_schema,
+    find_unfounded_product_ids,
 )
 
 if isinstance(ElevationConfig.percent_ranges, str):
@@ -76,16 +77,29 @@ class CustomUser(HttpUser):
             polygon=self.poly,
             exclude_fields=exclude_fields,
         )
+
+        print(body)
+        print(type(json.loads(body)))
         if retype_env(ElevationConfig.token_flag):
             with self.client.post(
                     f"?token={ElevationConfig.TOKEN}",
                     data=body,
                     headers={"Content-Type": "application/json"}, verify=False, catch_response=True
             ) as response:
+                # print("response is ", response)
                 if response.status_code == 200:
+                    print(response.json())
                     # response_time = response.elapsed.total_seconds() * 1000
+                    # print("response json",type(response.json()))
+                    # print("body ",type(body))
                     unmatched_points = find_unmatched_lat_long_points(response_dict=response.json(),
                                                                       request_dict=json.loads(body))
+                    is_invalid_response = validate_response_body_schema(response_body=response.text,
+                                                                        schema=ElevationConfig.response_schema)
+
+                    unfounded_product_ids = find_unfounded_product_ids(response_data=response.text)
+                    print(unfounded_product_ids)
+
                     null_points = [
                         item for item in response.json()["data"] if item.get("height") is None
                     ]
@@ -96,7 +110,11 @@ class CustomUser(HttpUser):
 
                     if null_points:
                         response.failure(null_points)
+                    if not is_invalid_response["is_valid"]:
+                        response.failure(is_invalid_response)
 
+                    if unfounded_product_ids:
+                        response.failure(is_invalid_response)
         else:
             with self.client.post(
                     "/",
@@ -104,8 +122,8 @@ class CustomUser(HttpUser):
                     headers={"Content-Type": "application/json"},
                     verify=False, catch_response=True
             ) as response:
-                unmatched_points = find_unmatched_points(response_output=response.json(),
-                                                         requests_points=json.loads(body))
+                unmatched_points = find_unmatched_lat_long_points(response_dict=response.json(),
+                                                                  request_dict=json.loads(body))
                 if unmatched_points:
                     response.failure(f"Points without a match on the response content- {unmatched_points}")
 

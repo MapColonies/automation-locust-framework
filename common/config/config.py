@@ -84,6 +84,68 @@ class ProActiveConfig(Config):
 
 
 class ElevationConfig(Config):
+    response_schema = {
+    "type": "object",
+    "required": ["data", "products"],
+    "properties": {
+        "data": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["longitude", "latitude", "height"],
+                "properties": {
+                    "longitude": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "latitude": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "height": {
+                        "type": "number",
+                        "nullable": True,
+                        "format": "double"
+                    },
+                    "productId": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "products": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "properties": {
+                    "productType": {
+                        "oneOf": [
+                            {"$ref": "#/definitions/productTypeEnum"}
+                        ]
+                    },
+                    "resolutionMeter": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "absoluteAccuracyLEP90": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "updateDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "productTypeEnum": {
+            "type": "string",
+            "enum": ["DSM", "DTM", "MIXED"]
+        }
+    }
+}
     elevation_host = os.environ.get("elevation_host_value", None)
     positions_path = os.environ.get(
         "positions_path_value",
@@ -103,11 +165,11 @@ class ElevationConfig(Config):
     )
     wait_time = os.environ.get("wait_time", 1)
     graph_name = os.environ.get("graph_name", "avg_rps_vs_user_amount")
-    payload_flag = os.environ.get("payload_flag", "True")
+    payload_flag = os.environ.get("payload_flag", True)
     token_flag = os.environ.get("token_flag", True)
     # payload_flag = os.environ.get("payload_flag", True)
     # token_flag = os.environ.get("token_flag", True)
-    points_amount_range = os.environ.get("points_amount_range", 10)
+    points_amount_range = os.environ.get("points_amount_range", 5)
     poly = os.environ.get(
         "polygon",
         [
@@ -142,7 +204,7 @@ class ElevationConfig(Config):
         #     ],
         # ],
     )
-    exclude_fields = os.environ.get("exclude_fields", True)
+    exclude_fields = os.environ.get("exclude_fields", False)
     normality_threshold = os.environ.get(
         "normality_threshold", {"low_response_time": 20, "high_response_time": 800}
     )
