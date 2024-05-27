@@ -1,0 +1,31 @@
+{
+  "tilejson": "2.1.0",
+  "name": "combined_israel_everest_30_100",
+  "description": "",
+  "version": "1.1.0",
+  "format": "quantized-mesh-1.0",
+  "attribution": "",
+  "schema": "tms",
+  "extensions": [ "octvertexnormals" ],
+  "tiles": [ "{z}/{x}/{y}.terrain?v={version}" ],
+  "projection": "EPSG:4326",
+  "bounds": [ 0.00, -90.00, 180.00, 90.00 ],
+  "available": [
+    [ { "startX": 0, "startY": 0, "endX": 1, "endY": 0 }]
+   ,[]
+   ,[]
+   ,[]
+   ,[ { "startX": 19, "startY": 10, "endX": 19, "endY": 10 }, { "startX": 23, "startY": 10, "endX": 23, "endY": 10 } ]
+   ,[ { "startX": 38, "startY": 21, "endX": 38, "endY": 21 }, { "startX": 47, "startY": 20, "endX": 47, "endY": 21 } ]
+   ,[ { "startX": 76, "startY": 43, "endX": 76, "endY": 43 }, { "startX": 94, "startY": 41, "endX": 95, "endY": 42 }  ]
+   ,[ { "startX": 152, "startY": 86, "endX": 153, "endY": 87 }, { "startX": 188, "startY": 82, "endX": 191, "endY": 84 } ]
+   ,[ { "startX": 305, "startY": 172, "endX": 306, "endY": 174 }, { "startX": 376, "startY": 164, "endX": 383, "endY": 169 } ]
+   ,[ { "startX": 611, "startY": 344, "endX": 613, "endY": 349 }, { "startX": 753, "startY": 328, "endX": 766, "endY": 339 } ]
+   ,[ { "startX": 1222, "startY": 688, "endX": 1227, "endY": 699 }, { "startX": 1507, "startY": 657, "endX": 1532, "endY": 679 } ]
+   ,[ { "startX": 2445, "startY": 1376, "endX": 2454, "endY": 1399 }, { "startX": 3015, "startY": 1315, "endX": 3064, "endY": 1358 }  ]
+   ,[ { "startX": 4891, "startY": 2753, "endX": 4908, "endY": 2799 }, { "startX": 6030, "startY": 2630, "endX": 6128, "endY": 2717 } ]
+   ,[ { "startX": 9782, "startY": 5506, "endX": 9817, "endY": 5598 } ]
+   ,[ { "startX": 19565, "startY": 11013, "endX": 19634, "endY": 11196 } ]
+  ]
+}
+

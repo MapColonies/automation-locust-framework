@@ -12,6 +12,6 @@ RUN pip install -r requirements.txt
 WORKDIR urls
 
 # Run the application:
-COPY ./extract_url.py .
+COPY ./big_json_file.py .
 
-CMD ["python", "extract_url.py"]
+CMD ["python", "big_json_file.py"]

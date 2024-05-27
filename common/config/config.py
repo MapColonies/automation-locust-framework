@@ -38,7 +38,7 @@ class Database:
 
 class Config:
     TOKEN = os.environ.get("SECRET_VALUE_API", None)
-    HOST = os.environ.get("HOST", "Enter a host")
+    HOST = os.environ.get("HOST", "enter a host")
     WAIT_TIME_FUNC = int(os.environ.get("wait_function", 4))
     WAIT_TIME = int(os.environ.get("wait_time", 4))
     MAX_WAIT = int(os.environ.get("max_wait", 1))
@@ -46,7 +46,6 @@ class Config:
     LAYERS_LIST = os.environ.get("layer_list", "shay44").split(",")
     WMTS_CAPABILITIES_URL = os.environ.get("wmts_capabilities_url", "")
     RESULTS_PATH = os.environ.get("result_path", f"{os.getcwd()}")
-    percent_ranges = os.environ.get("percent_ranges", [100, 500])
 
 
 class WmtsConfig(Config):
@@ -84,68 +83,6 @@ class ProActiveConfig(Config):
 
 
 class ElevationConfig(Config):
-    response_schema = {
-    "type": "object",
-    "required": ["data", "products"],
-    "properties": {
-        "data": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": ["longitude", "latitude", "height"],
-                "properties": {
-                    "longitude": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "latitude": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "height": {
-                        "type": "number",
-                        "nullable": True,
-                        "format": "double"
-                    },
-                    "productId": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "products": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "object",
-                "properties": {
-                    "productType": {
-                        "oneOf": [
-                            {"$ref": "#/definitions/productTypeEnum"}
-                        ]
-                    },
-                    "resolutionMeter": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "absoluteAccuracyLEP90": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "updateDate": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                }
-            }
-        }
-    },
-    "definitions": {
-        "productTypeEnum": {
-            "type": "string",
-            "enum": ["DSM", "DTM", "MIXED"]
-        }
-    }
-}
     elevation_host = os.environ.get("elevation_host_value", None)
     positions_path = os.environ.get(
         "positions_path_value",
@@ -159,38 +96,42 @@ class ElevationConfig(Config):
     # percent_ranges = os.environ.get(
     #     "percent_ranges", [(0, 100), (101, 500), (501, float('inf'))]
     # )
-    percent_ranges = os.environ.get("percent_ranges", [100, 500])
+    percent_ranges = os.environ.get(
+        "percent_ranges", [100, 500]
+    )
     bulks_root_folder = os.environ.get(
         "bulks_root_folder", "/home/shayavr/Documents/bulks_input"
     )
     wait_time = os.environ.get("wait_time", 1)
     graph_name = os.environ.get("graph_name", "avg_rps_vs_user_amount")
-    payload_flag = os.environ.get("payload_flag", True)
-    token_flag = os.environ.get("token_flag", True)
+    payload_flag = os.environ.get("payload_flag", "True")
+    token_flag = os.environ.get("token_flag", "True")
+    terrain_csv_path = os.environ.get("terrain_csv_path", "/home/shayavr/Desktop/git/automation-locust-framework/test_data/new.csv")
     # payload_flag = os.environ.get("payload_flag", True)
     # token_flag = os.environ.get("token_flag", True)
     points_amount_range = os.environ.get("points_amount_range", 5)
     poly = os.environ.get(
         "polygon",
-        [
+        [[
+            (34.78599261466954, 30.62650484692135),
+            (34.78599261466954, 30.56735846770877),
+            (34.873818350199315, 30.56735846770877),
+            (34.873818350199315, 30.62650484692135),
+            (34.78599261466954, 30.62650484692135),
+        ],
             [
-                (35.21370173535735, 32.944784748967194),
-                (35.21370173535735, 32.602044942336676),
-                (35.76262909563465, 32.602044942336676),
-                (35.76262909563465, 32.944784748967194),
-                (35.21370173535735, 32.944784748967194),
-            ],
-            [
-                (34.9936172458529, 32.73613049628601),
-                (34.9936172458529, 32.431627293935804),
-                (35.288205407997964, 32.431627293935804),
-                (35.288205407997964, 32.73613049628601),
-                (34.9936172458529, 32.73613049628601),
-            ],
+                (34.75686905280091, 30.674265565587575),
+                (34.75686905280091, 30.668797385759987),
+                (34.756895479083596, 30.668797385759987),
+                (34.756895479083596, 30.674265565587575),
+                (34.75686905280091, 30.674265565587575),
+            ]
         ]
+
         # [
         #     [
         #         [
+
         #         ]
         #     ],
         #     [
@@ -204,21 +145,18 @@ class ElevationConfig(Config):
         #     ],
         # ],
     )
-    exclude_fields = os.environ.get("exclude_fields", False)
-    normality_threshold = os.environ.get(
-        "normality_threshold", {"low_response_time": 20, "high_response_time": 800}
-    )
+    exclude_fields = os.environ.get("exclude_fields", True)
+    TERRAIN_lAYER = os.environ.get("layer_type", "terrains")
+    TERRAIN_NAME = os.environ.get("terrain_name", "combined_srtm_30_100_il_ever")
+    TERRAIN_FORMAT = os.environ.get("terrain_format", ".terrain")
 
 
-# ToDo : Change the const.
+
 class Config3D(Config):
     CSV_DATA_PATH = os.environ.get(
         "CSV_3D_DATA_PATH",
-        "/home/shayavr/Desktop/git/automation-locust-framework/scripts/extract_urls_script_3d/filtered_urls.csv",
+        "/home/shayavr/Desktop/git/automation-locust-framework/test_data/lol.csv",
     )
-    # PERCENT_RESULT_PATH = os.environ.get(
-    #     # percent_result_path,
-    # )
 
 
 config_obj = {
@@ -227,4 +165,5 @@ config_obj = {
     "pro_active": ProActiveConfig,
     "_3d": Config3D,
     "default": Config,
+    "elevation": ElevationConfig
 }

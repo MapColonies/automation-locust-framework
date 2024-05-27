@@ -1,49 +1,40 @@
-import json
-import random
-
-from locust import HttpUser, constant, events, task, constant_pacing, between, constant_throughput
-
-from common.config.config import ElevationConfig, config_obj
-from common.utils.constants.strings import INVALID_TIMER_STR, CONSTANT_PACING_TIMER_STR, BETWEEN_TIMER_STR, \
-    CONSTANT_THROUGHPUT_TIMER_STR, CONSTANT_TIMER_STR
-from common.utils.data_generator.data_utils import generate_points_request, custom_sorting_key, find_unmatched_points
+from locust import HttpUser, constant, events, task, FastHttpUser, constant_throughput, between, constant_pacing
+from common.config.config import config_obj, ElevationConfig
+from common.utils.constants.strings import CONSTANT_TIMER_STR, CONSTANT_THROUGHPUT_TIMER_STR, BETWEEN_TIMER_STR, \
+    CONSTANT_PACING_TIMER_STR, INVALID_TIMER_STR
+from common.utils.csvreader import CSVReader
+from common.utils.data_generator.data_utils import custom_sorting_key
 from common.validation.validation_utils import (
     find_range_for_response_time,
     initiate_counters_by_ranges,
-    retype_env, parse_response_content, find_unmatch_lat_long,
+    retype_env
 )
 
-if isinstance(ElevationConfig.percent_ranges, str):
-    percent_ranges = retype_env(ElevationConfig.percent_ranges)
+if isinstance(config_obj["elevation"].percent_ranges, str):
+    percent_ranges = retype_env(config_obj["elevation"].percent_ranges)
     percent_ranges.append(0)
     percent_ranges.append(float("inf"))
     percent_ranges = sorted(percent_ranges)
 else:
-    percent_ranges = ElevationConfig.percent_ranges
+    percent_ranges = config_obj["elevation"].percent_ranges
     percent_ranges.append(0)
     percent_ranges.append(float("inf"))
     percent_ranges = sorted(percent_ranges)
 
-if isinstance(ElevationConfig.wait_time, str):
-    wait_time = retype_env(ElevationConfig.wait_time)
+if isinstance(config_obj["wmts"].WAIT_TIME, str):
+    wait_time = retype_env(config_obj["wmts"].WAIT_TIME)
 else:
-    wait_time = ElevationConfig.wait_time
-
-if isinstance(ElevationConfig.exclude_fields, str):
-    exclude_fields = retype_env(ElevationConfig.exclude_fields)
-else:
-    exclude_fields = ElevationConfig.exclude_fields
-
-if isinstance(ElevationConfig.poly, str):
-    polygons = eval(ElevationConfig.poly)
-else:
-    polygons = ElevationConfig.poly
-
-points_amount_range = ElevationConfig.points_amount_range
+    wait_time = config_obj["wmts"].WAIT_TIME
 
 stats = {"total_requests": 0}
 counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
 counters_keys = list(counters.keys())
+
+# print(counters)
+
+csv_file_path = ElevationConfig.terrain_csv_path
+
+ssn_reader = CSVReader(csv_file_path)
 
 
 def set_wait_time(timer_selection, wait_time):
@@ -52,64 +43,57 @@ def set_wait_time(timer_selection, wait_time):
     elif timer_selection == 2:
         return constant_throughput(wait_time), CONSTANT_THROUGHPUT_TIMER_STR
     elif timer_selection == 3:
-        return between(wait_time["min_wait"], wait_time["max_wait"]), BETWEEN_TIMER_STR
+        return (
+            between(config_obj["wmts"].MIN_WAIT, config_obj["wmts"].MAX_WAIT),
+            BETWEEN_TIMER_STR,
+        )
     elif timer_selection == 4:
         return constant_pacing(wait_time), CONSTANT_PACING_TIMER_STR
     else:
         return None, INVALID_TIMER_STR
 
 
-class CustomUser(HttpUser):
-    response_times = []
+class User(FastHttpUser):
     timer_selection = config_obj["wmts"].WAIT_TIME_FUNC
-    wait_time_config = config_obj["wmts"].WAIT_TIME
-    wait_time, timer_message = set_wait_time(timer_selection, wait_time_config)
+    wait_time = config_obj["wmts"].WAIT_TIME
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.poly = random.choice(polygons)
+    wait_time, timer_message = set_wait_time(timer_selection, wait_time)
+    print(timer_message)
 
     @task(1)
     def index(self):
-        body = generate_points_request(
-            points_amount=int(ElevationConfig.points_amount_range),
-            polygon=self.poly,
-            exclude_fields=exclude_fields,
+        points = next(ssn_reader)
+
+        url = (
+            f"/{config_obj['elevation'].TERRAIN_lAYER}/"
+            f"{config_obj['elevation'].TERRAIN_NAME}/"
+            # f"{config_obj['wmts'].GRID_NAME}/"
+            f"{points[0]}/{points[1]}/{points[2]}"
+            f"{config_obj['elevation'].TERRAIN_FORMAT}"
         )
-        if retype_env(ElevationConfig.token_flag):
-            with self.client.post(
-                    f"?token={ElevationConfig.TOKEN}",
-                    data=body,
-                    headers={"Content-Type": "application/json"}, verify=False, catch_response=True
-            ) as response:
-                if response.status_code == 200:
-                    # response_time = response.elapsed.total_seconds() * 1000
-                    unmatched_points = find_unmatch_lat_long(response_points=response.json(),
-                                                             request_points=json.loads(body))
-                    null_points = [
-                        item for item in response.json()["data"] if item.get("height") is None
-                    ]
-                    if unmatched_points:
-                        unmatched_points["request body"] = body
-                        response.failure(unmatched_points)
+        if config_obj["wmts"].TOKEN:
+            url += f"?token={config_obj['wmts'].TOKEN}"
+        self.client.get(url)
 
-                    if null_points:
-                        response.failure(null_points)
-
-        else:
-            with self.client.post(
-                    "/",
-                    data=body,
-                    headers={"Content-Type": "application/json"},
-                    verify=False, catch_response=True
-            ) as response:
-                unmatched_points = find_unmatched_points(response_output=response.json(),
-                                                         requests_points=json.loads(body))
-                if unmatched_points:
-                    response.failure(f"Points without a match on the response content- {unmatched_points}")
+    host = config_obj["wmts"].HOST
 
 
-# create counters for each range value from the configuration
+#
+# class UserModel2(HttpUser):
+#     wait_time = constant(wait_time)
+#
+#
+#     @task(1)
+#     def model2(self):
+#         url = next(ssn_reader2)
+#         with self.client.get(url=url[1], verify=False, catch_response=True) as response:
+#             content_type = response.headers.get("Content-Type", "")
+#             if content_type != "application/octet-stream":
+#                 response.failure(f"Invalid response content-type: {content_type}")
+#             elif response.status_code == 402 or response.status_code == 403 or response.status_code == 401:
+#                 response.failure(f"status code: {response.status_code} for: {url[1]}")
+#
+#         host = config_obj["default"].HOST
 
 
 @events.init.add_listener
@@ -142,12 +126,22 @@ def locust_init(environment, **kwargs):
                     "total_requests": stats["total_requests"]}
 
 
+# create counters for each range value from the configuration
+
+
+@events.test_start.add_listener
+def on_locust_init(environment, **_kwargs):
+    environment.users_count = environment.runner.target_user_count
+
+
 @events.request.add_listener
 def response_time_listener(response_time, **kwargs):
     global counters
+    # print("percent_ranges is", percent_ranges)
     counters = find_range_for_response_time(
         response_time=response_time, ranges_list=percent_ranges, counters_dict=counters
     )
+    # total_requests += 1
     stats["total_requests"] += 1
 
 
@@ -163,6 +157,7 @@ def on_report_to_master(client_id, data):
         data[range_val] = counters[range_val]
         counters[range_val] = 0
     stats["total_requests"] = 0
+    # counters["total_requests"] = 0
 
 
 @events.worker_report.add_listener
@@ -179,6 +174,7 @@ def on_worker_report(client_id, data):
 
 @events.test_start.add_listener
 def reset_counters(**kwargs):
-    global counters, stats
+    global counters, total_requests, stats
     counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
+    total_requests = 0
     stats = {"total_requests": 0}

@@ -130,3 +130,4 @@ dmypy.json
 
 # playground files
 .playgorund/
+/test_data

@@ -1,17 +1,17 @@
-imageRepository: &imageRepository "acrarolibotnonprod.azurecr.io/response_validation:2.3.0"
+imageRepository: &imageRepository "acrarolibotnonprod.azurecr.io/locust_demo:1.0.0"
 
 global:
   name: locust-global
-  test_file: response_validation.py
-  test_file_path: "/mnt/locust/tests/elevation_service"
-  host: https://dem-2023-q3-1-heights-production-nginx-route-2023-q3-1.apps.j1lk3njp.eastus.aroapp.io/api/heights/v1/points
+  test_file: csv_reader.py
+  test_file_path: "/mnt/locust/tests/wmts"
+  host: /
 
   env: {
       layer_list: "shay44" ,
       points_amount_range: 100,
       token_flag: true,
       measure_time: false,
-      percent_ranges: "[20,30,50,80,100,500]",
+      percent_ranges: "[100,500]",
       result_path: "/layerSources/locust/",
       pro_active_wmts_bbox: [35.024411528661574, 32.79419004139809, 35.37597717328861, 32.947998391903226],
       mc_region_value: "ישראל, ירדן",
@@ -42,7 +42,7 @@ global:
       imageType: ".jpeg",
       layer: "Orthophoto",
       users: 15,
-      CSV_3D_DATA_PATH: "/mnt/locust/test_data/urls_data.csv",
+      CSV_3D_DATA_PATH: "/layerSources/filtered_urls.csv",
       port: 8080,
       CONF_FILE: "/layerSources/locust/locust_configuration.json",
       layer_type: "wmts",
@@ -140,6 +140,16 @@ storage:
   volumeName: ingestion-storage
   mountPathName: /layerSources
   subPath: ingestion-source
+
+volumeMounts:
+  - name: test-files-volume
+    mountPath: /mnt/locust/test_files
+
+volumes:
+  - name: test-files-volume
+    # Define the ConfigMap that holds test files
+    configMap:
+      name: locust-test-files
 
 
 # fs:

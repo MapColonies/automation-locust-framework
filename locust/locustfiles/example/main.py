@@ -1,11 +1,47 @@
+# # -*- coding: utf-8 -*-
+#
+# from locust import HttpUser, task, between
+# from lib.example_functions import choose_random_page
+#
+#
+# default_headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36'}
+#
+#
+# class WebsiteUser(HttpUser):
+#     wait_time = between(1, 2)
+#
+#     @task(1)
+#     def get_index(self):
+#         self.client.get("/", headers=default_headers)
+#
+#     @task(3)
+#     def get_random_page(self):
+#         self.client.get(choose_random_page(), headers=default_headers)
+# import os
+# import sys
+# from pathlib import Path
+#
+# myDir = os.getcwd()
+# sys.path.append(myDir)
+#
+# path = Path(myDir)
+# a = str(path.parent.absolute())
+# sys.path.append(a)
+import json
+import os
+import threading
+
 from locust import HttpUser, constant, events, task
-from common.config.config import config_obj
-from common.utils.csvreader import CSVReader
-from common.utils.data_generator.data_utils import custom_sorting_key
-from common.validation.validation_utils import (
+
+from lib.common.config.config import config_obj
+from lib.common.utils.csvreader import CSVReader
+from lib.common.utils.data_generator.data_utils import custom_sorting_key
+from lib.common.validation.validation_utils import (
     find_range_for_response_time,
     initiate_counters_by_ranges,
-    retype_env
+    read_tests_data_folder,
+    retype_env,
+    write_rps_percent_results,
 )
 
 if isinstance(config_obj["_3d"].percent_ranges, str):
@@ -20,46 +56,29 @@ else:
     percent_ranges = sorted(percent_ranges)
 
 # ssn_reader = CSVReader(config_obj["_3d"].CSV_DATA_PATH)
-ssn_reader1 = CSVReader(
-    "/home/shayavr/Desktop/git/automation-locust-framework/test_data/unfiltered_urls.csv")
+ssn_reader = CSVReader(
+    "/home/shayavr/Desktop/git/automation-locust-framework/scripts/extract_urls_script_3d/filtered_urls.csv")
+results_path = config_obj["_3d"].RESULTS_PATH
 
-ssn_reader2 = CSVReader(
-    "/home/shayavr/Desktop/git/automation-locust-framework/test_data/urls_data_backup.csv")
 if isinstance(config_obj["wmts"].WAIT_TIME, str):
     wait_time = retype_env(config_obj["wmts"].WAIT_TIME)
 else:
     wait_time = config_obj["wmts"].WAIT_TIME
 
+file_lock = threading.Lock()
+
 stats = {"total_requests": 0}
 counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
+print(counters)
 counters_keys = list(counters.keys())
 
-print(counters)
 
-
-class UserModel1(HttpUser):
+class User(HttpUser):
     wait_time = constant(wait_time)
 
     @task(1)
-    def model1(self):
-        url = next(ssn_reader1)
-        with self.client.get(url=url[1], verify=False, catch_response=True) as response:
-            content_type = response.headers.get("Content-Type", "")
-            if content_type != "application/octet-stream":
-                response.failure(f"Invalid response content-type: {content_type}")
-            elif response.status_code == 402 or response.status_code == 403 or response.status_code == 401:
-                response.failure(f"status code: {response.status_code} for: {url[1]}")
-
-        host = config_obj["default"].HOST
-
-
-class UserModel2(HttpUser):
-    wait_time = constant(wait_time)
-
-
-    @task(1)
-    def model2(self):
-        url = next(ssn_reader2)
+    def index(self):
+        url = next(ssn_reader)
         with self.client.get(url=url[1], verify=False, catch_response=True) as response:
             content_type = response.headers.get("Content-Type", "")
             if content_type != "application/octet-stream":
@@ -87,6 +106,7 @@ def locust_init(environment, **kwargs):
             """
             requests_amount = stats["total_requests"]
             percent_value_by_range = {}
+            print(counters)
 
             if requests_amount != 0:
                 for index, (key, value) in enumerate(counters.items()):
@@ -111,7 +131,7 @@ def on_locust_init(environment, **_kwargs):
 @events.request.add_listener
 def response_time_listener(response_time, **kwargs):
     global counters
-    # print("percent_ranges is", percent_ranges)
+    print("percent_ranges is", percent_ranges)
     counters = find_range_for_response_time(
         response_time=response_time, ranges_list=percent_ranges, counters_dict=counters
     )
@@ -144,7 +164,8 @@ def on_worker_report(client_id, data):
     stats["total_requests"] += data["total_requests"]
     for range_val in counters_keys:
         counters[range_val] += data[range_val]
-
+    print(stats)
+    print(data)
 
 
 @events.test_start.add_listener
