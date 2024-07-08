@@ -14,98 +14,95 @@
 #        args: ['--max-line-length=88', '--exclude=venv, .venv, ', '--ignore=E203,W503']
 
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
-    -   id: check-added-large-files
-    -   id: fix-byte-order-marker
-    -   id: trailing-whitespace
-    -   id: end-of-file-fixer
-    -   id: check-json
-    -   id: check-yaml
+      - id: check-added-large-files
+      - id: fix-byte-order-marker
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-json
+      - id: check-yaml
         exclude: |
           (?x)(
               ^helm/templates|
               ^tests/master-ingress.yaml|
               secret.yaml
           )
-    -   id: check-merge-conflict
-
-
-#-   repo: https://github.com/pycqa/flake8
-#    rev: 6.0.0
-#    hooks:
-#    -   id: flake8
-
--   repo: https://github.com/pycqa/flake8
+      - id: check-merge-conflict
+  #-   repo: https://github.com/pycqa/flake8
+  #    rev: 6.0.0
+  #    hooks:
+  #    -   id: flake8
+  - repo: https://github.com/pycqa/flake8
     rev: 6.0.0
     hooks:
       - id: flake8
         args: ['--config=pyproject.toml', '--extend-ignore=E203,E501,W503']
-
-#        additional_dependencies:
-#          - flake8-bugbear
-#          - flake8-implicit-str-concat
-#-   repo: https://github.com/peterdemin/pip-compile-multi
-#    rev: v2.6.2
-#    hooks:
-#      - id: pip-compile-multi-verify
-
--   repo: https://github.com/asottile/pyupgrade
+  #        additional_dependencies:
+  #          - flake8-bugbear
+  #          - flake8-implicit-str-concat
+  #-   repo: https://github.com/peterdemin/pip-compile-multi
+  #    rev: v2.6.2
+  #    hooks:
+  #      - id: pip-compile-multi-verify
+  - repo: https://github.com/asottile/pyupgrade
     rev: v3.9.0
     hooks:
-    -   id: pyupgrade
+      - id: pyupgrade
         args:
-        - --py3-plus
-        - --keep-runtime-typing
-#-   repo: https://github.com/asottile/reorder_python_imports
-#    rev: v3.9.0
-#    hooks:
-#      - id: reorder-python-imports
-#        name: Reorder Python imports (src, tests)
-#        files: "^(?!examples/)"
-#        args: ["--application-directories", "src"]
+          - --py3-plus
+          - --keep-runtime-typing
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    #-   repo: https://github.com/asottile/reorder_python_imports
+    #    rev: v3.9.0
+    #    hooks:
+    #      - id: reorder-python-imports
+    #        name: Reorder Python imports (src, tests)
+    #        files: "^(?!examples/)"
+    #        args: ["--application-directories", "src"]
 
--   repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.0.280
     hooks:
-    -   id: ruff
+      - id: ruff
         args:
-        - --fix
-
--   repo: https://github.com/psf/black
+          - --fix
+  - repo: https://github.com/psf/black
     rev: 23.7.0
     hooks:
-    -   id: black
-
-
-- repo: https://github.com/pycqa/isort
-  rev: 5.12.0
-  hooks:
-  - id: isort
-    args: ["--profile", "black"]
-
-- repo: https://github.com/PyCQA/bandit
-  rev: '1.7.5'
-  hooks:
-  - id: bandit
-    args: ["-c", "pyproject.toml", "-r", "."]
+      - id: black
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+  - repo: https://github.com/PyCQA/bandit
+    rev: '1.7.5'
+    hooks:
+      - id: bandit
+        args: ["-c", "pyproject.toml", "-r", "."]
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args:
+          - --baseline
+          - .secrets.baseline
+        exclude: '''lib/.*|.*/lib/.*'''
 #    args: [-r, -c, pyproject.toml]
 
 #- repo: https://github.com/pre-commit/mirrors-mypy
 #  rev: v1.1.1  # Update the version to the latest one you have installed
 #  hooks:
 #  - id: mypy
-
-
 ci:
-    autofix_commit_msg: |
-        [pre-commit.ci] auto fixes from pre-commit.com hooks
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit.com hooks
 
-        for more information, see https://pre-commit.ci
-    autofix_prs: true
-    autoupdate_branch: ''
-    autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
-    autoupdate_schedule: weekly
-    skip: []
-    submodules: false
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false
