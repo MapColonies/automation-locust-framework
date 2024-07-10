@@ -133,3 +133,7 @@ dmypy.json
 
 # CSV files
 test_data/urls_data_backup.csv
+
+# Default ignored files
+/shelf/
+/workspace.xml
