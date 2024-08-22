@@ -17,3 +17,11 @@ class WebsiteUser(HttpUser):
     @task(3)
     def get_random_page(self):
         self.client.get(choose_random_page(), headers=default_headers)
+x = 5
+print(id(x))
+def shalom(y):
+    y = 3
+    return y
+
+sss = shalom(x)
+print(id(sss))

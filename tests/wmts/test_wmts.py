@@ -19,6 +19,12 @@ from common.config.config import WmtsConfig, config_obj
 #     get_percentile_value,
 #     write_rsp_time_percentile_ranges,
 # )
+from common.utils import (
+    count_rsp_time_by_rsp_time_ranges,
+    extract_response_time_from_record,
+    get_percentile_value,
+    write_rsp_time_percentile_ranges,
+)
 from common.utils.constants.strings import (
     BETWEEN_TIMER_STR,
     CONSTANT_PACING_TIMER_STR,
@@ -50,6 +56,9 @@ else:
     percent_ranges.append(float("inf"))
     percent_ranges = sorted(percent_ranges)
 
+stat_file = open("stats.csv", "w")
+wmts_csv_path = WmtsConfig.WMTS_CSV_PATH
+ssn_reader = CSVReader(wmts_csv_path)
 
 counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
 print(counters)
@@ -74,6 +83,8 @@ def set_wait_time(timer_selection, wait_time):
 class User(FastHttpUser):
     timer_selection = config_obj["wmts"].WAIT_TIME_FUNC
     wait_time = config_obj["wmts"].WAIT_TIME
+    timer_selection = config_obj["wmts"].WAIT_TIME_FUNC[0]
+    wait_time = config_obj["wmts"].WAIT_TIME[0]
 
     wait_time, timer_message = set_wait_time(timer_selection, wait_time)
     print(timer_message)
@@ -147,3 +158,40 @@ def reset_counters(**kwargs):
     total_requests = 0
     stats = {"total_requests": 0}
 
+    def on_stop(self):
+        rsp_list = extract_response_time_from_record(
+            csv_path=config_obj["wmts"].REQUESTS_RECORDS_CSV
+        )
+        percentile_rages_dict = {}
+        rsp_time_ranges = [(0, 100), (101, 500), (501, None)]
+        for idx, rsp_t_range in enumerate(rsp_time_ranges):
+            counter = count_rsp_time_by_rsp_time_ranges(
+                rsp_time_data=rsp_list, rsp_range=rsp_t_range
+            )
+
+            percentile = get_percentile_value(
+                rsp_counter=counter, rsp_time_list=rsp_list
+            )
+            percentile_rages_dict[str(rsp_time_ranges[idx])] = percentile
+        write_rsp_time_percentile_ranges(percentile_rages_dict)
+
+
+@events.request.add_listener
+def hook_request_(request_type, name, response_time, response_length, response, **kw):
+    stat_file.write(
+        str(response)
+        + ";"
+        + request_type
+        + ";"
+        + name
+        + ";"
+        + str(response_time)
+        + ";"
+        + str(response_length)
+        + "\n"
+    )
+
+
+@events.quitting.add_listener
+def hook_quitting(environment, **kw):
+    stat_file.close()

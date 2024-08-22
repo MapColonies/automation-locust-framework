@@ -1,3 +1,4 @@
+
 FROM locustio/locust:latest
 
 RUN pip3 install --no-cache-dir locust_plugins==4.5.1

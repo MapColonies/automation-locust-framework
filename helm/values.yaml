@@ -42,7 +42,7 @@ global:
       imageType: ".jpeg",
       layer: "Orthophoto",
       users: 15,
-      CSV_3D_DATA_PATH: "/layerSources/filtered_urls.csv",
+      CSV_3D_DATA_PATH: "/mnt/locust/test_data/urls_data.csv",
       port: 8080,
       CONF_FILE: "/layerSources/locust/locust_configuration.json",
       layer_type: "wmts",
@@ -144,16 +144,3 @@ storage:
 volumeMounts:
   - name: test-files-volume
     mountPath: /mnt/locust/test_files
-
-volumes:
-  - name: test-files-volume
-    # Define the ConfigMap that holds test files
-    configMap:
-      name: locust-test-files
-
-
-# fs:
-#      ingestionSourcePvc:
-#        enabled: true
-#        name: ingestion-source-pvc
-#        subPath: ingestion-source
