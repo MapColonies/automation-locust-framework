@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM python:3.8-slim
 
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
@@ -9,9 +9,9 @@ COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
-WORKDIR urls
+WORKDIR terrain_script
 
 # Run the application:
-COPY ./big_json_file.py .
+COPY ./generate_terrian_urls.py .
 
-CMD ["python", "big_json_file.py"]
+CMD ["python", "generate_terrian_urls.py"]
