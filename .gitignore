@@ -23,6 +23,7 @@ wheels/
 pip-wheel-metadata/
 share/python-wheels/
 *.egg-info/
+ .idea
 .installed.cfg
 *.egg
 MANIFEST
@@ -131,9 +132,5 @@ dmypy.json
 # playground files
 .playgorund/
 
-# CSV files
-test_data/urls_data_backup.csv
-
-# Default ignored files
-/shelf/
-/workspace.xmltest_data/urls_data_backup.csv
+/test_data
+.idea/
