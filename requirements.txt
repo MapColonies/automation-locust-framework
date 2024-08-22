@@ -5,6 +5,3 @@ common~=0.1.2
 pandas~=2.0.1
 matplotlib~=3.7.2
 setuptools~=72.1.0
-numpy==1.24.3
-shapely~=2.0.1
-jsonschema~=4.19.1

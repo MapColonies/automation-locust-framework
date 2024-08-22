@@ -1,12 +1,21 @@
 from locust import HttpUser, constant, events, task
-from common.config.config import config_obj
-from common.utils.csvreader import CSVReader
-from common.utils.data_generator.data_utils import custom_sorting_key
-from common.validation.validation_utils import (
-    find_range_for_response_time,
-    initiate_counters_by_ranges,
-    retype_env
-)
+
+# import os
+# import sys
+# from pathlib import Path
+#
+# myDir = os.getcwd()
+# sys.path.append(myDir)
+#
+# path = Path(myDir)
+# a = str(path.parent.absolute())
+# sys.path.append(a)
+import json
+import os
+import threading
+
+from locust import HttpUser, constant, events, task
+
 
 if isinstance(config_obj["_3d"].percent_ranges, str):
     percent_ranges = retype_env(config_obj["_3d"].percent_ranges)
@@ -25,6 +34,7 @@ ssn_reader1 = CSVReader(
 
 ssn_reader2 = CSVReader(
     "/home/shayavr/Desktop/git/automation-locust-framework/test_data/urls_data_backup.csv")
+
 if isinstance(config_obj["wmts"].WAIT_TIME, str):
     wait_time = retype_env(config_obj["wmts"].WAIT_TIME)
 else:
@@ -60,6 +70,20 @@ class UserModel2(HttpUser):
     @task(1)
     def model2(self):
         url = next(ssn_reader2)
+file_lock = threading.Lock()
+
+stats = {"total_requests": 0}
+counters = initiate_counters_by_ranges(config_ranges=percent_ranges)
+print(counters)
+counters_keys = list(counters.keys())
+
+
+class User(HttpUser):
+    wait_time = constant(wait_time)
+
+    @task(1)
+    def index(self):
+        url = next(ssn_reader)
         with self.client.get(url=url[1], verify=False, catch_response=True) as response:
             content_type = response.headers.get("Content-Type", "")
             if content_type != "application/octet-stream":
@@ -87,6 +111,7 @@ def locust_init(environment, **kwargs):
             """
             requests_amount = stats["total_requests"]
             percent_value_by_range = {}
+            print(counters)
 
             if requests_amount != 0:
                 for index, (key, value) in enumerate(counters.items()):
@@ -112,6 +137,8 @@ def on_locust_init(environment, **_kwargs):
 def response_time_listener(response_time, **kwargs):
     global counters
     # print("percent_ranges is", percent_ranges)
+
+    print("percent_ranges is", percent_ranges)
     counters = find_range_for_response_time(
         response_time=response_time, ranges_list=percent_ranges, counters_dict=counters
     )
@@ -145,6 +172,8 @@ def on_worker_report(client_id, data):
     for range_val in counters_keys:
         counters[range_val] += data[range_val]
 
+    print(stats)
+    print(data)
 
 
 @events.test_start.add_listener
