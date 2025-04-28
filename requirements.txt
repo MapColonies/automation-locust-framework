@@ -1,7 +1,8 @@
 glom~=23.5.0
-locust~=2.31.2
+locust~=2.36.2
 httpx==0.27.0
 common~=0.1.2
 pandas~=2.0.1
 matplotlib~=3.7.2
 setuptools~=72.1.0
+OWSLib==0.33.0
