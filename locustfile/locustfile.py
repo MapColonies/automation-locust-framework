@@ -1,8 +1,9 @@
-from locust import HttpUser, task, between
+from locust import HttpUser, task, constant
 
-class MyUser(HttpUser):
-    wait_time = between(1, 5)
+
+class User(HttpUser):
+    wait_time = constant(1)
 
     @task
-    def example(self):
+    def mainPage(self):
         self.client.get("/")
