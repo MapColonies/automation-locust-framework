@@ -1,14 +1,18 @@
 import json
+import time
+
 import requests
 import random
 from lxml import etree
 from typing import List, Tuple
 from shapely.geometry import shape, Polygon, MultiPolygon, Point
+from locust import events
+
 
 
 class WFSClient:
     """
-    wrapper for all WFS operations
+    Wrapper for all WFS operations with Locust integration.
     """
 
     def __init__(self, base_url, version, token, output_format="application/json"):
@@ -17,27 +21,40 @@ class WFSClient:
         self.token = token
         self.output_format = output_format
 
+    def _track_request(self, method, name, url, **kwargs):
+        start_time = time.time()
+        try:
+            response = method(url, **kwargs)
+            response.raise_for_status()
+            total_time = int((time.time() - start_time) * 1000)
+            events.request_success.fire(
+                request_type=method.__name__.upper(),
+                name=name,
+                response_time=total_time,
+                response_length=len(response.content),
+            )
+            return response
+        except Exception as e:
+            total_time = int((time.time() - start_time) * 1000)
+            events.request_failure.fire(
+                request_type=method.__name__.upper(),
+                name=name,
+                response_time=total_time,
+                exception=e,
+            )
+            raise
+
     def get_capabilities(self):
-        """
-        The GetCapabilities operation is a request to a WFS server for a list of the operations and services,
-         or capabilities, supported by that server.
-        """
         params = {
             "service": "WFS",
             "request": "GetCapabilities",
             "version": self.version,
             "token": self.token
         }
-        response = requests.get(self.base_url, params=params)
-        response.raise_for_status()
+        response = self._track_request(requests.get, "WFS GetCapabilities", self.base_url, params=params)
         return response.text
 
     def describe_feature_type(self, type_name):
-        """
-        DescribeFeatureType requests information about an individual feature type before requesting the actual data.
-        Specifically, the operation will request a list of features and attributes for the given feature type,
-        or list the feature types available.
-        """
         params = {
             "service": "WFS",
             "version": self.version,
@@ -45,16 +62,11 @@ class WFSClient:
             "typeNames": type_name,
             "token": self.token,
             "outputFormat": self.output_format
-
         }
-        response = requests.get(self.base_url, params=params)
-        response.raise_for_status()
+        response = self._track_request(requests.get, "WFS DescribeFeatureType", self.base_url, params=params)
         return response.json() if self.output_format == "application/json" else response.text
 
     def get_feature(self, type_name, logic_operator=None, filters=None, request_params=None):
-        """
-        The GetFeature operation returns a selection of features from the data source.
-        """
         params = {
             "service": "WFS",
             "request": "GetFeature",
@@ -66,35 +78,44 @@ class WFSClient:
         if request_params:
             params.update(request_params)
 
-        if filter:
+        if filters:
             headers = {"Content-Type": "application/xml"}
             filter_xml = self.create_wfs_filter(filters, logic_operator)
-            response = requests.post(self.base_url, params=params, data=filter_xml, headers=headers)
+            response = self._track_request(
+                requests.post,
+                "WFS GetFeature (POST with Filter)",
+                self.base_url,
+                params=params,
+                data=filter_xml,
+                headers=headers
+            )
         else:
-            response = requests.get(self.base_url, params=params)
+            response = self._track_request(
+                requests.get,
+                "WFS GetFeature (GET)",
+                self.base_url,
+                params=params
+            )
 
-        response.raise_for_status()
         return response.json() if self.output_format == "application/json" else response.text
 
     def transaction(self, transaction_xml):
         headers = {"Content-Type": "application/xml"}
-        response = requests.post(self.base_url, data=transaction_xml, headers=headers)
-        response.raise_for_status()
+        response = self._track_request(
+            requests.post,
+            "WFS Transaction",
+            self.base_url,
+            data=transaction_xml,
+            headers=headers
+        )
         return response.text
 
-    def create_wfs_filter(self,
-                          filters: List[Tuple[str, str]],
-                          logic_operator: str = "And",
-                          ogc_version: str = "1.1.0"
-                          ) -> str:
-        """
-        Generates a WFS filter XML for a GetFeature request with multiple equality filters.
-
-        :param filters: List of (property_name, literal_value) tuples.
-        :param logic_operator: Logical operator to combine filters: "And" or "Or".
-        :param ogc_version: OGC version ("1.1.0" or "2.0").
-        :return: XML string of the filter.
-        """
+    @staticmethod
+    def create_wfs_filter(
+        filters: List[Tuple[str, str]],
+        logic_operator: str = "And",
+        ogc_version: str = "1.1.0"
+    ) -> str:
         ogc_ns = {
             '1.1.0': 'http://www.opengis.net/ogc',
             '2.0': 'http://www.opengis.net/fes/2.0'
@@ -119,6 +140,7 @@ class WFSClient:
         return etree.tostring(ogc, pretty_print=True, xml_declaration=True, encoding='UTF-8').decode("utf-8")
 
 
+
 class GeoGenerator:
     """
     This class will provide geo utils to test data generation
@@ -131,7 +153,6 @@ class GeoGenerator:
         """
         Get a random Point within a polygon from a GeoJSON geometry or feature collection.
 
-        :param geojson_content: A dict or JSON string of the GeoJSON.
         :return: A Shapely Point object within a randomly selected polygon.
         """
         if isinstance(self.ROI, str):
