@@ -77,7 +77,7 @@ def locust_init(environment, **kwargs):
     last stats report was sent to the master
     """
     if environment.web_ui:
-        # this code is only run on the master node (the web_ui instance doesn't exist on workers)
+        # this code is only run on the master node (the web_ui instance doesn"t exist on workers)
         @environment.web_ui.app.route("/total_requests")
         def total_content_length():
             """
@@ -137,7 +137,7 @@ def on_report_to_master(client_id, data):
 def on_worker_report(client_id, data):
     """
     This event is triggered on the master instance when a new stats report arrives
-    from a worker. Here we just add the content-length to the master's aggregated
+    from a worker. Here we just add the content-length to the master"s aggregated
     stats dict.
     """
     stats["total_requests"] += data["total_requests"]

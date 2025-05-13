@@ -9,7 +9,7 @@ metadata:
     kubernetes.io/ingress.class: "nginx"
     {{- if eq .Values.ingress.type "nginx-org" }}
     nginx.org/mergeable-ingress-type: "minion"
-    nginx.org/rewrites: 'serviceName={{ $releaseName }}-{{ $chartName }} rewrite=/'
+    nginx.org/rewrites: "serviceName={{ $releaseName }}-{{ $chartName }} rewrite=/"
     {{- end }}
     {{- if eq .Values.ingress.type "nginx-kubernetes" }}
     nginx.ingress.kubernetes.io/rewrite-target: /$2
@@ -19,10 +19,10 @@ metadata:
         return 204;
       }
     {{- if .Values.ingress.cors.enabled }}
-      add_header 'Access-Control-Allow-Origin' '{{- .Values.ingress.cors.origin -}}';
-      add_header 'Access-Control-Max-Age' 3600;
-      add_header 'Access-Control-Expose-Headers' 'Content-Length';
-      add_header 'Access-Control-Allow-Headers' '*';
+      add_header "Access-Control-Allow-Origin" "{{- .Values.ingress.cors.origin -}}";
+      add_header "Access-Control-Max-Age" 3600;
+      add_header "Access-Control-Expose-Headers" "Content-Length";
+      add_header "Access-Control-Allow-Headers" "*";
     {{- end }}
 spec:
   rules:
