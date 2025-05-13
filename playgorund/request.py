@@ -1,44 +1,74 @@
-import random
-import json
-from shapely.geometry import shape, Polygon, MultiPolygon, Point
+from lxml import etree
+from typing import List
 
 
-def get_random_point_from_geojson(geojson_content):
+def create_wfs_getfeature_body(pos_list: List[float], type_name: str) -> str:
     """
-    Get a random Point within a polygon from a GeoJSON geometry or feature collection.
+    Generates a full WFS GetFeature XML body with an Intersects filter using a gml:Polygon.
 
-    :param geojson_content: A dict or JSON string of the GeoJSON.
-    :return: A Shapely Point object within a randomly selected polygon.
+    :param pos_list: List of coordinates in [x1, y1, x2, y2, ..., xn, yn] format.
+    :param type_name: Feature type name to query.
+    :return: XML string of the GetFeature request.
     """
-    if isinstance(geojson_content, str):
-        geojson_content = json.loads(geojson_content)
+    # Namespaces
+    NSMAP = {
+        'wfs': "http://www.opengis.net/wfs/2.0",
+        'fes': "http://www.opengis.net/fes/2.0",
+        'gml': "http://www.opengis.net/gml/3.2",
+        'xsi': "http://www.w3.org/2001/XMLSchema-instance",
+        'my': "http://www.someserver.com/my"
+    }
 
-    # Extract all polygons
-    polygons = []
+    # Root element
+    root = etree.Element(
+        "{http://www.opengis.net/wfs/2.0}GetFeature",
+        nsmap=NSMAP,
+        service="WFS",
+        version="2.0.0",
+        attrib={
+            "{http://www.w3.org/2001/XMLSchema-instance}schemaLocation":
+                "http://www.opengis.net/wfs/2.0 http://schemas.opengis.net/wfs/2.0/wfs.xsd"
+        }
+    )
 
-    features = geojson_content.get("features", [geojson_content])  # handles both FeatureCollection and single Feature
+    # wfs:Query
+    query = etree.SubElement(root, "{http://www.opengis.net/wfs/2.0}Query", typeNames=type_name)
 
-    for feature in features:
-        geom = feature.get("geometry", feature)  # handle raw geometry or full feature
-        shapely_geom = shape(geom)
-        if isinstance(shapely_geom, Polygon):
-            polygons.append(shapely_geom)
-        elif isinstance(shapely_geom, MultiPolygon):
-            polygons.extend(list(shapely_geom.geoms))
+    # fes:Filter
+    filter_elem = etree.SubElement(query, "{http://www.opengis.net/fes/2.0}Filter")
 
-    if not polygons:
-        raise ValueError("No polygons found in the GeoJSON input.")
+    # fes:Intersects
+    intersects = etree.SubElement(filter_elem, "{http://www.opengis.net/fes/2.0}Intersects")
 
-    # Randomly choose a polygon
-    selected_polygon = random.choice(polygons)
+    # fes:ValueReference
+    value_ref = etree.SubElement(intersects, "{http://www.opengis.net/fes/2.0}ValueReference")
+    value_ref.text = "footprint"
 
-    # Randomly pick a point inside the selected polygon
-    minx, miny, maxx, maxy = selected_polygon.bounds
-    for _ in range(1000):  # Limit attempts
-        random_point = Point(random.uniform(minx, maxx), random.uniform(miny, maxy))
-        if selected_polygon.contains(random_point):
-            return random_point
+    # gml:Polygon
+    polygon = etree.SubElement(
+        intersects,
+        "{http://www.opengis.net/gml/3.2}Polygon",
+        srsName="EPSG:4326"
+    )
+    exterior = etree.SubElement(polygon, "{http://www.opengis.net/gml/3.2}exterior")
+    linear_ring = etree.SubElement(exterior, "{http://www.opengis.net/gml/3.2}LinearRing")
+    pos_list_elem = etree.SubElement(linear_ring, "{http://www.opengis.net/gml/3.2}posList")
 
-    raise RuntimeError("Unable to find a point inside any polygon.")
+    # Format posList as space-separated string
+    pos_list_elem.text = " ".join(f"{x:.14f}" for x in pos_list)
+
+    return etree.tostring(root, pretty_print=True, xml_declaration=True, encoding='UTF-8').decode('utf-8')
 
 
+print(type(
+    create_wfs_getfeature_body(type_name="automation_2025_05_07_15_22_58-RasterVectorBest", pos_list=[34.48760376150682
+        , 31.530834035809296
+        , 34.48819410915064
+        , 31.530834035809296
+        , 34.48819410915064
+        , 31.531043009844296
+        , 34.48760376150682
+        , 31.531043009844296
+        , 34.48760376150682
+        , 31.530834035809296]))
+)
