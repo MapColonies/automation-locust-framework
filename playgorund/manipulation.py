@@ -1,48 +1,58 @@
-# import logging
-import os
+from locust import HttpUser, task, between, events
+import json
+import queue
+import threading
 
-import pandas as pd
+# --- Config ---
+LOG_FILE = "all_requests.jsonl"
+log_queue = queue.Queue()
 
-from common import Log as logger
-from common.config import path_builder
-from common.config import requests_file as CSV_NAME
+# --- Background Logger ---
+def background_writer():
+    with open(LOG_FILE, "a") as f:
+        while True:
+            data = log_queue.get()
+            if data == "STOP":
+                break
+            f.write(json.dumps(data) + "\n")
+            log_queue.task_done()
 
+# Start background thread
+threading.Thread(target=background_writer, daemon=True).start()
 
-def up_path(_path, n):
-    return os.sep.join(_path.split(os.sep)[:-n])
+# --- Listeners ---
+@events.request_success.add_listener
+def log_success(request_type, name, response_time, response_length, response, context, **kwargs):
+    request_data = {
+        "type": request_type,
+        "name": name,
+        "url": response.request.url,
+        "method": response.request.method,
+        "request_headers": dict(response.request.headers),
+        "request_body": response.request.body.decode("utf-8") if response.request.body else None,
+        "status_code": response.status_code,
+        "response_time_ms": response_time,
+        "response_length": response_length,
+        "response_body": response.text
+    }
+    log_queue.put(request_data)
 
+@events.request_failure.add_listener
+def log_failure(request_type, name, response_time, exception, context, **kwargs):
+    request_data = {
+        "type": request_type,
+        "name": name,
+        "status": "FAILED",
+        "error": str(exception),
+        "response_time_ms": response_time
+    }
+    log_queue.put(request_data)
 
-# URL_TO_ITERATE = 'https://mapproxy.com/{TileMatrix}/{TileCol}/{TileRow}'
-URL_TO_ITERATE = path_builder
-logging = logger.MyLog()
+# --- Example Locust test ---
+class MyUser(HttpUser):
+    wait_time = between(1, 2)
 
-
-def do_something():
-    logging.info(f"Reading csv {CSV_NAME} file")
-    csv_path = os.path.join(os.path.dirname(__file__), "data", CSV_NAME)
-
-    try:
-        df = pd.read_csv(csv_path)
-        logging.info(f"csv read from {csv_path}")
-    except FileNotFoundError:
-        logging.error("Failed to read csv , file not found")
-        raise FileNotFoundError(f"{CSV_NAME} in path : {csv_path}")
-
-    x_column = df["TileMatrix"].tolist()
-    y_column = df["TileCol"].tolist()
-    z_column = df["TileRow"].tolist()
-
-    logging.info("URL builder - looping on csv columns")
-
-    url_list_to_run = []
-
-    for x, y, z in zip(x_column, y_column, z_column):
-        url_builder = URL_TO_ITERATE
-        url_builder = url_builder.replace("TileMatrix", str(x))
-        url_builder = url_builder.replace("TileCol", str(y))
-        url_builder = url_builder.replace("TileRow", str(z))
-        url_list_to_run.append(url_builder)
-
-    # print(df['x'].tolist())
-
-    return url_list_to_run
+    @task
+    def send_request(self):
+        data = {"foo": "bar"}
+        self.client.get("/api/test", json=data)
