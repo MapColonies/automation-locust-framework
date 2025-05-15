@@ -11,6 +11,9 @@ from shapely.ops import unary_union
 import geojson
 import numpy as np
 
+from common.config.config import config_obj
+from common.utils.requests_logger import log_request, insert_request_log
+
 
 class WFSClient:
     """
@@ -77,6 +80,11 @@ class WFSClient:
             # Full XML body provided (e.g., Intersects request)
             headers = {"Content-Type": "application/xml"}
             response = self.session.post(self.base_url, data=filters, params=params, headers=headers)
+            print("hi")
+            log_request(method="POST", url=self.base_url, params=params, body=filters, headers=headers)
+
+
+
 
         else:
             # Attribute filter mode (fallback to old behavior)
@@ -94,9 +102,15 @@ class WFSClient:
                 headers = {"Content-Type": "application/xml"}
                 filter_xml = self.create_wfs_filter(filters, logic_operator)
                 response = self.session.post(self.base_url, params=params, data=filter_xml, headers=headers)
+                print("hi1")
+                log_request(method="POST", url=self.base_url, params=params, body=filters, headers=headers)
 
             else:
                 response = self.session.get(self.base_url, params=params)
+                print(f"status_code: {response.status_code}")
+                print("hi2")
+                headers = {"Content-Type": "application/xml"}
+                log_request(method="POST", url=self.base_url, params=params, body=filters, headers=headers)
 
         response.raise_for_status()
 
@@ -311,8 +325,6 @@ class GeoGenerator:
         self.ROI = ROI_PATH
         self.geometry = self._load_and_merge_geometry()
 
-
-
     def _load_and_merge_geometry(self):
         """
         Load and merge all features in the GeoJSON into a single geometry (Polygon or MultiPolygon).
@@ -472,5 +484,6 @@ class GeoGenerator:
 
         return None
 
-x = GeoGenerator(ROI_PATH="/home/shayavr/Desktop/git/automation-locust-framework/test_data/roi.geojson")
-print(x.generate_random_polygon(vertex_count=4))
+
+# x = GeoGenerator(ROI_PATH="/home/shayavr/Desktop/git/automation-locust-framework/test_data/roi.geojson")
+# print(x.generate_random_polygon(vertex_count=4))
