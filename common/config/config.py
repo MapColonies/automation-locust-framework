@@ -12,6 +12,8 @@ class Config:
     WMTS_CAPABILITIES_URL = os.environ.get("wmts_capabilities_url", "")
     RESULTS_PATH = os.environ.get("result_path", f"{os.getcwd()}")
     percent_ranges = os.environ.get("percent_ranges", [100, 500])
+    MAX_ROWS_PER_FILE = os.environ.get("MAX_ROWS_PER_FILE", 5000)
+    OUTPUT_DIR = os.environ.get("OUTPUT_DIR", "request_logs")
 
 
 class WmtsConfig(Config):
@@ -176,21 +178,22 @@ class Config3D(Config):
 
 
 class WfsConfig(Config):
-    BBOX_MAPPING = os.getenv("BBOX_MAPPING","/home/shayavr/Desktop/git/automation-locust-framework/test_data/type_by_bbox.json")
-    WFS_URL = os.getenv("WFS_URL")
+    BBOX_MAPPING = os.getenv("BBOX_MAPPING",
+                             "/home/shayavr/Desktop/git/automation-locust-framework/test_data/type_by_bbox.json")
+    ATTRIBUTE_MAPPING = os.getenv("ATTTRIBUTE_MAPPING",
+                                  "/home/shayavr/Desktop/git/automation-locust-framework/test_data/attribute_query.json")
+    WFS_URL = os.getenv("WFS_URL","https://polygon-parts-qa.mapcolonies.net/api/raster/v1/wfs")
     MIN_RADIUS = int(os.getenv("MIN_RADIUS", 1))
     MAX_RADIUS = int(os.getenv("MAX_RADIUS", 10))
-    VERSION = "2.0.0"
-    # todo: check how to covert env to the expected type (string to list)
+    VERSION = os.getenv("VERSION", "2.0.0")
     ID_LIST = os.getenv("ID_LIST",
                         ["automation_2025_04_22_19_39_40-RasterVectorBest.80209d7f-a8c7-430b-a64f-e5c4c4ddfa72"])
     ROI_PATH = os.environ.get("ROI_PATH", "/home/shayavr/Desktop/git/automation-locust-framework/test_data/roi.geojson")
     TYPE_NAMES = os.environ.get("TYPE_NAMES", '{"key":"SWAP_TEST-RasterVectorBest"}')
-    MIN_WIDTH = float(os.environ.get("MIN_WIDTH",0.5))
-    MAX_WIDTH = float(os.environ.get("MAX_WIDTH",0.5))
-    MIN_HEIGHT = float(os.environ.get("MIN_HEIGHT",0.5))
-    MAX_HEIGHT = float(os.environ.get("MAX_HEIGHT",0.5))
-
+    MIN_WIDTH = float(os.environ.get("MIN_WIDTH", 0.5))
+    MAX_WIDTH = float(os.environ.get("MAX_WIDTH", 0.5))
+    MIN_HEIGHT = float(os.environ.get("MIN_HEIGHT", 0.5))
+    MAX_HEIGHT = float(os.environ.get("MAX_HEIGHT", 0.5))
 
 
 config_obj = {
