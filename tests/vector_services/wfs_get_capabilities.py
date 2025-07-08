@@ -8,7 +8,7 @@ class GetCapabilitiestUser(FastHttpUser):
 
     @task
     def get_capabilities(self):
-        my_client = WFSClient(base_url=config_obj["wfs"].HOST, version=
+        my_client = WFSClient(base_url=config_obj["wfs"].WFS_URL, version=
         config_obj["wfs"].VERSION,
                               token=config_obj["wfs"].TOKEN)
         my_client.session = self.client
