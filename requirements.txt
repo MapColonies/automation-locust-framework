@@ -48,3 +48,4 @@ bidict~=0.23.1
 python-socketio~=5.13.0
 platformdirs~=4.3.7
 wsproto~=1.2.0
+geojson==3.2.0

@@ -25,4 +25,3 @@ class GetFeatureByAttributeUser(FastHttpUser):
                                                              type_names=attribute.get("typeNames"))
         my_client.get_feature(filters=attribute_filter)
         my_client.session = self.client
-
