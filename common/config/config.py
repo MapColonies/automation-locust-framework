@@ -1,4 +1,6 @@
+import json
 import os
+from plistlib import loads
 
 
 class Config:
@@ -182,18 +184,18 @@ class WfsConfig(Config):
                              "/home/shayavr/Desktop/git/automation-locust-framework/test_data/type_by_bbox.json")
     ATTRIBUTE_MAPPING = os.getenv("ATTTRIBUTE_MAPPING",
                                   "/home/shayavr/Desktop/git/automation-locust-framework/test_data/attribute_query.json")
-    WFS_URL = os.getenv("WFS_URL","https://polygon-parts-qa.mapcolonies.net/api/raster/v1/wfs")
-    MIN_RADIUS = int(os.getenv("MIN_RADIUS", 1))
-    MAX_RADIUS = int(os.getenv("MAX_RADIUS", 10))
+    WFS_URL = os.getenv("WFS_URL","https://geoserver-2-27-vector-dev.apps.j1lk3njp.eastus.aroapp.io/geoserver/core/wfs")
+    MIN_RADIUS = int(os.getenv("MIN_RADIUS", 100))
+    MAX_RADIUS = int(os.getenv("MAX_RADIUS", 5000))
     VERSION = os.getenv("VERSION", "2.0.0")
     ID_LIST = os.getenv("ID_LIST",
-                        ["automation_2025_04_22_19_39_40-RasterVectorBest.80209d7f-a8c7-430b-a64f-e5c4c4ddfa72"])
+                        ["004CAF38-2758-99B6-6A29-6E648A5CA573","03C9B549-AA0C-8164-84FF-819755085F6B4"])
     ROI_PATH = os.environ.get("ROI_PATH", "/home/shayavr/Desktop/git/automation-locust-framework/test_data/roi.geojson")
     TYPE_NAMES = os.environ.get("TYPE_NAMES", '{"key":"SWAP_TEST-RasterVectorBest"}')
-    MIN_WIDTH = float(os.environ.get("MIN_WIDTH", 0.5))
-    MAX_WIDTH = float(os.environ.get("MAX_WIDTH", 0.5))
-    MIN_HEIGHT = float(os.environ.get("MIN_HEIGHT", 0.5))
-    MAX_HEIGHT = float(os.environ.get("MAX_HEIGHT", 0.5))
+    MIN_WIDTH = float(os.environ.get("MIN_WIDTH", 1))
+    MAX_WIDTH = float(os.environ.get("MAX_WIDTH", 100))
+    MIN_HEIGHT = float(os.environ.get("MIN_HEIGHT", 1))
+    MAX_HEIGHT = float(os.environ.get("MAX_HEIGHT", 100))
 
 
 config_obj = {
