@@ -80,7 +80,6 @@ class WFSClient:
             # Full XML body provided (e.g., Intersects request)
             headers = {"Content-Type": "application/xml"}
             response = self.session.post(self.base_url, data=filters, params=params, headers=headers)
-            print("hi")
             log_request(method="POST", url=self.base_url, params=params, body=filters, headers=headers)
 
 
@@ -200,7 +199,7 @@ class WFSClient:
 
         # fes:ValueReference
         value_ref = etree.SubElement(intersects, "{http://www.opengis.net/fes/2.0}ValueReference")
-        value_ref.text = "footprint"
+        value_ref.text = "geom"
 
         # gml:Polygon
         polygon = etree.SubElement(
@@ -311,7 +310,7 @@ class WFSClient:
         val_ref.text = attribute
 
         literal = etree.SubElement(comparison, "{http://www.opengis.net/fes/2.0}Literal")
-        literal.text = value
+        literal.text = str(value)
 
         return etree.tostring(root, pretty_print=True, encoding="UTF-8", xml_declaration=True).decode("utf-8")
 
