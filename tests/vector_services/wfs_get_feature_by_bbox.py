@@ -1,6 +1,6 @@
 import json
+import logging
 import random
-
 from locust import FastHttpUser, task, constant
 from common.config.config import config_obj
 from common.utils.wfs_wrapper import WFSClient, GeoGenerator
@@ -8,6 +8,7 @@ from common.utils.wfs_wrapper import WFSClient, GeoGenerator
 with open(config_obj["wfs"].BBOX_MAPPING, "r") as f:
     bbox_mappings = json.load(f)
 
+logger = logging.getLogger("locust.user")
 
 class GetFeatureByBboxUser(FastHttpUser):
     wait_time = constant(config_obj["wfs"].WAIT_TIME)
@@ -20,6 +21,7 @@ class GetFeatureByBboxUser(FastHttpUser):
                                              max_width=config_obj["wfs"].MAX_WIDTH,
                                              min_height=config_obj["wfs"].MIN_HEIGHT,
                                              max_height=config_obj["wfs"].MAX_HEIGHT)
+        logger.info(f"bbox value: {bbox}")
         my_client = WFSClient(base_url=config_obj["wfs"].WFS_URL, version=
         config_obj["wfs"].VERSION,
                               token=config_obj["wfs"].TOKEN)
