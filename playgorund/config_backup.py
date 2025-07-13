@@ -1,73 +1,47 @@
-import os
+import json
+import random
+from shapely.geometry import shape, box
+from shapely.ops import unary_union
+
+def get_random_bbox(min_width=1, max_width=100, min_height=1, max_height=100):
+    """
+    Generate a random bounding box within the bounds of a GeoJSON containing polygons.
+
+    :param min_width: Minimum width of the random bbox.
+    :param max_width: Maximum width of the random bbox.
+    :param min_height: Minimum height of the random bbox.
+    :param max_height: Maximum height of the random bbox.
+    :return: List of bbox values [minx, miny, maxx, maxy].
+    """
+    with open("/home/shayavr/Desktop/git/automation-locust-framework/test_data/roi.geojson", 'r') as file:
+        geojson_content = json.load(file)
 
 
-class Database:
-    PG_USER = os.environ.get("pg_user")
-    PG_PASS = os.environ.get("pg_pass")
-    PG_PORT = os.environ.get("pg_port")
-    PG_HOST = os.environ.get("pg_host")
-    PG_JOB_TASK_DB_NAME = os.environ.get("pg_job_task_table")
-    PG_RECORD_PYCSW_DB = os.environ.get("pg_pycsw_record_table")
-    PG_MAPPROXY_CONFIG = os.environ.get("pg_mapproxy_table")
-    PG_AGENT = os.environ.get("pg_agent_table")
-    DISCRETE_AGENT_DB = os.environ.get("discrete_agent_db")
-    HEARTBEAT_MANAGER = os.environ.get("heartbeat_manager")
-    JOB_MANAGER = os.environ.get("job_manager")
-    LAYER_SPEC = os.environ.get("layer_spec")
-    MAPPROXY_CONFIG = os.environ.get("mapproxy_config")
-    RASTER_CATALOG = os.environ.get("raster_catalog_manager")
-    PUBLIC = os.environ.get("public")
+    geometries = [shape(feature["geometry"]) for feature in geojson_content["features"]]
+    merged_geom = unary_union(geometries)
+    minx, miny, maxx, maxy = merged_geom.bounds
+
+    for _ in range(100):
+        # Random bbox size
+        bbox_width = random.uniform(min_width, min(max_width, maxx - minx))
+        bbox_height = random.uniform(min_height, min(max_height, maxy - miny))
+
+        # Restrict origin so bbox stays inside bounds
+        x_range = maxx - minx - bbox_width
+        y_range = maxy - miny - bbox_height
+
+        if x_range <= 0 or y_range <= 0:
+            continue  # Try again with different size
+
+        rand_minx = random.uniform(minx, minx + x_range)
+        rand_miny = random.uniform(miny, miny + y_range)
+        candidate_bbox = box(rand_minx, rand_miny, rand_minx + bbox_width, rand_miny + bbox_height)
+
+        if merged_geom.intersects(candidate_bbox):
+            return ", ".join(
+                str(x) for x in [rand_minx, rand_miny, rand_minx + bbox_width, rand_miny + bbox_height])
+
+    raise RuntimeError("Failed to generate a valid random bbox within geometry after 100 attempts.")
 
 
-class Config:
-    TOKEN = os.environ.get("SECRET_VALUE_API")
-    HOST = os.environ.get("HOST", "enter a host")
-    WAIT_TIME_FUNC = int(os.environ.get("wait_function", 4))
-    WAIT_TIME = int(os.environ.get("wait_time", 4))
-    MAX_WAIT = int(os.environ.get("max_wait", 1))
-    MIN_WAIT = int(os.environ.get("min_wait", 1))
-    LAYERS_LIST = os.environ.get("layer_list", "test-update,shay").split(",")
-
-
-class WmtsConfig(Config):
-    LAYER_TYPE = os.environ.get("layer_type", "wmts")
-    LAYER_NAME = os.environ.get("layer", "bluemarble-Orthophoto")
-    GRID_NAME = os.environ.get("gridName", "newGrids")
-    IMAGE_FORMAT = os.environ.get("imageType", ".png")
-    WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "../test_data/wmts_shaziri.csv")
-    REQUESTS_RECORDS_CSV = os.environ.get(
-        "requests_records_csv", f"{os.getcwd()}/tests/stats.csv"
-    )
-
-
-class PycswConfig(Config):
-    PYCSW_ID_PROPERTY = os.environ.get("mc_id_property", "mc:id")
-    PYCSW_REGION_PROPERTY = os.environ.get("mc_region_property", "mc:region")
-    PYCSW_POLYGON_PROPERTY = os.environ.get(
-        "mc_polygon_property", "mc:layerPolygonParts"
-    )
-    PYCSW_ID_VALUE = os.environ.get(
-        "mc_id_value", "d53a03e3-650b-4f4e-9047-071667741c08"
-    )
-    PYCSW_REGION_VALUE = os.environ.get("mc_region_value", "string")
-    PYCSW_POLYGON_VALUE = os.environ.get("mc_polygon_value", "s")
-
-
-class ProActiveConfig(Config):
-    SHOH = (True,)
-    LIRAN = False
-
-
-class Config3D(Config):
-    CSV_DATA_PATH = os.environ.get(
-        "CSV_3D_DATA_PATH", "/home/shayavr/Desktop/git/automation-locust/urls_data.csv"
-    )
-
-
-config_obj = {
-    "wmts": WmtsConfig,
-    "pycsw": PycswConfig,
-    "pro_active": ProActiveConfig,
-    "_3d": Config3D,
-    "default": Config,
-}
+print(get_random_bbox())

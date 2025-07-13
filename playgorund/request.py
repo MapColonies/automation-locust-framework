@@ -1,161 +1,74 @@
-import jsonschema
-import json
-from common.config import *
-from common.config.config import ElevationConfig
+from lxml import etree
+from typing import List
 
 
-def validate_response_body_schema(response_body: str, schema: dict):
+def create_wfs_getfeature_body(pos_list: List[float], type_name: str) -> str:
     """
-    This function will validate the response body schema
-    :param response_body: response body string
-    :param schema: python schema
-    :return:
-    dict of is valida flag and reason
+    Generates a full WFS GetFeature XML body with an Intersects filter using a gml:Polygon.
+
+    :param pos_list: List of coordinates in [x1, y1, x2, y2, ..., xn, yn] format.
+    :param type_name: Feature type name to query.
+    :return: XML string of the GetFeature request.
     """
-    is_response_valid = {"is_valid": True, "reason": ""}
-    try:
-        response_data = json.loads(response_body)
-        jsonschema.validate(response_data, schema)
-        return is_response_valid
-    except json.JSONDecodeError:
-        is_response_valid["is_valid"] = False
-        is_response_valid["reason"] = "Error parsing response JSON."
-        return is_response_valid
-    except jsonschema.exceptions.ValidationError as e:
-        is_response_valid["is_valid"] = False
-        is_response_valid["reason"] = f"Response validation error: {e.message}"
-        return is_response_valid
-
-
-response_schema = {
-    "type": "object",
-    "required": ["data", "products"],
-    "properties": {
-        "data": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": ["longitude", "latitude", "height"],
-                "properties": {
-                    "longitude": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "latitude": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "height": {
-                        "type": "number",
-                        "nullable": True,
-                        "format": "double"
-                    },
-                    "productId": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "products": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "object",
-                "properties": {
-                    "productType": {
-                        "oneOf": [
-                            {"$ref": "#/definitions/productTypeEnum"}
-                        ]
-                    },
-                    "resolutionMeter": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "absoluteAccuracyLEP90": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "updateDate": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                }
-            }
-        }
-    },
-    "definitions": {
-        "productTypeEnum": {
-            "type": "string",
-            "enum": ["DSM", "DTM", "MIXED"]
-        }
+    # Namespaces
+    NSMAP = {
+        'wfs': "http://www.opengis.net/wfs/2.0",
+        'fes': "http://www.opengis.net/fes/2.0",
+        'gml': "http://www.opengis.net/gml/3.2",
+        'xsi': "http://www.w3.org/2001/XMLSchema-instance",
+        'my': "http://www.someserver.com/my"
     }
-}
 
-
-
-response_content = """ {
-    "data": [
-        {
-            "latitude": 32.77799447531367,
-            "longitude": 35.3515237021664,
-            "height": 341.1314283899249,
-            "productId": "22111111-1111-1111-1111-111111111111"
-        },
-        {
-            "latitude": 32.63471527948201,
-            "longitude": 35.43627669431557,
-            "height": 194.52289124972788,
-            "productId": "22111111-1111-1111-1111-111111111111"
-        },
-        {
-            "latitude": 32.71178885617321,
-            "longitude": 35.67004062476305,
-            "height": 285.475907245389,
-            "productId": "22111111-1111-1111-1111-111111111111"
-        },
-        {
-            "latitude": 32.938864930225805,
-            "longitude": 35.2513946971832,
-            "height": 479.0000915555284,
-            "productId": "22111111-1111-1111-1111-111111111111"
-        },
-        {
-            "latitude": 32.61686551394591,
-            "longitude": 35.592909262484916,
-            "height": -217.7191314869324,
-            "productId": "22111111-1111-1111-1111-111111111111"
-        },
-        {
-            "latitude": 32.6274275271839,
-            "longitude": 35.25963413542271,
-            "height": 56.74249097000812,
-            "productId": "22111111-1111-1111-1111-111111111111"
-        },
-        {
-            "latitude": 32.91873888948771,
-            "longitude": 35.377996112852536,
-            "height": 248.27864581561394,
-            "productId": "22111111-1111-1111-1111-111111111111"
-        },
-        {
-            "latitude": 32.61143389324824,
-            "longitude": 35.63459003056397,
-            "height": -19.097115486640114,
-            "productId": "22111111-1111-1111-1111-111111111111"
-        },
-        {
-            "latitude": 32.84209176987322,
-            "longitude": 35.4737307506895,
-            "height": 49.81626034447447,
-            "productId": "22111111-1111-1111-1111-111111111111"
-        },
-        {
-            "latitude": 32.652417803520216,
-            "longitude": 35.71351164961295,
-            "height": 0,
-            "productId": "11111111-1111-1111-1111-111111111111"
+    # Root element
+    root = etree.Element(
+        "{http://www.opengis.net/wfs/2.0}GetFeature",
+        nsmap=NSMAP,
+        service="WFS",
+        version="2.0.0",
+        attrib={
+            "{http://www.w3.org/2001/XMLSchema-instance}schemaLocation":
+                "http://www.opengis.net/wfs/2.0 http://schemas.opengis.net/wfs/2.0/wfs.xsd"
         }
-    ]
-    }
-"""
+    )
 
-print(validate_response_body_schema(response_body=response_content, schema=response_schema))
+    # wfs:Query
+    query = etree.SubElement(root, "{http://www.opengis.net/wfs/2.0}Query", typeNames=type_name)
+
+    # fes:Filter
+    filter_elem = etree.SubElement(query, "{http://www.opengis.net/fes/2.0}Filter")
+
+    # fes:Intersects
+    intersects = etree.SubElement(filter_elem, "{http://www.opengis.net/fes/2.0}Intersects")
+
+    # fes:ValueReference
+    value_ref = etree.SubElement(intersects, "{http://www.opengis.net/fes/2.0}ValueReference")
+    value_ref.text = "footprint"
+
+    # gml:Polygon
+    polygon = etree.SubElement(
+        intersects,
+        "{http://www.opengis.net/gml/3.2}Polygon",
+        srsName="EPSG:4326"
+    )
+    exterior = etree.SubElement(polygon, "{http://www.opengis.net/gml/3.2}exterior")
+    linear_ring = etree.SubElement(exterior, "{http://www.opengis.net/gml/3.2}LinearRing")
+    pos_list_elem = etree.SubElement(linear_ring, "{http://www.opengis.net/gml/3.2}posList")
+
+    # Format posList as space-separated string
+    pos_list_elem.text = " ".join(f"{x:.14f}" for x in pos_list)
+
+    return etree.tostring(root, pretty_print=True, xml_declaration=True, encoding='UTF-8').decode('utf-8')
+
+
+print(type(
+    create_wfs_getfeature_body(type_name="automation_2025_05_07_15_22_58-RasterVectorBest", pos_list=[34.48760376150682
+        , 31.530834035809296
+        , 34.48819410915064
+        , 31.530834035809296
+        , 34.48819410915064
+        , 31.531043009844296
+        , 34.48760376150682
+        , 31.531043009844296
+        , 34.48760376150682
+        , 31.530834035809296]))
+)
