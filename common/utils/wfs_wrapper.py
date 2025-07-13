@@ -426,10 +426,9 @@ class GeoGenerator:
 
     def generate_random_polygon(self, vertex_count):
         """
-        Reads a GeoJSON file and returns a random polygon (as list of floats) inside the GeoJSON polygon.
+        Generates a random simple (non-self-intersecting) polygon within a GeoJSON-defined area.
 
         Args:
-            file_path (str): Path to the GeoJSON file.
             vertex_count (int): Number of vertices for the generated polygon (minimum 4 for a closed polygon).
 
         Returns:
@@ -437,6 +436,7 @@ class GeoGenerator:
         """
         if vertex_count < 4:
             raise ValueError("vertex_count must be at least 4 (including closing vertex)")
+
         if isinstance(self.ROI, str):
             with open(self.ROI, 'r') as file:
                 geojson_obj = json.load(file)
@@ -451,7 +451,6 @@ class GeoGenerator:
         minx, miny, maxx, maxy = geom.bounds
 
         for _ in range(1000):  # max attempts
-            # Random center point within bounds
             cx = random.uniform(minx, maxx)
             cy = random.uniform(miny, maxy)
             center = Point(cx, cy)
@@ -459,26 +458,22 @@ class GeoGenerator:
             if not geom.contains(center):
                 continue
 
-            # Random small radius
             max_radius = min(maxx - minx, maxy - miny) * 0.01
             radius = random.uniform(max_radius * 0.5, max_radius)
 
-            # Generate polygon points in a circular shape
-            angle_step = 360 / (vertex_count - 1)
-            coords = []
-            for i in range(vertex_count - 1):
-                angle_deg = i * angle_step + random.uniform(-5, 5)  # slight irregularity
-                angle_rad = math.radians(angle_deg)
-                x = cx + radius * math.cos(angle_rad)
-                y = cy + radius * math.sin(angle_rad)
-                coords.append((x, y))
-
-            # Close the polygon
-            coords.append(coords[0])
+            # Generate points with random angles, but sort them to avoid self-intersection
+            angles = sorted([random.uniform(0, 2 * math.pi) for _ in range(vertex_count - 1)])
+            coords = [
+                (
+                    cx + radius * math.cos(angle),
+                    cy + radius * math.sin(angle)
+                )
+                for angle in angles
+            ]
+            coords.append(coords[0])  # Close the polygon
 
             candidate_poly = Polygon(coords)
             if geom.contains(candidate_poly):
-                # Flatten to list of floats: [lon1, lat1, lon2, lat2, ...]
                 return [round(coord, 14) for point in coords for coord in point]
 
         return None
