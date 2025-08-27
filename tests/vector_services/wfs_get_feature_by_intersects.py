@@ -1,7 +1,6 @@
 import json
 import logging
 import random
-
 from locust import FastHttpUser, task, constant
 from common.config.config import config_obj
 from common.utils.wfs_wrapper import WFSClient, GeoGenerator
@@ -19,7 +18,7 @@ class GetFeatureByIntersectsUser(FastHttpUser):
     def get_feature_by_intersects(self):
         mapping = random.choice(bbox_mappings)
         geo_generator = GeoGenerator(ROI_PATH=mapping.get("roiPath"))
-        polygon = geo_generator.generate_random_polygon(vertex_count=5)
+        polygon = geo_generator.generate_random_polygon(vertex_count=config_obj["wfs"].VERTEX_COUNT)
         logger.info(f"Generated polygon: {polygon}")
         my_client = WFSClient(base_url=config_obj["wfs"].WFS_URL, version=
         config_obj["wfs"].VERSION,

@@ -1,56 +1,30 @@
-imageRepository: &imageRepository "acrarolibotnonprod.azurecr.io/locust_demo:1.0.0"
+imageRepository: &imageRepository "acrarolibotnonprod.azurecr.io/locust-automation:v3.1.0"
 
 global:
   name: locust-global
-  test_file: csv_reader.py
-  test_file_path: "/mnt/locust/tests/wmts"
-  host: /
+  test_file: "wfs_get_capabilities.py"
+  test_file_path: "/mnt/locust/tests/vector_services/"
+  host: "/"
 
   env: {
-      layer_list: "shay44" ,
-      points_amount_range: 100,
-      token_flag: true,
-      measure_time: false,
-      percent_ranges: "[100,500]",
-      result_path: "/layerSources/locust/",
-      pro_active_wmts_bbox: [35.024411528661574, 32.79419004139809, 35.37597717328861, 32.947998391903226],
-      mc_region_value: "ישראל, ירדן",
-      mc_polygon_value: "{"bbox":[34.8468438649828,32.0466327470143,34.8804418550117,32.0689996810298],"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[34.8468438649828,32.0689996810298],[34.8637856279928,32.0590059440186],[34.8773961450173,32.0680478960404],[34.8804418550117,32.0528193460686],[34.8786334639958,32.0466327470143],[34.8605495609931,32.0488218510146],[34.8468438649828,32.0689996810298]]]},"properties":{"Dsc":"תשתית אורתופוטו בישראל עדכני לאפריל 2019","Rms":null,"Ep90":"3","Scale":null,"Source":"MAS_6_ORT_247993-1.0","Resolution":"0.2","SensorType":"OTHER","SourceName":"O_arzi_mz_w84geo_Tiff_20cm","UpdateDate":"06/04/2019"}}]}",
-      version: "1.0.0",
-      normality_threshold: "{"low_response_time": 10, "high_response_time": 800}",
-      wait_time: 1,
-      polygon: "[
-            [
-                (35.21370173535735, 32.944784748967194),
-                (35.21370173535735, 32.602044942336676),
-                (35.76262909563465, 32.602044942336676),
-                (35.76262909563465, 32.944784748967194),
-                (35.21370173535735, 32.944784748967194),
-            ],
-            [
-                (34.9936172458529, 32.73613049628601),
-                (34.9936172458529, 32.431627293935804),
-                (35.288205407997964, 32.431627293935804),
-                (35.288205407997964, 32.73613049628601),
-                (34.9936172458529, 32.73613049628601),
-            ],
-        ]",
-      projection: "roie",
-      wmts_csv_path: "/mnt/locust/test_data/wmts_shaziri.csv",
-      requests_records_csv: "test_data/data/stats.csv",
-      gridName: "newGrids",
-      imageType: ".jpeg",
-      layer: "Orthophoto",
-      users: 15,
-      CSV_3D_DATA_PATH: "/mnt/locust/test_data/urls_data.csv",
-      port: 8080,
-      CONF_FILE: "/layerSources/locust/locust_configuration.json",
-      layer_type: "wmts",
-      test_to_run: "Lateron",
-      sub_url_for_pycsw: "https://pycsw-raster-qa-nginx-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1"}
+    HOST: "/",
+    LOCUST_LOCUSTFILE: "/mnt/locust/tests/vector_services/wfs_get_capabilities.py",
+    OUTPUT_DIR: "/layerSources/automation/locust",
+    WFS_URL: "https://geoserver-2-27-vector-dev.apps.j1lk3njp.eastus.aroapp.io/geoserver/core/wfs",
+    token_flag: true,
+    measure_time: false,
+    result_path: "/layerSources/locust/",
+    VERSION: "2.0.0",
+    wait_time: 1,
+ }
+
+  envFrom:
+   - configMapRef:
+       name: automation-configmap
+
   env_secret: true
   env_external_secret:
-    {}
+    { }
   secret_name_api_key_locust: "automation-secret"
   sub_url_secret: "automation-secret"
   headless: false
@@ -63,14 +37,21 @@ image:
 service:
   type: ClusterIP
   # type: NodePort
-  annotations: {}
+  annotations: { }
 
 master:
   image: *imageRepository
   logLevel: INFO
   envs_include_default: true
-  env: {}
-  args: []
+  env: { }
+  args: [ ]
+  resources:
+    limits:
+      cpu: "400m"
+      memory: "512Mi"
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
   pvc:
     enabled: true
   strategy:
@@ -90,8 +71,15 @@ worker:
   logLevel: INFO
   envs_include_default: true
   replicas: 2
+  resources:
+    limits:
+      cpu: "400m"
+      memory: "512Mi"
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
   env: { SUB_URL_FOR_IDS: "https://www.google.com" }
-  args: []
+  args: [ ]
   pvc:
     enabled: true
   strategy:
@@ -102,16 +90,23 @@ nameOverride: ""
 fullnameOverride: "locust"
 pullSecretName: mapcolonies-secret
 
+
+exporter:
+  enabled: true
+  image: acrarolibotnonprod.azurecr.io/locust-exporter
+  tag: v1.0.0
+  port: 9646
+
 ingress:
- enabled: false
- className: ""
- annotations: {}
-  #  kubernetes.io/ingress.class: nginx
+  enabled: false
+  className: ""
+  annotations: { }
+    #  kubernetes.io/ingress.class: nginx
   #  kubernetes.io/tls-acme: "true"
- hosts:
-   - host: chart-example.local
-     pathType: ImplementationSpecific
-     path: /
+  hosts:
+    - host: chart-example.local
+      pathType: ImplementationSpecific
+      path: /
 # tls: []
 #  - secretName: chart-example-tls
 #    hosts:
@@ -126,17 +121,17 @@ route:
     duration: 60s # supported units (us, ms, s, m, h, d)
 #ingress:
 #  enabled: false
-#  type: "nginx-kubernetes" # supported values: "nginx-org" | "nginx-kubernetes"
+#  type: 'nginx-kubernetes' # supported values: 'nginx-org' | 'nginx-kubernetes'
 #  path: /locust-ww
 #  host: "lb-mapcolonies.gg.wwest.local"
 #  cors:
 #    enabled: true
-#    origin: "*"
+#    origin: '*'
 #    tls: []
 
 storage:
   enabled: true
-  pvcName: ingestion-source-pvc
+  pvcName: internal-pvc-nfs
   volumeName: ingestion-storage
   mountPathName: /layerSources
   subPath: ingestion-source
@@ -144,3 +139,19 @@ storage:
 volumeMounts:
   - name: test-files-volume
     mountPath: /mnt/locust/test_files
+
+
+prometheus-locust-exporter:
+  podAnnotations:
+    "prometheus.io/scrape": "true"
+  pod_labels:
+    "mapcolonies.io/part-of": "locust"
+    "mapcolonies.io/environment": "production"
+    "mapcolonies.io/owner": "automation"
+    "mapcolonies.io/component": "infrastructure"
+
+  config:
+    locust_uri: http://locust-check-dependency:8089
+  image:
+    repository: acrarolibotnonprod.azurecr.io/automation/locust-exporter
+    tag: v0.4.1

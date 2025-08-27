@@ -20,12 +20,12 @@ class Config:
 
 class WmtsConfig(Config):
     LAYER_TYPE = os.environ.get("layer_type", "wmts")
-    LAYER_NAME = os.environ.get("layer", "Orthophoto")
-    GRID_NAME = os.environ.get("gridName", "newGrids")
+    LAYER_NAME = os.environ.get("layer", "aza_south-Orthophoto")
+    GRID_NAME = os.environ.get("gridName", "WorldCRS84")
     TOKEN = os.environ.get("SECRET_VALUE_API", None)
-    # IMAGE_FORMAT = os.environ.get("imageType", ".png")
-    IMAGE_FORMAT = os.environ.get("imageType", ".jpeg")
-    WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "test_data/wmts_shaziri.csv")
+    IMAGE_FORMAT = os.environ.get("imageType", ".png")
+    # IMAGE_FORMAT = os.environ.get("imageType", ".jpeg")
+    WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "test_data/tiles.csv")
     REQUESTS_RECORDS_CSV = os.environ.get(
         "requests_records_csv", f"{os.getcwd()}/tests/stats.csv"
     )
@@ -180,22 +180,28 @@ class Config3D(Config):
 
 
 class WfsConfig(Config):
+    REQUEST_METHOD = os.getenv("REQUEST_METHOD", "POST")
     BBOX_MAPPING = os.getenv("BBOX_MAPPING",
                              "/home/shayavr/Desktop/git/automation-locust-framework/test_data/type_by_bbox.json")
     ATTRIBUTE_MAPPING = os.getenv("ATTTRIBUTE_MAPPING",
                                   "/home/shayavr/Desktop/git/automation-locust-framework/test_data/attribute_query.json")
-    WFS_URL = os.getenv("WFS_URL","https://geoserver-2-27-vector-dev.apps.j1lk3njp.eastus.aroapp.io/geoserver/core/wfs")
+    WFS_URL = os.getenv("WFS_URL",
+                        "https://geoserver-2-27-vector-dev.apps.j1lk3njp.eastus.aroapp.io/geoserver/core/wfs")
     MIN_RADIUS = int(os.getenv("MIN_RADIUS", 100))
     MAX_RADIUS = int(os.getenv("MAX_RADIUS", 5000))
     VERSION = os.getenv("VERSION", "2.0.0")
     ID_LIST = os.getenv("ID_LIST",
-                        ["004CAF38-2758-99B6-6A29-6E648A5CA573","03C9B549-AA0C-8164-84FF-819755085F6B4"])
+                        ["004CAF38-2758-99B6-6A29-6E648A5CA573", "03C9B549-AA0C-8164-84FF-819755085F6B4"])
     ROI_PATH = os.environ.get("ROI_PATH", "/home/shayavr/Desktop/git/automation-locust-framework/test_data/roi.geojson")
     TYPE_NAMES = os.environ.get("TYPE_NAMES", '{"key":"SWAP_TEST-RasterVectorBest"}')
     MIN_WIDTH = float(os.environ.get("MIN_WIDTH", 1))
     MAX_WIDTH = float(os.environ.get("MAX_WIDTH", 100))
     MIN_HEIGHT = float(os.environ.get("MIN_HEIGHT", 1))
     MAX_HEIGHT = float(os.environ.get("MAX_HEIGHT", 100))
+    VERTEX_COUNT = int(os.environ.get("VERTEX_COUNT", 5))
+    SRS_NAME = os.environ.get("SRS_NAME", "EPSG:4326")
+    PROPERTY_NAME = os.environ.get("PROPERTY_NAME", "geom")
+    TYPE_NAME = os.environ.get("TYPE_NAME", "buildings")
 
 
 config_obj = {

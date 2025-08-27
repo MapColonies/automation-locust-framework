@@ -31,7 +31,7 @@ class _CSVWriterThread(threading.Thread):
         self.row_count = 0
         file_path = os.path.join(self.output_dir, f"requests_{self.file_index}.csv")
         self.file = open(file_path, mode='w', newline='', encoding='utf-8')
-        self.writer = csv.DictWriter(self.file, fieldnames=["method", "url", "params", "body","headers"])
+        self.writer = csv.DictWriter(self.file, fieldnames=["method", "url", "params", "body", "headers"])
         self.writer.writeheader()
 
     def run(self):
@@ -54,7 +54,7 @@ _writer_thread = _CSVWriterThread(_data_queue, OUTPUT_DIR, MAX_ROWS_PER_FILE)
 _writer_thread.start()
 
 
-def log_request(method: str, url: str, params: dict, body: dict , headers: dict):
+def log_request(method: str, url: str, params: dict, headers: dict, body: dict = {}):
     """Public function to be called from tests."""
 
     _data_queue.put({
