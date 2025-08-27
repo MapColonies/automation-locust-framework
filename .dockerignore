@@ -1,0 +1,23 @@
+# Python-specific ignores
+*.pyc
+*.pytest_cache/
+.venv/
+env/
+venv/
+__pycache__/
+.mypy_cache/
+.ipynb_checkpoints/
+.ruff_cache/
+
+# Version control and editor-specific ignores
+.git/
+.gitignore
+.DS_Store
+.vscode/
+.idea/
+
+# Build artifacts and logs
+dist/
+build/
+*.log
+tmp/

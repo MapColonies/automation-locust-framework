@@ -20,7 +20,10 @@ class GetFeatureByPointUser(FastHttpUser):
         config_obj["wfs"].VERSION,
                               token=config_obj["wfs"].TOKEN)
 
-        point_filter = my_client.create_wfs_point_dwithin_filter_body(point=point, distance=radius)
+        point_filter = my_client.create_wfs_point_dwithin_filter_body(
+            type_name=config_obj["wfs"].TYPE_NAME, srs_name=config_obj[
+                "wfs"].SRS_NAME, property_name=config_obj[
+                "wfs"].PROPERTY_NAME, point=point, distance=radius)
         logger.info(f"Point filter: {point_filter}")
         my_client.session = self.client
         my_client.get_feature(filters=point_filter)
