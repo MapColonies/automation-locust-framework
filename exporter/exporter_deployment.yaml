@@ -1,0 +1,24 @@
+{{- if .Values.exporter.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: locust-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: locust-exporter
+  template:
+    metadata:
+      labels:
+        app: locust-exporter
+    spec:
+      containers:
+        - name: locust-exporter
+          image: "{{ .Values.exporter.image }}:{{ .Values.exporter.tag }}"
+          ports:
+            - containerPort: {{ .Values.exporter.port }}
+          env:
+            - name: LOCUST_EXPORTER_URI
+              value: 172.30.251.117:8089
+{{- end }}
