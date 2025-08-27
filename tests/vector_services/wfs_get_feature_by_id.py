@@ -4,10 +4,9 @@ from locust import FastHttpUser, task, constant
 from common.config.config import config_obj
 from common.utils.wfs_wrapper import WFSClient
 
-
-if isinstance(config_obj["wfs"].ID_LIST,str):
+if isinstance(config_obj["wfs"].ID_LIST, str):
     gf_ids = json.loads(config_obj["wfs"].ID_LIST)
-elif isinstance(config_obj["wfs"].ID_LIST,list):
+elif isinstance(config_obj["wfs"].ID_LIST, list):
     gf_ids = config_obj["wfs"].ID_LIST
 else:
     raise TypeError
@@ -15,7 +14,6 @@ else:
 
 class GetFeatureByIdUser(FastHttpUser):
     wait_time = constant(config_obj["wfs"].WAIT_TIME)
-
 
     @task
     def get_feature_by_id(self):

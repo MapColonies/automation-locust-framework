@@ -1,47 +1,63 @@
+
 import json
+import math
 import random
-from shapely.geometry import shape, box
+from shapely.geometry import shape, Point, Polygon, MultiPolygon
 from shapely.ops import unary_union
+from common.config.config import WfsConfig
 
-def get_random_bbox(min_width=1, max_width=100, min_height=1, max_height=100):
+def generate_random_polygon(geojson_path: str, vertex_count: int) -> list:
     """
-    Generate a random bounding box within the bounds of a GeoJSON containing polygons.
+    Generates a random simple (non-self-intersecting) polygon within a GeoJSON-defined area.
 
-    :param min_width: Minimum width of the random bbox.
-    :param max_width: Maximum width of the random bbox.
-    :param min_height: Minimum height of the random bbox.
-    :param max_height: Maximum height of the random bbox.
-    :return: List of bbox values [minx, miny, maxx, maxy].
+    Args:
+        geojson_path (str): Path to the GeoJSON file containing the area of interest.
+        vertex_count (int): Number of vertices for the generated polygon (minimum 4 for a closed polygon).
+
+    Returns:
+        list: A list of floats representing the polygon: [lon1, lat1, lon2, lat2, ..., lonN, latN]
     """
-    with open("/home/shayavr/Desktop/git/automation-locust-framework/test_data/roi.geojson", 'r') as file:
-        geojson_content = json.load(file)
+    if vertex_count < 4:
+        raise ValueError("vertex_count must be at least 4 (including closing vertex)")
+
+    with open(geojson_path, 'r') as file:
+        geojson_obj = json.load(file)
+
+    geom = shape(geojson_obj['features'][0]['geometry'])
+
+    if isinstance(geom, MultiPolygon):
+        geom = unary_union(geom)
+
+    minx, miny, maxx, maxy = geom.bounds
+
+    for _ in range(1000):  # max attempts
+        cx = random.uniform(minx, maxx)
+        cy = random.uniform(miny, maxy)
+        center = Point(cx, cy)
+
+        if not geom.contains(center):
+            continue
+
+        max_radius = min(maxx - minx, maxy - miny) * 0.01
+        radius = random.uniform(max_radius * 0.5, max_radius)
+
+        # Generate points with random angles, sort them to avoid self-intersection
+        angles = sorted([random.uniform(0, 2 * math.pi) for _ in range(vertex_count - 1)])
+        coords = [
+            (
+                cx + radius * math.cos(angle),
+                cy + radius * math.sin(angle)
+            )
+            for angle in angles
+        ]
+        coords.append(coords[0])  # Close the polygon
+
+        candidate_poly = Polygon(coords)
+        if geom.contains(candidate_poly):
+            return [round(coord, 14) for point in coords for coord in point]
+
+    return None
 
 
-    geometries = [shape(feature["geometry"]) for feature in geojson_content["features"]]
-    merged_geom = unary_union(geometries)
-    minx, miny, maxx, maxy = merged_geom.bounds
 
-    for _ in range(100):
-        # Random bbox size
-        bbox_width = random.uniform(min_width, min(max_width, maxx - minx))
-        bbox_height = random.uniform(min_height, min(max_height, maxy - miny))
-
-        # Restrict origin so bbox stays inside bounds
-        x_range = maxx - minx - bbox_width
-        y_range = maxy - miny - bbox_height
-
-        if x_range <= 0 or y_range <= 0:
-            continue  # Try again with different size
-
-        rand_minx = random.uniform(minx, minx + x_range)
-        rand_miny = random.uniform(miny, miny + y_range)
-        candidate_bbox = box(rand_minx, rand_miny, rand_minx + bbox_width, rand_miny + bbox_height)
-
-        if merged_geom.intersects(candidate_bbox):
-            return ", ".join(
-                str(x) for x in [rand_minx, rand_miny, rand_minx + bbox_width, rand_miny + bbox_height])
-
-    raise RuntimeError("Failed to generate a valid random bbox within geometry after 100 attempts.")
-
-
-print(get_random_bbox())
+print(generate_random_polygon(geojson_path=WfsConfig.ROI_PATH,vertex_count=5))

@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ printf "%s-base-configmap" (include "Release.Name" .) }}
-data:
-  new-3d-test.py: {{ tpl (.Files.Get "test_files/new-3d-test.py") . | quote }}
