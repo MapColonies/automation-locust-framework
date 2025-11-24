@@ -11,6 +11,7 @@ output_file = os.getenv("output_file", "attribute_value_mapping.json")
 if not type_name:
     raise ValueError("Missing TYPE_NAME environment variable")
 
+
 # Build full WFS GetFeature URL
 full_url = (
     f"{base_url}"
