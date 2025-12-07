@@ -2,37 +2,24 @@ imageRepository: &imageRepository "acrarolibotnonprod.azurecr.io/automation/locu
 
 global:
   name: locust-global
-  test_file: "wfs_get_capabilities.py"
-  test_file_path: "/mnt/locust/tests/vector_services/"
-  host: "/"
+  test_file: wcs_get_coverage.py
+  test_file_path: "/mnt/locust/tests/DEM"
+  host: /
 
   env: {
-    HOST: "/",
-    LOCUST_LOCUSTFILE: "/mnt/locust/tests/vector_services/wfs_get_capabilities.py",
-    OUTPUT_DIR: "/layerSources/automation/locust",
-    WFS_URL: "https://geoserver-2-27-vector-dev.apps.j1lk3njp.eastus.aroapp.io/geoserver/core/wfs",
-    token_flag: true,
-    measure_time: false,
-    result_path: "/layerSources/locust/",
-    wait_time: 1,
-    BASE_URL: "https://dem-geoserver-pp-geoserver-nginx-route-qa.apps.j1lk3njp.eastus.aroapp.io//wcs",
-    VERSION: 2.0.1,
-    COVERAGE_ID: "dtm_srtm30wgs84geo_untiled",
-    BBOX_WIDTH: 50,
-    BBOX_HEIGHT: 50,
-    RESOLUTIONS: {"resx": 5,"resy": 5},
-    SCALE_SIZE: "256,256",
-    FORMAT: "image/tiff",
-    SECRET_VALUE_API: None
- }
-
-  envFrom:
-   - configMapRef:
-       name: automation-configmap
-
+      BASE_URL: "https://dem-geoserver-pp-geoserver-nginx-route-qa.apps.j1lk3njp.eastus.aroapp.io//wcs",
+      VERSION: "2.0.1",
+      COVERAGE_ID: "dtm_srtm30wgs84geo_untiled",
+      BBOX_WIDTH: 50,
+      BBOX_HEIGHT: 50,
+      RES_X: 5,
+      RES_Y: 5,
+      SCALE_SIZE: "256,256",
+      FORMAT: "image/tiff",
+      }
   env_secret: true
   env_external_secret:
-    { }
+    {}
   secret_name_api_key_locust: "automation-secret"
   sub_url_secret: "automation-secret"
   headless: false
@@ -45,21 +32,14 @@ image:
 service:
   type: ClusterIP
   # type: NodePort
-  annotations: { }
+  annotations: {}
 
 master:
   image: *imageRepository
   logLevel: INFO
   envs_include_default: true
-  env: { }
-  args: [ ]
-  resources:
-    limits:
-      cpu: "400m"
-      memory: "512Mi"
-    requests:
-      cpu: "100m"
-      memory: "128Mi"
+  env: {}
+  args: []
   pvc:
     enabled: true
   strategy:
@@ -79,15 +59,8 @@ worker:
   logLevel: INFO
   envs_include_default: true
   replicas: 2
-  resources:
-    limits:
-      cpu: "400m"
-      memory: "512Mi"
-    requests:
-      cpu: "100m"
-      memory: "128Mi"
   env: { SUB_URL_FOR_IDS: "https://www.google.com" }
-  args: [ ]
+  args: []
   pvc:
     enabled: true
   strategy:
@@ -98,23 +71,16 @@ nameOverride: ""
 fullnameOverride: "locust"
 pullSecretName: mapcolonies-secret
 
-
-exporter:
-  enabled: true
-  image: acrarolibotnonprod.azurecr.io/locust-exporter
-  tag: v1.0.0
-  port: 9646
-
 ingress:
-  enabled: false
-  className: ""
-  annotations: { }
-    #  kubernetes.io/ingress.class: nginx
+ enabled: false
+ className: ""
+ annotations: {}
+  #  kubernetes.io/ingress.class: nginx
   #  kubernetes.io/tls-acme: "true"
-  hosts:
-    - host: chart-example.local
-      pathType: ImplementationSpecific
-      path: /
+ hosts:
+   - host: chart-example.local
+     pathType: ImplementationSpecific
+     path: /
 # tls: []
 #  - secretName: chart-example-tls
 #    hosts:
@@ -129,12 +95,12 @@ route:
     duration: 60s # supported units (us, ms, s, m, h, d)
 #ingress:
 #  enabled: false
-#  type: 'nginx-kubernetes' # supported values: 'nginx-org' | 'nginx-kubernetes'
+#  type: "nginx-kubernetes" # supported values: "nginx-org" | "nginx-kubernetes"
 #  path: /locust-ww
 #  host: "lb-mapcolonies.gg.wwest.local"
 #  cors:
 #    enabled: true
-#    origin: '*'
+#    origin: "*"
 #    tls: []
 
 storage:
@@ -147,19 +113,3 @@ storage:
 volumeMounts:
   - name: test-files-volume
     mountPath: /mnt/locust/test_files
-
-
-prometheus-locust-exporter:
-  podAnnotations:
-    "prometheus.io/scrape": "true"
-  pod_labels:
-    "mapcolonies.io/part-of": "locust"
-    "mapcolonies.io/environment": "production"
-    "mapcolonies.io/owner": "automation"
-    "mapcolonies.io/component": "infrastructure"
-
-  config:
-    locust_uri: http://locust-check-dependency:8089
-  image:
-    repository: acrarolibotnonprod.azurecr.io/automation/locust-exporter
-    tag: v0.4.1

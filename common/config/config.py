@@ -210,7 +210,7 @@ class WcsConfig(Config):
     COVERAGE_ID = os.environ.get("COVERAGE_ID", "dtm_srtm30wgs84geo_untiled")
     BBOX_WIDTH = int(os.environ.get("BBOX_WIDTH", 50)) #in meters
     BBOX_HEIGHT = int(os.environ.get("BBOX_HEIGHT", 50)) #in meters
-    RESOLUTIONS = os.environ.get("RESOLUTIONS", {"resx": 5,"resy": 5})
+    RESOLUTIONS = { "resx": os.environ.get("RES_X", 5), "resy": os.environ.get("RES_Y", 5)}
     SCALE_SIZE = os.environ.get("SCALE_SIZE","256,256")  # Exactly 256×256 pixels output
     FORMAT = os.environ.get("WCS_FORMAT", "image/tiff")
 

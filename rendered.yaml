@@ -1,0 +1,369 @@
+---
+# Source: locust-infrastructure/templates/master-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: locust-locust-infrastructure
+  labels:
+    helm.sh/chart: locust-infrastructure-1.0.0
+    app.kubernetes.io/name: locust-infrastructure
+    app.kubernetes.io/instance: locust-infrastructure
+    load_test: locust-global
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+    component: "master"
+spec:
+  type: ClusterIP
+  ports:
+  - name: master-p1
+    port: 5557
+    protocol: TCP
+    targetPort: 5557
+  - name: master-p2
+    port: 5558
+    protocol: TCP
+    targetPort: 5558
+  - name: master-p3
+#    nodePort: 30044
+    port: 8089
+    protocol: TCP
+    targetPort: 8089
+  selector:
+    component: master
+    app.kubernetes.io/name: locust-infrastructure
+    app.kubernetes.io/instance: locust-infrastructure
+    load_test: locust-global
+---
+# Source: locust-infrastructure/charts/prometheus-locust-exporter/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: locust-infrastructure-prometheus-locust-exporter
+  labels:
+    app.kubernetes.io/name: prometheus-locust-exporter
+    helm.sh/chart: prometheus-locust-exporter-1.2.3
+    app.kubernetes.io/instance: locust-infrastructure
+    app.kubernetes.io/version: "v0.4.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus-locust-exporter
+      app.kubernetes.io/instance: locust-infrastructure
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: prometheus-locust-exporter
+        app.kubernetes.io/instance: locust-infrastructure
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "9646"
+        prometheus.io_scrape: "true"
+    spec:
+      securityContext:
+        {}
+      containers:
+        - name: prometheus-locust-exporter
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: false
+          image: "containersol/locust_exporter:v0.4.1"
+          imagePullPolicy: IfNotPresent
+          args:
+            - --web.listen-address=:9646
+            - --web.telemetry-path=/metrics
+            - --locust.uri=http://localhost:8089
+            - --locust.timeout=5s
+            - --log.level=info
+          livenessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /healthz
+              port: 9646
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            failureThreshold: 2
+            httpGet:
+              path: /healthz
+              port: 9646
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            timeoutSeconds: 5
+          ports:
+            - name: prometheus
+              containerPort: 9646
+              protocol: TCP
+          resources:
+            {}
+---
+# Source: locust-infrastructure/templates/master-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: locust-locust-infrastructure-master
+  labels:
+    component: master
+    helm.sh/chart: locust-infrastructure-1.0.0
+    app.kubernetes.io/name: locust-infrastructure
+    app.kubernetes.io/instance: locust-infrastructure
+    load_test: locust-global
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+    matchLabels:
+      component: master
+      app.kubernetes.io/name: locust-infrastructure
+      app.kubernetes.io/instance: locust-infrastructure
+      load_test: locust-global
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        component: master
+        app.kubernetes.io/name: locust-infrastructure
+        app.kubernetes.io/instance: locust-infrastructure
+        load_test: locust-global
+    spec:
+      imagePullSecrets:
+        - name: mapcolonies-secret
+      containers:
+      - name: locust-infrastructure
+        image: "acrarolibotnonprod.azurecr.io/automation/locust-automation:v3.1.1"
+        args:
+          - --master
+        imagePullPolicy: Always
+        volumeMounts:
+          - name: ingestion-storage
+            mountPath: /layerSources
+            subPath: ingestion-source
+#          - name: locust-vol
+#            mountPath: "/mnt/locust/new-3d-test.py"
+#            subPath: new-3d-test.py
+        env:
+          - name: host
+            value: "/"
+          - name: LOCUST_LOGLEVEL
+            value: "INFO"
+          - name: LOCUST_LOCUSTFILE
+            value: "/mnt/locust/tests/DEM/wcs_get_coverage.py"
+          - name: SECRET_VALUE_API
+            valueFrom:
+              secretKeyRef:
+                name: automation-secret
+                key: x-api-key
+          - name: CONF_FILE
+            value: "/layerSources/locust/locust_configuration.json"
+          - name: CSV_3D_DATA_PATH
+            value: "/mnt/locust/test_data/urls_data.csv"
+          - name: gridName
+            value: "newGrids"
+          - name: imageType
+            value: ".jpeg"
+          - name: layer
+            value: "Orthophoto"
+          - name: layer_list
+            value: "shay44"
+          - name: layer_type
+            value: "wmts"
+          - name: mc_region_value
+            value: "ישראל, ירדן"
+          - name: measure_time
+            value: "false"
+          - name: percent_ranges
+            value: "[100,500]"
+          - name: points_amount_range
+            value: "100"
+          - name: polygon
+            value: "[ [ (35.21370173535735, 32.944784748967194), (35.21370173535735, 32.602044942336676), (35.76262909563465, 32.602044942336676), (35.76262909563465, 32.944784748967194), (35.21370173535735, 32.944784748967194), ], [ (34.9936172458529, 32.73613049628601), (34.9936172458529, 32.431627293935804), (35.288205407997964, 32.431627293935804), (35.288205407997964, 32.73613049628601), (34.9936172458529, 32.73613049628601), ], ]"
+          - name: port
+            value: "8080"
+          - name: pro_active_wmts_bbox
+            value: "[35.024411528661574 32.79419004139809 35.37597717328861 32.947998391903226]"
+          - name: projection
+            value: "roie"
+          - name: requests_records_csv
+            value: "test_data/data/stats.csv"
+          - name: result_path
+            value: "/layerSources/locust/"
+          - name: sub_url_for_pycsw
+            value: "https://pycsw-raster-qa-nginx-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1"
+          - name: test_to_run
+            value: "Lateron"
+          - name: token_flag
+            value: "true"
+          - name: users
+            value: "15"
+          - name: version
+            value: "1.0.0"
+          - name: wait_time
+            value: "1"
+          - name: wmts_csv_path
+            value: "/mnt/locust/test_data/wmts_shaziri.csv"
+        ports:
+          - containerPort: 8089
+            name: loc-master-web
+            protocol: TCP
+          - containerPort: 5557
+            name: loc-master-p1
+            protocol: TCP
+          - containerPort: 5558
+            name: loc-master-p2
+            protocol: TCP
+        readinessProbe:
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 30
+          failureThreshold: 2
+          httpGet:
+            path: /
+            port: 8089
+      restartPolicy: Always
+      volumes:
+        - name: ingestion-storage
+          persistentVolumeClaim:
+            claimName: internal-pvc-nfs
+        - name: locust-vol
+          configMap:
+            name: locust-base-configmap
+            items:
+            - key: "new-3d-test.py"
+              path: "new-3d-test.py"
+---
+# Source: locust-infrastructure/templates/worker-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: locust-locust-infrastructure-worker
+  labels:
+    component: worker
+    helm.sh/chart: locust-infrastructure-1.0.0
+    app.kubernetes.io/name: locust-infrastructure
+    app.kubernetes.io/instance: locust-infrastructure
+    load_test: locust-global
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  selector:
+    matchLabels:
+      component: worker
+      app.kubernetes.io/name: locust-infrastructure
+      app.kubernetes.io/instance: locust-infrastructure
+      load_test: locust-global
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+
+      labels:
+        component: worker
+        app.kubernetes.io/name: locust-infrastructure
+        app.kubernetes.io/instance: locust-infrastructure
+        load_test: locust-global
+    spec:
+      imagePullSecrets:
+        - name: mapcolonies-secret
+      containers:
+      - name: locust-infrastructure
+        image: "acrarolibotnonprod.azurecr.io/automation/locust-automation:v3.1.1"
+        args:
+          - --worker
+        imagePullPolicy: Always
+        volumeMounts:
+          - name: ingestion-storage
+            mountPath: /layerSources
+            subPath: ingestion-source
+        env:
+          - name: host
+            value: "/"
+          - name: LOCUST_MASTER_NODE_HOST
+            value: locust-locust-infrastructure
+          - name: LOCUST_MASTER_NODE_PORT
+            value: "5557"
+          - name: LOCUST_LOGLEVEL
+            value: "INFO"
+          - name: LOCUST_LOCUSTFILE
+            value: "/mnt/locust/tests/DEM/wcs_get_coverage.py"
+          - name: SECRET_VALUE_API
+            valueFrom:
+              secretKeyRef:
+                name: automation-secret
+                key: x-api-key
+          - name: SUB_URL_FOR_IDS
+            value: "https://www.google.com"
+          - name: CONF_FILE
+            value: "/layerSources/locust/locust_configuration.json"
+          - name: CSV_3D_DATA_PATH
+            value: "/mnt/locust/test_data/urls_data.csv"
+          - name: gridName
+            value: "newGrids"
+          - name: imageType
+            value: ".jpeg"
+          - name: layer
+            value: "Orthophoto"
+          - name: layer_list
+            value: "shay44"
+          - name: layer_type
+            value: "wmts"
+          - name: mc_region_value
+            value: "ישראל, ירדן"
+          - name: measure_time
+            value: "false"
+          - name: percent_ranges
+            value: "[100,500]"
+          - name: points_amount_range
+            value: "100"
+          - name: polygon
+            value: "[ [ (35.21370173535735, 32.944784748967194), (35.21370173535735, 32.602044942336676), (35.76262909563465, 32.602044942336676), (35.76262909563465, 32.944784748967194), (35.21370173535735, 32.944784748967194), ], [ (34.9936172458529, 32.73613049628601), (34.9936172458529, 32.431627293935804), (35.288205407997964, 32.431627293935804), (35.288205407997964, 32.73613049628601), (34.9936172458529, 32.73613049628601), ], ]"
+          - name: port
+            value: "8080"
+          - name: pro_active_wmts_bbox
+            value: "[35.024411528661574 32.79419004139809 35.37597717328861 32.947998391903226]"
+          - name: projection
+            value: "roie"
+          - name: requests_records_csv
+            value: "test_data/data/stats.csv"
+          - name: result_path
+            value: "/layerSources/locust/"
+          - name: sub_url_for_pycsw
+            value: "https://pycsw-raster-qa-nginx-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1"
+          - name: test_to_run
+            value: "Lateron"
+          - name: token_flag
+            value: "true"
+          - name: users
+            value: "15"
+          - name: version
+            value: "1.0.0"
+          - name: wait_time
+            value: "1"
+          - name: wmts_csv_path
+            value: "/mnt/locust/test_data/wmts_shaziri.csv"
+      restartPolicy: Always
+      volumes:
+        - name: ingestion-storage
+          persistentVolumeClaim:
+            claimName: internal-pvc-nfs
+---
+# Source: locust-infrastructure/templates/route.yaml
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: locust-locust-infrastructure-route
+  annotations:
+    haproxy.router.openshift.io/rewrite-target: /
+spec:
+  path: /
+  port:
+    targetPort: 8089
+  to:
+    kind: Service
+    name: locust-locust-infrastructure
+  tls:
+    termination: edge
