@@ -1,4 +1,4 @@
-imageRepository: &imageRepository "acrarolibotnonprod.azurecr.io/locust-automation:v3.1.0"
+imageRepository: &imageRepository "acrarolibotnonprod.azurecr.io/automation/locust-automation:v3.1.1"
 
 global:
   name: locust-global
@@ -14,8 +14,16 @@ global:
     token_flag: true,
     measure_time: false,
     result_path: "/layerSources/locust/",
-    VERSION: "2.0.0",
     wait_time: 1,
+    BASE_URL: "https://dem-geoserver-pp-geoserver-nginx-route-qa.apps.j1lk3njp.eastus.aroapp.io//wcs",
+    VERSION: 2.0.1,
+    COVERAGE_ID: "dtm_srtm30wgs84geo_untiled",
+    BBOX_WIDTH: 50,
+    BBOX_HEIGHT: 50,
+    RESOLUTIONS: {"resx": 5,"resy": 5},
+    SCALE_SIZE: "256,256",
+    FORMAT: "image/tiff",
+    SECRET_VALUE_API: None
  }
 
   envFrom:

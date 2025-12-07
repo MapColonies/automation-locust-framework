@@ -203,6 +203,19 @@ class WfsConfig(Config):
     PROPERTY_NAME = os.environ.get("PROPERTY_NAME", "geom")
     TYPE_NAME = os.environ.get("TYPE_NAME", "buildings")
 
+class WcsConfig(Config):
+    BASE_URL = os.environ.get("WCS_URL", "https://dem-geoserver-pp-geoserver-nginx-route-qa.apps.j1lk3njp.eastus.aroapp.io//wcs")
+    VERSION = os.environ.get("WCS_VERSION", "2.0.1")
+    # COVERAGE_ID = os.environ.get("COVERAGE_ID", "dtm_srtm30wgs84utm36_COG")
+    COVERAGE_ID = os.environ.get("COVERAGE_ID", "dtm_srtm30wgs84geo_untiled")
+    BBOX_WIDTH = int(os.environ.get("BBOX_WIDTH", 50)) #in meters
+    BBOX_HEIGHT = int(os.environ.get("BBOX_HEIGHT", 50)) #in meters
+    RESOLUTIONS = os.environ.get("RESOLUTIONS", {"resx": 5,"resy": 5})
+    SCALE_SIZE = os.environ.get("SCALE_SIZE","256,256")  # Exactly 256×256 pixels output
+    FORMAT = os.environ.get("WCS_FORMAT", "image/tiff")
+
+
+
 
 config_obj = {
     "wmts": WmtsConfig,
@@ -211,6 +224,7 @@ config_obj = {
     "_3d": Config3D,
     "default": Config,
     "elevation": ElevationConfig,
-    "wfs": WfsConfig
+    "wfs": WfsConfig,
+    "wcs": WcsConfig,
 
 }
