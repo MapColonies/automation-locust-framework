@@ -10,18 +10,18 @@ global:
       BASE_URL: "https://dem-geoserver-pp-geoserver-nginx-route-qa.apps.j1lk3njp.eastus.aroapp.io//wcs",
       VERSION: "2.0.1",
       COVERAGE_ID: "dtm_srtm30wgs84geo_untiled",
-      BBOX_WIDTH: 50,
-      BBOX_HEIGHT: 50,
-      RES_X: 5,
-      RES_Y: 5,
-      SCALE_SIZE: "256,256",
-      FORMAT: "image/tiff",
+      BBOX_WIDTH: 500,
+      BBOX_HEIGHT: 500,
+      SCALE_SIZE: "(256,256)",
+#      BBOX: "",
+      OUTPUT_CRS: "geo",
+      CRS_DICT: '{"utm":"http://www.opengis.net/def/crs/EPSG/0/32636", "geo":"http://www.opengis.net/def/crs/EPSG/0/4326"}',
       }
   env_secret: true
   env_external_secret:
     {}
-  secret_name_api_key_locust: "automation-secret"
-  sub_url_secret: "automation-secret"
+  secret_name_api_key_locust: "dem-secret"
+  sub_url_secret: "dem-secret"
   headless: false
 
 image:
