@@ -24,7 +24,7 @@ class WCSGetCoverageUser(HttpUser):
         self.extent, self.axis_labels, self.is_degree = self.wcs_client.parse_coverage_metadata(self.layer_xml)
 
     @task
-    def get_coverage_by_size_and_scale_size(self):
+    def get_coverage_by_scale_size(self):
         subsets = self.wcs_client.get_subset(self.extent, self.axis_labels, self.is_degree)
         scale_size = self.wcs_client.generate_scalesize(config_obj["wcs"].SCALE_SIZE)
         additional_params={
