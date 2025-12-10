@@ -206,12 +206,12 @@ class WfsConfig(Config):
 class WcsConfig(Config):
     BASE_URL = os.environ.get("WCS_URL", "https://dem-geoserver-pp-geoserver-nginx-route-qa.apps.j1lk3njp.eastus.aroapp.io//wcs")
     VERSION = os.environ.get("WCS_VERSION", "2.0.1")
-    COVERAGE_ID = os.environ.get("COVERAGE_ID", "dtm_srtm30wgs84utm36")
+    COVERAGE_ID = os.environ.get("COVERAGE_ID", "dtm_srtm30wgs84geo_untiled")
     # COVERAGE_ID = os.environ.get("COVERAGE_ID", "dtm_srtm30wgs84geo_untiled")
     BBOX_WIDTH = int(os.environ.get("BBOX_WIDTH", 29)) #in meters
     BBOX_HEIGHT = int(os.environ.get("BBOX_HEIGHT", 29)) #in meters
     SCALE_SIZE = os.environ.get("SCALE_SIZE","(250,250)")  # Exactly 256×256 pixels output
-    # FORMAT = os.environ.get("WCS_FORMAT", "image/tiff")
+    FORMAT = os.environ.get("WCS_FORMAT", "image/tiff")
     CRS_DICT = json.loads(os.environ.get("CRS_DICT",
                                          '{"utm":"http://www.opengis.net/def/crs/EPSG/0/32636", "geo":"http://www.opengis.net/def/crs/EPSG/0/4326"}'))
     OUTPUT_CRS = os.environ.get("OUTPUT_CRS", "geo")

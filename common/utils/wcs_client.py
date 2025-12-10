@@ -212,39 +212,62 @@ class WCSClient:
             f"{axis_y}({rand_miny},{rand_maxy})"
         ]
 
-    def generate_subset_from_bbox(self, bbox_extent: Tuple[float, float, float, float],axis_labels: Tuple[str, str]) -> List[str]:
+    def generate_subset_from_bbox(self, bbox_extent: str, axis_labels: Tuple[str, str]) -> List[str]:
         """
-        Generates WCS SUBSET parameters directly from a fixed Bounding Box
-        (minx, miny, maxx, maxy) coordinates.
+        Generates WCS SUBSET parameters from a BBOX string (Env Var input).
 
-        This function is used when the desired clip coordinates are already known
-        and do not require random calculation or unit conversion.
+        CRITICAL FIX: This function performs an explicit axis-label SWAP in the output
+        to circumvent the common GeoServer axis reversal issue (Lat/Long vs. Long/Lat)
+        which leads to the 'Empty intersection' error.
 
         Args:
-            bbox_extent (tuple): The fixed BBOX coordinates in the format
-                                 (minx, miny, maxx, maxy).
-            axis_labels (tuple): The axis names of the CRS (e.g., ('Long', 'Lat') or ('x', 'y')).
-                                 The X-axis label should be first, followed by the Y-axis label.
+            bbox_extent (str): The BBOX coordinates as a string in standard GIS format:
+                               'MinX, MinY, MaxX, MaxY' (e.g., '34.8, 32.2, 34.87, 32.27').
+            axis_labels (tuple): The axis names, e.g., ('Long', 'Lat').
+                                 ASSUMED ORDER: (Axis X Label, Axis Y Label).
 
         Returns:
-            list: A list of WCS SUBSET strings in the format [AxisY(min,max), AxisX(min,max)].
+            list: The list of WCS SUBSET strings in the order [AxisY, AxisX].
         """
 
-        # Unpack the fixed bounding box coordinates
-        minx, miny, maxx, maxy = bbox_extent
+        # --- 1. Parsing the string input (MinX, MinY, MaxX, MaxY) ---
+        try:
+            # Cleaning the string from external chars and converting to float
+            cleaned_str = bbox_extent.strip("() '\"[]")
+            coords = [float(s.strip()) for s in cleaned_str.split(',')]
 
-        # Unpack axis names
+            if len(coords) != 4:
+                raise ValueError("BBOX string must contain exactly 4 comma-separated values.")
+
+            # Unpack the coordinates based on the standard GIS order: (X=Long, Y=Lat)
+            minx, miny, maxx, maxy = coords
+
+        except ValueError as e:
+            # Raise an informative error if parsing fails
+            raise ValueError(
+                f"Invalid BBOX string format: '{bbox_extent}'. Error details: {e}"
+            )
+
+        # --- 2. Generation of SUBSET strings with Explicit SWAP ---
+
+        # Unpack axis labels: axis_x='Long', axis_y='Lat'
         axis_x, axis_y = axis_labels
 
-        # 1. Create the SUBSET string for the X-axis (Longitude or Easting)
-        # The format is AxisName(MinCoord, MaxCoord)
-        subset_x = f"{axis_x}({minx},{maxx})"
+        # FIX FOR GEOSERVER REVERSAL ISSUE:
+        # GeoServer expects the Long label to contain the 34.x values (X-coords).
+        # But, due to internal reversal, we must 'lie' to it:
 
-        # 2. Create the SUBSET string for the Y-axis (Latitude or Northing)
-        subset_y = f"{axis_y}({miny},{maxy})"
+        # 1. Create the SUBSET string for the X-axis (Longitude)
+        # We pair the X-LABEL ('Long') with the Y-COORDINATES (32.x) to trick the server.
+        subset_x = f"{axis_x}({miny},{maxy})"
 
-        # Return the list, typically with the Y-axis (Lat) first,
-        # to match the WCS standard's preferred order.
+        # 2. Create the SUBSET string for the Y-axis (Latitude)
+        # We pair the Y-LABEL ('Lat') with the X-COORDINATES (34.x) to trick the server.
+        subset_y = f"{axis_y}({minx},{maxx})"
+
+        # Return the list in the standard WCS order: Y-axis (Lat) first, then X-axis (Long).
+        # This will output: ['Lat(34.8, 34.86)', 'Long(32.2, 32.26)']
+        # The GeoServer internal logic will *reverse* this to the correct coordinates.
         return [subset_y, subset_x]
 
 
