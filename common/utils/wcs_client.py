@@ -216,10 +216,6 @@ class WCSClient:
         """
         Generates WCS SUBSET parameters from a BBOX string (Env Var input).
 
-        CRITICAL FIX: This function performs an explicit axis-label SWAP in the output
-        to circumvent the common GeoServer axis reversal issue (Lat/Long vs. Long/Lat)
-        which leads to the 'Empty intersection' error.
-
         Args:
             bbox_extent (str): The BBOX coordinates as a string in standard GIS format:
                                'MinX, MinY, MaxX, MaxY' (e.g., '34.8, 32.2, 34.87, 32.27').
@@ -252,10 +248,6 @@ class WCSClient:
 
         # Unpack axis labels: axis_x='Long', axis_y='Lat'
         axis_x, axis_y = axis_labels
-
-        # FIX FOR GEOSERVER REVERSAL ISSUE:
-        # GeoServer expects the Long label to contain the 34.x values (X-coords).
-        # But, due to internal reversal, we must 'lie' to it:
 
         # 1. Create the SUBSET string for the X-axis (Longitude)
         # We pair the X-LABEL ('Long') with the Y-COORDINATES (32.x) to trick the server.

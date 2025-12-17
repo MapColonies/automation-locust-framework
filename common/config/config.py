@@ -214,8 +214,9 @@ class WcsConfig(Config):
     FORMAT = os.environ.get("WCS_FORMAT", "image/tiff")
     CRS_DICT = json.loads(os.environ.get("CRS_DICT",
                                          '{"utm":"http://www.opengis.net/def/crs/EPSG/0/32636", "geo":"http://www.opengis.net/def/crs/EPSG/0/4326"}'))
-    OUTPUT_CRS = os.environ.get("OUTPUT_CRS", "geo")
+    OUTPUT_CRS = os.environ.get("OUTPUT_CRS", "utm")
     BBOX = os.environ.get("BBOX", None )
+    SCALE_FACTOR = float(os.environ.get("SCALE_FACTOR", 1.0))
 
 
 

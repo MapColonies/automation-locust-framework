@@ -17,6 +17,7 @@ global:
 #      BBOX: "[34.800000000,32.200000000,34.8694444447,32.2694444449]",
       OUTPUT_CRS: "utm",
       CRS_DICT: '{"utm":"http://www.opengis.net/def/crs/EPSG/0/32636", "geo":"http://www.opengis.net/def/crs/EPSG/0/4326"}',
+      SCALE_FACTOR: "2"
       }
   env_secret: true
   env_external_secret:
