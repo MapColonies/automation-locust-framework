@@ -212,118 +212,40 @@ class WCSClient:
             f"{axis_y}({rand_miny},{rand_maxy})"
         ]
 
+
     def generate_subset_from_bbox(self, bbox_extent: str, axis_labels: Tuple[str, str]) -> List[str]:
         """
-        Generates WCS SUBSET parameters from a BBOX string (Env Var input).
-
-        Args:
-            bbox_extent (str): The BBOX coordinates as a string in standard GIS format:
-                               'MinX, MinY, MaxX, MaxY' (e.g., '34.8, 32.2, 34.87, 32.27').
-            axis_labels (tuple): The axis names, e.g., ('Long', 'Lat').
-                                 ASSUMED ORDER: (Axis X Label, Axis Y Label).
-
-        Returns:
-            list: The list of WCS SUBSET strings in the order [AxisY, AxisX].
+        Generates WCS SUBSET parameters directly mapping X to X and Y to Y.
         """
-
-        # --- 1. Parsing the string input (MinX, MinY, MaxX, MaxY) ---
         try:
-            # Cleaning the string from external chars and converting to float
             cleaned_str = bbox_extent.strip("() '\"[]")
             coords = [float(s.strip()) for s in cleaned_str.split(',')]
 
             if len(coords) != 4:
                 raise ValueError("BBOX string must contain exactly 4 comma-separated values.")
 
-            # Unpack the coordinates based on the standard GIS order: (X=Long, Y=Lat)
+            # Standard GIS order: MinX (Long), MinY (Lat), MaxX (Long), MaxY (Lat)
             minx, miny, maxx, maxy = coords
 
         except ValueError as e:
-            # Raise an informative error if parsing fails
-            raise ValueError(
-                f"Invalid BBOX string format: '{bbox_extent}'. Error details: {e}"
-            )
+            raise ValueError(f"Invalid BBOX string format: '{bbox_extent}'. Error: {e}")
 
-        # --- 2. Generation of SUBSET strings with Explicit SWAP ---
-
-        # Unpack axis labels: axis_x='Long', axis_y='Lat'
+        # Unpack axis labels. Assumed order from caller: (Axis X Label, Axis Y Label)
+        # Example: axis_x='Long', axis_y='Lat'
         axis_x, axis_y = axis_labels
 
-        # 1. Create the SUBSET string for the X-axis (Longitude)
-        # We pair the X-LABEL ('Long') with the Y-COORDINATES (32.x) to trick the server.
-        subset_x = f"{axis_x}({miny},{maxy})"
+        # --- CORRECTION: Match X values to X axis, and Y values to Y axis ---
 
-        # 2. Create the SUBSET string for the Y-axis (Latitude)
-        # We pair the Y-LABEL ('Lat') with the X-COORDINATES (34.x) to trick the server.
-        subset_y = f"{axis_y}({minx},{maxx})"
+        # 1. X-Axis (Longitude / Easting) -> Takes MinX, MaxX
+        subset_x = f"{axis_x}({minx},{maxx})"
 
-        # Return the list in the standard WCS order: Y-axis (Lat) first, then X-axis (Long).
-        # This will output: ['Lat(34.8, 34.86)', 'Long(32.2, 32.26)']
-        # The GeoServer internal logic will *reverse* this to the correct coordinates.
+        # 2. Y-Axis (Latitude / Northing) -> Takes MinY, MaxY
+        subset_y = f"{axis_y}({miny},{maxy})"
+
+        # Return list. The order inside the list usually doesn't matter for KVPs
+        # as long as the strings themselves are correct.
         return [subset_y, subset_x]
 
-
-    def generate_subset_from_xml(self, width_m, height_m, extent, axis_labels, is_degree):
-        """
-        High-level helper:
-          Input: XML + width_m + height_m
-          Output: ready-to-use WCS subset[]
-        """
-
-        # Generate subset correctly
-        return self.generate_subset(extent, width_m, height_m, axis_labels, is_degree)
-
-    # def generate_subset_from_extent(self, extent, width_m, height_m):
-    #     """
-    #     extent = (minx, miny, maxx, maxy)
-    #     width_m, height_m = requested bbox size IN METERS
-    #
-    #     Converts meter sizes to degrees (EPSG:4326),
-    #     validates, and returns WCS subset strings - such as:
-    #         subsets = [
-    #             "Long(10,20)",
-    #             "Lat(30,40)"
-    #         ]
-    #     """
-    #
-    #     minx, miny, maxx, maxy = extent
-    #
-    #     # Compute center latitude for conversion accuracy
-    #     center_lat = (miny + maxy) / 2.0
-    #     center_lat_rad = math.radians(center_lat)
-    #
-    #     # Convert meters → degrees
-    #     width_deg = width_m / (111320.0 * math.cos(center_lat_rad))
-    #     height_deg = height_m / 110540.0
-    #
-    #     # Compute full width/height of coverage (in degrees)
-    #     full_width_deg = maxx - minx
-    #     full_height_deg = maxy - miny
-    #
-    #     # Validate
-    #     if width_deg > full_width_deg:
-    #         raise ValueError(
-    #             f"Requested width {width_m}m ({width_deg}°) exceeds coverage width "
-    #             f"{full_width_deg}°. Maximum allowed width is {full_width_deg}°."
-    #         )
-    #
-    #     if height_deg > full_height_deg:
-    #         raise ValueError(
-    #             f"Requested height {height_m}m ({height_deg}°) exceeds coverage height "
-    #             f"{full_height_deg}°. Maximum allowed height is {full_height_deg}°."
-    #         )
-    #
-    #     # Random left corner inside valid range
-    #     rand_minx = random.uniform(minx, maxx - width_deg)
-    #     rand_miny = random.uniform(miny, maxy - height_deg)
-    #
-    #     rand_maxx = rand_minx + width_deg
-    #     rand_maxy = rand_miny + height_deg
-    #
-    #     return [
-    #         f"Long({rand_minx},{rand_maxx})",
-    #         f"Lat({rand_miny},{rand_maxy})"
-    #     ]
 
     def generate_output_crs(self, output_crs, crs_dict):
         lookup_key = output_crs.lower()
@@ -333,47 +255,6 @@ class WCSClient:
         if config_obj["wcs"].BBOX:
              return self.generate_subset_from_bbox(config_obj["wcs"].BBOX, axis_labels)
         return self.generate_subset_from_extent_by_size(extent, config_obj["wcs"].BBOX_WIDTH, config_obj["wcs"].BBOX_HEIGHT, axis_labels, is_degree)
-
-    # def generate_scalesize(self, pixel_sizes: str, axis_labels: Tuple[str, str]) -> str:
-    #     """
-    #         Generates the WCS SCALESIZE parameter string by parsing a string input
-    #         from a configuration source (like an environment variable).
-    #
-    #         Expected input format for pixel_sizes_str: "(X, Y)" or "X,Y" as a string.
-    #
-    #         Args:
-    #             pixel_sizes_str (str): A string containing the desired pixel sizes,
-    #                                    e.g., "'512,256'".
-    #             axis_labels (tuple): The axis identifiers (e.g., ('i', 'j')).
-    #                                  Format: (Axis X label, Axis Y label).
-    #
-    #         Returns:
-    #             str: The full SCALESIZE string for the WCS request,
-    #                  formatted as "AxisX(SizeX),AxisY(SizeY)".
-    #         """
-    #
-    #     # Strip outer quotes, parentheses, and any surrounding whitespace
-    #     cleaned_str = pixel_sizes.strip("() '\"")
-    #
-    #     # Split the string by the comma and strip any whitespace from parts
-    #     x_str, y_str = [s.strip() for s in cleaned_str.split(',')]
-    #
-    #     # Convert the string parts to integers
-    #     x_size = int(x_str)
-    #     y_size = int(y_str)
-    #
-    #     # Unpack axis identifiers
-    #     axis_x, axis_y = axis_labels
-    #
-    #     # 2. Format the string for the X-axis size
-    #     # WCS format for scaling: AxisName(Size)
-    #     scale_size_x = f"{axis_x}({x_size})"
-    #
-    #     # 3. Format the string for the Y-axis size
-    #     scale_size_y = f"{axis_y}({y_size})"
-    #
-    #     # 4. Combine the strings into the full SCALESIZE parameter
-    #     return f"{scale_size_x},{scale_size_y}"
 
 
     def generate_scalesize(self, pixel_sizes_str: str) -> str:
@@ -409,7 +290,6 @@ class WCSClient:
             y_size = int(y_str)
 
         except ValueError as e:
-            # Raise an informative error if parsing fails
             raise ValueError(
                 f"Invalid pixel size format: '{pixel_sizes_str}'. Expected '(X,Y)' integers. Error details: {e}")
 

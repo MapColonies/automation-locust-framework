@@ -1,0 +1,7 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = true
+[remote "origin"]
+	url = https://github.com/MapColonies/automation-locust-framework.git
+	fetch = +refs/heads/*:refs/remotes/origin/*

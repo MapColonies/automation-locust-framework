@@ -2,13 +2,15 @@ from locust import HttpUser, task
 from requests.adapters import HTTPAdapter
 from common.config.config import config_obj
 from common.utils.wcs_client import WCSClient
+import logging
+
+logger = logging.getLogger(__name__)
 
 class NoNormHTTPAdapter(HTTPAdapter):
     def request_url(self, request, proxies):
         return request.url # Return exactly what the user gave – no normalization
 
 class WCSGetCoverageUser(HttpUser):
-    host = config_obj["wcs"].BASE_URL
 
     def on_start(self):
         self.wcs_client = WCSClient(
@@ -18,6 +20,7 @@ class WCSGetCoverageUser(HttpUser):
         )
         self.session = self.client #get to request.session()
         self.session.mount("https://", NoNormHTTPAdapter())
+        self.session.mount("http://", NoNormHTTPAdapter())
 
         self.coverage_id = config_obj["wcs"].COVERAGE_ID
         self.layer_xml = self.wcs_client.get_describe_coverage(self.coverage_id, self.session)
@@ -25,7 +28,11 @@ class WCSGetCoverageUser(HttpUser):
 
     @task
     def get_coverage_by_crs(self):
-        subsets = self.wcs_client.get_subset(self.extent, self.axis_labels, self.is_degree)
+        try:
+            subsets = self.wcs_client.get_subset(self.extent, self.axis_labels, self.is_degree)
+        except Exception as e:
+            logger.error(f"Stopping ALL runs due to: {e}")
+            self.environment.runner.quit()
         output_crs = self.wcs_client.generate_output_crs(config_obj["wcs"].OUTPUT_CRS, config_obj["wcs"].CRS_DICT)
         additional_params={
             "OUTPUTCRS": output_crs

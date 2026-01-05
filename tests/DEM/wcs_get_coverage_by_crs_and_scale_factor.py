@@ -27,14 +27,17 @@ class WCSGetCoverageUser(HttpUser):
         self.extent, self.axis_labels, self.is_degree = self.wcs_client.parse_coverage_metadata(self.layer_xml)
 
     @task
-    def get_coverage_by_scale_size(self):
+    def get_coverage_by_crs(self):
         try:
             subsets = self.wcs_client.get_subset(self.extent, self.axis_labels, self.is_degree)
         except Exception as e:
             logger.error(f"Stopping ALL runs due to: {e}")
             self.environment.runner.quit()
+        output_crs = self.wcs_client.generate_output_crs(config_obj["wcs"].OUTPUT_CRS, config_obj["wcs"].CRS_DICT)
         scale_factor = config_obj["wcs"].SCALE_FACTOR
         additional_params={
+            "OUTPUTCRS": output_crs,
             "scalefactor": scale_factor
         }
+
         res = self.wcs_client.get_coverage(self.coverage_id, config_obj["wcs"].FORMAT, subsets, self.session, additional_params)
