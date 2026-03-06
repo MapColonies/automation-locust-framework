@@ -1,0 +1,6 @@
+dependencies:
+- name: prometheus-locust-exporter
+  repository: oci://acrarolibotnonprod.azurecr.io/helm/automation
+  version: 1.2.3
+digest: sha256:36ab5fc3539cdcc802a96bd139e24200b0622f5483d9fc7f78fa183ba4c8dad4
+generated: "2025-07-14T11:45:20.791165599+03:00"

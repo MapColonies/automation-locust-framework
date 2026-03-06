@@ -1,0 +1,131 @@
+imageRepository: &imageRepository "acrarolibotnonprod.azurecr.io/automation/locust-slim:v1.0.1"
+
+global:
+  name: locust-global
+  test_file: test_wmts_new.py
+  test_file_path: "/mnt/locust/scripts"  # Fixed missing quote and path
+  host: /
+
+  env: {
+      layer_list: "shay44",
+      points_amount_range: 100,
+      token_flag: true,
+      measure_time: false,
+      percent_ranges: "[100,500]",
+      result_path: "/layerSources/locust/",
+      pro_active_wmts_bbox: [35.024411528661574, 32.79419004139809, 35.37597717328861, 32.947998391903226],
+      mc_region_value: "ישראל, ירדן",
+      version: "1.0.0",
+      wait_time: 1,
+      # Note: Complex strings like this polygon are safer inside single quotes
+      polygon: '[[ (35.21370173535735, 32.944784748967194), (35.21370173535735, 32.602044942336676), (35.76262909563465, 32.602044942336676), (35.76262909563465, 32.944784748967194), (35.21370173535735, 32.944784748967194) ], [ (34.9936172458529, 32.73613049628601), (34.9936172458529, 32.431627293935804), (35.288205407997964, 32.431627293935804), (35.288205407997964, 32.73613049628601), (34.9936172458529, 32.73613049628601) ]]',
+      projection: "roie",
+      wmts_csv_path: "/layerSources/shay/egypt_1_z17-Orthophoto-tiles.csv",
+      requests_records_csv: "test_data/data/stats.csv",
+      gridName: "newGrids",
+      imageType: ".jpeg",
+      layer: "Orthophoto",
+      users: 15,
+      CSV_3D_DATA_PATH: "/mnt/locust/test_data/urls_data.csv",
+      port: 8080,
+      CONF_FILE: "/layerSources/locust/locust_configuration.json",
+      layer_type: "wmts",
+      test_to_run: "Lateron",
+      sub_url_for_pycsw: "https://pycsw-raster-qa-nginx-route-raster-qa.apps.j1lk3njp.eastus.aroapp.io/api/raster/v1"
+  }
+  env_secret: true
+  env_external_secret:
+    {}
+  secret_name_api_key_locust: "automation-secret"
+  sub_url_secret: "automation-secret"
+  headless: false
+
+image:
+  repository: *imageRepository
+  tag: 1.2.0
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  # type: NodePort
+  annotations: {}
+
+master:
+  image: *imageRepository
+  logLevel: INFO
+  envs_include_default: true
+  env: {}
+  args: []
+  pvc:
+    enabled: true
+  strategy:
+    type: RollingUpdate
+  auth:
+    enabled: false
+    username: "danny"
+    password: "danny"
+  csv_options:
+    enabled: false
+    csv: "/home/kaka/dam/"
+    csv_history: false
+  restartPolicy: Always
+
+worker:
+  image: *imageRepository
+  logLevel: INFO
+  envs_include_default: true
+  replicas: 2
+  env: { SUB_URL_FOR_IDS: "https://www.google.com" }
+  args: []
+  pvc:
+    enabled: true
+  strategy:
+    type: RollingUpdate
+  restartPolicy: Always
+
+nameOverride: ""
+fullnameOverride: "locust"
+pullSecretName: mapcolonies-secret
+
+ingress:
+ enabled: false
+ className: ""
+ annotations: {}
+  #  kubernetes.io/ingress.class: nginx
+  #  kubernetes.io/tls-acme: "true"
+ hosts:
+   - host: chart-example.local
+     pathType: ImplementationSpecific
+     path: /
+# tls: []
+#  - secretName: chart-example-tls
+#    hosts:
+#      - chart-example.local
+
+route:
+  enabled: true
+  path: /
+  https: true
+  timeout:
+    enabled: false # defaults to 30s by openshift
+    duration: 60s # supported units (us, ms, s, m, h, d)
+#ingress:
+#  enabled: false
+#  type: "nginx-kubernetes" # supported values: "nginx-org" | "nginx-kubernetes"
+#  path: /locust-ww
+#  host: "lb-mapcolonies.gg.wwest.local"
+#  cors:
+#    enabled: true
+#    origin: "*"
+#    tls: []
+
+storage:
+  enabled: true
+  pvcName: shared-ingestion-source
+  volumeName: ingestion-storage
+  mountPathName: /layerSources
+  subPath: raster/ingestion-sources
+
+volumeMounts:
+  - name: test-files-volume
+    mountPath: /mnt/locust/test_files
