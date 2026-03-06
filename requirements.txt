@@ -1,5 +1,5 @@
 glom~=23.5.0
-locust~=2.36.2
+locust~= 2.43.3
 httpx==0.27.0
 common~=0.1.2
 setuptools~=80.0.0

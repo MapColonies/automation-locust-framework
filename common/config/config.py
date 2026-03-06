@@ -20,11 +20,11 @@ class Config:
 
 class WmtsConfig(Config):
     LAYER_TYPE = os.environ.get("layer_type", "wmts")
-    LAYER_NAME = os.environ.get("layer", "aza_south-Orthophoto")
+    LAYER_NAME = os.environ.get("layer", "egypt_1_z17-Orthophoto")
     GRID_NAME = os.environ.get("gridName", "WorldCRS84")
     TOKEN = os.environ.get("SECRET_VALUE_API", None)
-    IMAGE_FORMAT = os.environ.get("imageType", ".png")
-    # IMAGE_FORMAT = os.environ.get("imageType", ".jpeg")
+    # IMAGE_FORMAT = os.environ.get("imageType", ".png")
+    IMAGE_FORMAT = os.environ.get("imageType", ".jpeg")
     WMTS_CSV_PATH = os.environ.get("wmts_csv_path", "test_data/tiles.csv")
     REQUESTS_RECORDS_CSV = os.environ.get(
         "requests_records_csv", f"{os.getcwd()}/tests/stats.csv"
